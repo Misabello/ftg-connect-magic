@@ -235,6 +235,8 @@ export function MagicStudio({
     setVideoMeta(null);
     setVideoApproved(false);
     setErrorMessage(null);
+    setDeliveryPath(null);
+    setShareLink(null);
   }
 
   const busy =
@@ -394,6 +396,8 @@ export function MagicStudio({
         setStatus("preview_listo");
       } else {
         setFinalUrl(result.imageUrl);
+        setDeliveryPath(path);
+        setShareLink(null);
         setStatus("completado");
       }
       setProgress(100);
@@ -522,6 +526,8 @@ export function MagicStudio({
       }
 
       setVideoUrl(playable);
+      setDeliveryPath(videoPath);
+      setShareLink(null);
       setVideoMeta({ mime, seconds: probe.seconds, width: probe.width, height: probe.height });
       setStatus("completado");
       setProgress(100);
