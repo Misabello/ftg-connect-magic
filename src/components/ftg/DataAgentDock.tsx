@@ -13,6 +13,22 @@ import { cn } from "@/lib/utils";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
+function csvCell(value: string) {
+  return `"${String(value).replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+}
+
+function extractMarkdownTables(content: string): string[][] {
+  const rows: string[][] = [];
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) continue;
+    const cells = trimmed.slice(1, -1).split("|").map((c) => c.trim());
+    if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
+    rows.push(["", ...cells].slice(0, 1).concat(cells));
+  }
+  return rows;
+}
+
 const SUGERENCIAS = [
   "¿Cuánto se vendió en los últimos 7 días por sede?",
   "¿Qué productos tienen stock bajo?",
