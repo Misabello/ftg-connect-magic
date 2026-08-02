@@ -519,9 +519,7 @@ export function PosWorkspace({
             onClose={(counted, notes) => closeSession.mutate({ counted, notes })}
           />
 
-          <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
-            <div className="space-y-5 xl:col-span-2">
-              {magicItems.length > 0 && (
+          {magicItems.length > 0 && (
                 <section className="surface-card p-5">
                   <h2 className="flex items-center gap-2 text-base font-semibold">
                     <Sparkles className="h-4 w-4 text-primary" /> Recuerdos IA listos para cobrar
@@ -551,9 +549,9 @@ export function PosWorkspace({
                     ))}
                   </ul>
                 </section>
-              )}
-            </div>
+          )}
 
+          <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
             <CatalogPanel
               products={products}
               categories={catalog?.categories ?? []}
