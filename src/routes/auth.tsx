@@ -112,6 +112,20 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">Ingresá con tu cuenta corporativa.</p>
 
           <Tabs defaultValue="signin" className="mt-8">
+            <Button
+              type="button"
+              variant="outline"
+              className="mb-4 w-full"
+              onClick={async () => {
+                const result = await lovable.auth.signInWithOAuth("google", {
+                  redirect_uri: window.location.origin,
+                });
+                if (result.error) toast.error(result.error.message ?? "No se pudo ingresar con Google");
+              }}
+            >
+              Continuar con Google
+            </Button>
+
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Iniciar sesión</TabsTrigger>
               <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
