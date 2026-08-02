@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
 import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,20 +38,27 @@ import {
   type CatalogProduct,
 } from "@/lib/ftg/pos";
 
-export const Route = createFileRoute("/_authenticated/pos")({
-  head: () => ({
-    meta: [
-      { title: "Punto de venta — FTG ONE" },
-      { name: "description", content: "Punto de venta de Fotográfica: catálogo, carrito, pagos y caja." },
-      { property: "og:title", content: "Punto de venta — FTG ONE" },
-      { property: "og:description", content: "Catálogo, carrito, medios de pago combinados y arqueo de caja." },
-    ],
-  }),
-  component: Pos,
-});
+type PosWorkspaceProps = {
+  /** Sede a operar. Por defecto usa la sede activa del scope. */
+  locationId?: string;
+  /** Punto de venta fijo (cuando se entra desde una sede). */
+  posId?: string;
+  title?: string;
+  description?: string;
+  headerActions?: React.ReactNode;
+};
 
-function Pos() {
-  const { activeLocation, activeLocationId, online } = useScope();
+export function PosWorkspace({
+  locationId,
+  posId,
+  title = "Punto de venta",
+  description = "Catálogo, carrito, pagos combinados y arqueo de caja por puesto.",
+  headerActions,
+}: PosWorkspaceProps) {
+  const scope = useScope();
+  const { online, locations } = scope;
+  const activeLocationId = locationId ?? scope.activeLocationId;
+  const activeLocation = locations.find((l) => l.id === activeLocationId) ?? null;
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { pending, pendingCount, syncing, sync } = useOfflineQueue();
@@ -81,7 +87,9 @@ function Pos() {
     },
   });
 
-  const activePos = posList.find((p) => p.id === selectedPosId) ?? posList[0] ?? null;
+  const activePos =
+    (posId ? posList.find((p) => p.id === posId) : posList.find((p) => p.id === selectedPosId)) ??
+    (posId ? null : (posList[0] ?? null));
 
   const { data: catalog, isLoading: catalogLoading } = useQuery({
     queryKey: ["catalog", currency],
@@ -401,10 +409,11 @@ function Pos() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Punto de venta"
-        description="Catálogo, carrito, pagos combinados y arqueo de caja por puesto."
+        title={title}
+        description={description}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            {headerActions}
             {!online && (
               <Badge variant="secondary" className="gap-1.5 text-warning">
                 <WifiOff className="h-3.5 w-3.5" /> Sin conexión
@@ -416,25 +425,27 @@ function Pos() {
                 {syncing ? "Sincronizando…" : `Sincronizar ${pendingCount}`}
               </Button>
             )}
-            <Select value={activePos?.id ?? ""} onValueChange={setSelectedPosId}>
-              <SelectTrigger className="w-[16rem]">
-                <SelectValue placeholder="Seleccionar punto de venta" />
-              </SelectTrigger>
-              <SelectContent>
-                {posList.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!posId && (
+              <Select value={activePos?.id ?? ""} onValueChange={setSelectedPosId}>
+                <SelectTrigger className="w-[16rem]">
+                  <SelectValue placeholder="Seleccionar punto de venta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {posList.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         }
       />
 
-      {posList.length === 0 ? (
+      {!activePos ? (
         <p className="surface-card p-8 text-center text-sm text-muted-foreground">
-          Esta sede todavía no tiene puntos de venta activos. Creálos desde Configuración.
+          Esta sede todavía no tiene puntos de venta activos. Podés crearlos desde el detalle de la sede.
         </p>
       ) : (
         <>
