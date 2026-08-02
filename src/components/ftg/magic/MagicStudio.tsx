@@ -34,7 +34,6 @@ import { useI18n } from "@/hooks/useI18n";
 import { cn } from "@/lib/utils";
 import {
   buildVideoComposition,
-  improveVideoPrompt as _improveVideoPrompt,
   runImageGeneration,
   runVideoGeneration,
 } from "@/lib/ftg/magic.functions";
@@ -64,8 +63,6 @@ import { CharacterLibrary, characterImage, type CharacterRow } from "./Character
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
 import { VideoPromptPanel } from "./VideoPromptPanel";
-
-void _improveVideoPrompt;
 
 type SceneRow = {
   id: string;
