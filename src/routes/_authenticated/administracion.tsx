@@ -451,7 +451,15 @@ function Administracion() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!payDoc} onOpenChange={(v) => !v && setPayDoc(null)}>
+      <Dialog
+        open={!!payDoc}
+        onOpenChange={(v) => {
+          if (!v) {
+            setPayDoc(null);
+            clearReceipt();
+          }
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{tab === "cobrar" ? "Registrar cobro" : "Registrar pago"}</DialogTitle>
@@ -459,15 +467,77 @@ function Administracion() {
               Saldo pendiente: {payDoc ? formatMoney(payDoc.balance, payDoc.currency) : ""}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-1.5">
-            <Label htmlFor="pay">Importe</Label>
-            <Input id="pay" type="number" min="0" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="pay">Importe</Label>
+              <Input id="pay" type="number" min="0" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Comprobante (obligatorio)</Label>
+              <p className="text-xs text-muted-foreground">
+                Subí un archivo o sacá una foto del comprobante. Formato libre: imagen o PDF.
+              </p>
+
+              {receipt ? (
+                <div className="flex items-center gap-3 rounded-lg border border-border p-2">
+                  {receiptPreview ? (
+                    <img src={receiptPreview} alt="Comprobante adjunto" className="h-14 w-14 rounded object-cover" />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded bg-muted">
+                      <Paperclip className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{receipt.name}</p>
+                    <p className="text-xs text-muted-foreground">{(receipt.size / 1024).toFixed(0)} KB</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={clearReceipt} aria-label="Quitar comprobante">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-border p-3 text-xs hover:border-primary/50">
+                    <Paperclip className="h-4 w-4 text-muted-foreground" />
+                    Subir archivo
+                    <input
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={(e) => pickReceipt(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                  <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-border p-3 text-xs hover:border-primary/50">
+                    <Camera className="h-4 w-4 text-muted-foreground" />
+                    Sacar foto
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => pickReceipt(e.target.files?.[0] ?? null)}
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPayDoc(null)}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setPayDoc(null);
+                clearReceipt();
+              }}
+            >
               Cancelar
             </Button>
-            <Button disabled={registerPayment.isPending} onClick={() => registerPayment.mutate()}>
+            <Button
+              disabled={registerPayment.isPending || !receipt || !payAmount}
+              onClick={() => registerPayment.mutate()}
+            >
+              {registerPayment.isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
               Confirmar
             </Button>
           </DialogFooter>
