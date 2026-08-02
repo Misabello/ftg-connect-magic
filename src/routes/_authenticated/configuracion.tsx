@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
+import { GoogleAccountCard } from "@/components/ftg/GoogleAccountCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,6 +154,7 @@ function Configuracion() {
           <TabsTrigger value="pos">Puntos de venta</TabsTrigger>
           <TabsTrigger value="paises">Países y monedas</TabsTrigger>
           <TabsTrigger value="usuarios">Usuarios y roles</TabsTrigger>
+          <TabsTrigger value="cuenta">Mi cuenta</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sedes" className="space-y-5 pt-5">
@@ -359,6 +361,10 @@ function Configuracion() {
               );
             })}
           </section>
+        </TabsContent>
+
+        <TabsContent value="cuenta" className="pt-5">
+          <GoogleAccountCard />
         </TabsContent>
       </Tabs>
     </div>
