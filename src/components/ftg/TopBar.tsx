@@ -18,28 +18,30 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/hooks/useI18n";
 import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useScope } from "@/hooks/useScope";
 import { relativeTime } from "@/lib/ftg/format";
-import { ROLE_LABELS } from "@/lib/ftg/roles";
+import { LANGUAGES } from "@/lib/ftg/i18n";
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { profile, roles, user, signOut } = useAuth();
-  const { locations, activeLocationId, setActiveLocation, online, lastSyncAt, language, setLanguage } =
+  const { locations, activeLocationId, setActiveLocation, online, lastSyncAt } =
     useScope();
   const { pendingCount, syncing, sync } = useOfflineQueue();
+  const { t, tRole, language, setLanguage } = useI18n();
 
   const initials = (profile?.full_name || user?.email || "?").slice(0, 2).toUpperCase();
 
   return (
     <header className="sticky top-0 z-30 flex flex-wrap items-center gap-3 border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
-      <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label="Abrir menú">
+      <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenu} aria-label={t("top.menu")}>
         <Menu className="h-5 w-5" />
       </Button>
 
       <Select {...(activeLocationId ? { value: activeLocationId } : {})} onValueChange={setActiveLocation}>
         <SelectTrigger className="h-9 w-[230px]">
-          <SelectValue placeholder="Seleccionar sede" />
+          <SelectValue placeholder={t("top.selectLocation")} />
         </SelectTrigger>
         <SelectContent>
           {locations.map((loc) => (
@@ -59,7 +61,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           }
         >
           {online ? <Wifi className="h-3.5 w-3.5" /> : <CloudOff className="h-3.5 w-3.5" />}
-          {online ? "En línea" : "Offline"}
+          {online ? t("top.online") : t("top.offline")}
         </span>
 
         {pendingCount > 0 ? (
@@ -70,39 +72,44 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
             disabled={syncing}
           >
             <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
-            {syncing ? "Sincronizando…" : `${pendingCount} pendiente${pendingCount === 1 ? "" : "s"}`}
+            {syncing
+              ? t("top.syncing")
+              : `${pendingCount} ${pendingCount === 1 ? t("top.pendingOne") : t("top.pendingMany")}`}
           </Button>
         ) : (
           <span className="hidden items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground sm:flex">
             <CloudUpload className="h-3.5 w-3.5" />
-            Sinc. {relativeTime(lastSyncAt)}
+            {t("top.lastSync")} {relativeTime(lastSyncAt)}
           </span>
         )}
 
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Notificaciones"
-          onClick={() => toast.info("Sin notificaciones nuevas")}
+          aria-label={t("top.notifications")}
+          onClick={() => toast.info(t("top.noNotifications"))}
         >
           <Bell className="h-[18px] w-[18px]" />
         </Button>
 
         <Select value={language} onValueChange={(v) => setLanguage(v as "es" | "pt")}>
-          <SelectTrigger className="h-9 w-[74px]">
+          <SelectTrigger className="h-9 w-[74px]" aria-label={t("top.language")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="es">ES</SelectItem>
-            <SelectItem value="pt">PT</SelectItem>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l.value} value={l.value}>
+                {l.flag}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Ayuda"
-          onClick={() => toast.info("Centro de ayuda disponible en la próxima etapa")}
+          aria-label={t("top.help")}
+          onClick={() => toast.info(t("top.helpSoon"))}
         >
           <HelpCircle className="h-[18px] w-[18px]" />
         </Button>
@@ -120,15 +127,15 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
             <DropdownMenuLabel className="space-y-1">
-              <p className="text-sm font-medium">{profile?.full_name || "Usuario"}</p>
+              <p className="text-sm font-medium">{profile?.full_name || t("top.user")}</p>
               <p className="text-xs font-normal text-muted-foreground">{user?.email}</p>
               <p className="text-xs font-normal text-muted-foreground">
-                {roles.length ? roles.map((r) => ROLE_LABELS[r]).join(", ") : "Sin rol asignado"}
+                {roles.length ? roles.map((r) => tRole(r)).join(", ") : t("top.noRole")}
               </p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void signOut()}>
-              <LogOut className="mr-2 h-4 w-4" /> Cerrar sesión
+              <LogOut className="mr-2 h-4 w-4" /> {t("top.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
