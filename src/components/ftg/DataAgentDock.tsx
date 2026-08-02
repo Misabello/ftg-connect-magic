@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { useI18n } from "@/hooks/useI18n";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, Loader2, Send, X } from "lucide-react";
+import { Bot, Loader2, Maximize2, Minimize2, Send, Table2, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,22 @@ import { askDataAgent } from "@/lib/ftg/agent.functions";
 import { cn } from "@/lib/utils";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
+
+function csvCell(value: string) {
+  return `"${String(value).replace(/"/g, '""').replace(/\r?\n/g, " ")}"`;
+}
+
+function extractMarkdownTables(content: string): string[][] {
+  const rows: string[][] = [];
+  for (const line of content.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) continue;
+    const cells = trimmed.slice(1, -1).split("|").map((c) => c.trim());
+    if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue;
+    rows.push(["", ...cells].slice(0, 1).concat(cells));
+  }
+  return rows;
+}
 
 const SUGERENCIAS = [
   "¿Cuánto se vendió en los últimos 7 días por sede?",
@@ -21,6 +38,7 @@ const SUGERENCIAS = [
 
 export function DataAgentDock() {
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -59,18 +77,97 @@ export function DataAgentDock() {
     inputRef.current?.focus();
   }
 
+  function clearChat() {
+    setMessages([]);
+    setInput("");
+    inputRef.current?.focus();
+    toast.success(language === "pt" ? "Conversa limpa" : "Conversación limpiada");
+  }
+
+  function exportToSheet() {
+    if (messages.length === 0) {
+      toast.info(language === "pt" ? "Nada para exportar" : "No hay nada para exportar");
+      return;
+    }
+    const rows: string[][] = [
+      [language === "pt" ? "Papel" : "Rol", language === "pt" ? "Mensagem" : "Mensaje"],
+    ];
+    for (const m of messages) {
+      const tableRows = extractMarkdownTables(m.content);
+      rows.push([m.role === "user" ? (language === "pt" ? "Você" : "Vos") : "FTG Copiloto", m.content]);
+      for (const r of tableRows) rows.push(r);
+    }
+    const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ftg-copiloto-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(
+      language === "pt"
+        ? "Planilha exportada (abra no Google Sheets ou Excel)"
+        : "Planilla exportada (abrila en Google Sheets o Excel)",
+    );
+  }
+
   return (
     <>
       {open && (
-        <div className="fixed bottom-24 right-4 z-50 flex h-[540px] max-h-[75vh] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:right-6">
+        <div
+          className={cn(
+            "fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
+            expanded
+              ? "inset-3 sm:inset-6"
+              : "bottom-24 right-4 h-[540px] max-h-[75vh] w-[calc(100vw-2rem)] max-w-sm sm:right-6",
+          )}
+        >
           <header className="flex items-center gap-3 border-b border-border bg-muted/40 px-4 py-3">
             <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Bot className="size-5" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">FTG Copiloto</p>
-              <p className="truncate text-xs text-muted-foreground">Consultas sobre tus datos</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {language === "pt" ? "Consultas sobre seus dados" : "Consultas sobre tus datos"}
+              </p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={exportToSheet}
+              aria-label={language === "pt" ? "Exportar para planilha" : "Exportar a planilla"}
+              title={language === "pt" ? "Exportar para planilha" : "Exportar a planilla"}
+            >
+              <Table2 className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={clearChat}
+              aria-label={language === "pt" ? "Limpar conversa" : "Limpiar chat"}
+              title={language === "pt" ? "Limpar conversa" : "Limpiar chat"}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={
+                expanded
+                  ? language === "pt"
+                    ? "Reduzir"
+                    : "Reducir"
+                  : language === "pt"
+                    ? "Ampliar"
+                    : "Agrandar"
+              }
+              title={expanded ? (language === "pt" ? "Reduzir" : "Reducir") : language === "pt" ? "Ampliar" : "Agrandar"}
+            >
+              {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Cerrar agente">
               <X className="size-4" />
             </Button>
@@ -104,7 +201,8 @@ export function DataAgentDock() {
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
+                    expanded ? "max-w-[70%]" : "max-w-[85%]",
+                    "rounded-2xl px-3 py-2 text-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "prose prose-sm max-w-none text-foreground dark:prose-invert",
