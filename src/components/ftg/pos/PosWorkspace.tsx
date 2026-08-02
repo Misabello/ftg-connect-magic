@@ -648,6 +648,14 @@ export function PosWorkspace({
         submitting={registerSale.isPending}
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
       />
+
+      <ReceiptShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        receipt={lastReceipt}
+        defaultEmail={lastContact.email}
+        defaultPhone={lastContact.phone}
+      />
     </div>
   );
 }
