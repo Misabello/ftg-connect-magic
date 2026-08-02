@@ -79,21 +79,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "FTG ONE — Sistema Integral de Operaciones" },
+      { title: "FTG ONE — Plataforma operativa de Fotográfica" },
       {
         name: "description",
         content:
-          "Plataforma ERP modular de Fotográfica: punto de venta offline-first, operaciones, administración y recuerdos fotográficos.",
+          "Un solo sistema para punto de venta offline-first, operaciones de parques y eventos, administración y recuerdos fotográficos con IA.",
       },
       { name: "author", content: "Fotográfica" },
-      { property: "og:title", content: "FTG ONE — Sistema Integral de Operaciones" },
+      { property: "og:title", content: "FTG ONE — Plataforma operativa de Fotográfica" },
       {
         property: "og:description",
-        content: "ERP integral para parques, eventos y puntos de venta de Fotográfica.",
+        content: "Un solo sistema para punto de venta offline-first, operaciones de parques y eventos, administración y recuerdos fotográficos con IA.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "FTG ONE — Plataforma operativa de Fotográfica" },
+      { name: "twitter:description", content: "Un solo sistema para punto de venta offline-first, operaciones de parques y eventos, administración y recuerdos fotográficos con IA." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4ae48809-e0f0-44b5-946e-0babb0c0aad7/id-preview-1e02e5ea--ebe477af-3196-43c0-994e-126e7b2704f9.lovable.app-1785704320671.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4ae48809-e0f0-44b5-946e-0babb0c0aad7/id-preview-1e02e5ea--ebe477af-3196-43c0-994e-126e7b2704f9.lovable.app-1785704320671.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

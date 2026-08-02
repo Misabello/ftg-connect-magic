@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "FTG ONE — Plataforma operativa de Fotográfica" },
       {
         property: "og:description",
-        content: "Punto de venta offline-first, operaciones, administración y fotografía en una sola plataforma.",
+        content: "Un solo sistema para punto de venta offline-first, operaciones de parques y eventos, administración y recuerdos fotográficos con IA.",
       },
     ],
   }),
