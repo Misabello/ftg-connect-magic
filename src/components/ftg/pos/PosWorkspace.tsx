@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, Send, Sparkles, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -13,6 +13,7 @@ import {
   type PaymentDraft,
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
+import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,13 @@ import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 import { enqueueSale } from "@/lib/ftg/offline";
+import {
+  listMagicItems,
+  removeMagicItem,
+  subscribeMagicItems,
+  type MagicPendingItem,
+} from "@/lib/ftg/magic-cart";
+import type { ReceiptShareData } from "@/lib/ftg/share";
 import {
   buildSaleNumber,
   computeTotals,
@@ -68,6 +76,16 @@ export function PosWorkspace({
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [magicItems, setMagicItems] = useState<MagicPendingItem[]>([]);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
+  const [lastContact, setLastContact] = useState({ email: "", phone: "" });
+
+  useEffect(() => {
+    const refresh = () => setMagicItems(listMagicItems());
+    refresh();
+    return subscribeMagicItems(refresh);
+  }, []);
 
   const currency = activeLocation?.currency_code ?? "ARS";
   const locale = activeLocation?.country_code === "BR" ? "pt-BR" : "es-AR";
