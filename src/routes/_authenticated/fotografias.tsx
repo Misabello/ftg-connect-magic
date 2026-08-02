@@ -10,6 +10,8 @@ import { StatCard } from "@/components/ftg/StatCard";
 import { PhotoFormDialog, type PhotoDraft } from "@/components/ftg/photos/PhotoFormDialog";
 import { PhotoGrid, type PhotoRow } from "@/components/ftg/photos/PhotoGrid";
 import { SouvenirStudio, type TemplateRow } from "@/components/ftg/photos/SouvenirStudio";
+import { MagicStudio } from "@/components/ftg/magic/MagicStudio";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -68,9 +70,9 @@ type SouvenirRow = {
 };
 
 function Fotografias() {
-  const { activeLocation } = useScope();
+  const { activeLocation, locations } = useScope();
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const runGenerate = useServerFn(generateSouvenir);
 
@@ -78,6 +80,7 @@ function Fotografias() {
   const [status, setStatus] = useState<PhotoStatus | "todas">("todas");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [studioPhoto, setStudioPhoto] = useState<PhotoRow | null>(null);
+  const [magicOpen, setMagicOpen] = useState(false);
 
   const locationId = activeLocation?.id ?? null;
 
@@ -238,7 +241,14 @@ function Fotografias() {
       <PageHeader
         title={t("page.fotografias.title")}
         description={`${t("page.fotografias.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
-        actions={<PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setMagicOpen(true)}>
+              <Sparkles className="h-4 w-4" /> Crear recuerdo mágico
+            </Button>
+            <PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />
+          </div>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -350,6 +360,23 @@ function Fotografias() {
           return result.imageUrl;
         }}
         onSave={(args) => saveSouvenir.mutateAsync(args)}
+      />
+
+      <MagicStudio
+        open={magicOpen}
+        onOpenChange={setMagicOpen}
+        locationId={locationId}
+        organizationId={profile?.organization_id ?? null}
+        locations={locations.map((l) => ({ id: l.id, name: l.name }))}
+        onAddToCart={(item) => {
+          window.localStorage.setItem(
+            "ftg.pos.pending",
+            JSON.stringify({ ...item, createdAt: new Date().toISOString() }),
+          );
+          toast.success("Enviado al punto de venta", {
+            description: `${item.label} quedó listo para cobrar en el POS.`,
+          });
+        }}
       />
     </div>
   );

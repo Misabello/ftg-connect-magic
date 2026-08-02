@@ -14,6 +14,272 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_characters: {
+        Row: {
+          active: boolean
+          approved: boolean
+          category: string
+          character_version: string
+          created_at: string
+          description: string | null
+          id: string
+          location_id: string | null
+          name: string
+          organization_id: string | null
+          reference_image_path: string | null
+          styles: string[]
+          supports_image: boolean
+          supports_video: boolean
+          updated_at: string
+          usage_count: number
+          venue_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          approved?: boolean
+          category?: string
+          character_version?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id?: string | null
+          name: string
+          organization_id?: string | null
+          reference_image_path?: string | null
+          styles?: string[]
+          supports_image?: boolean
+          supports_video?: boolean
+          updated_at?: string
+          usage_count?: number
+          venue_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          approved?: boolean
+          category?: string
+          character_version?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id?: string | null
+          name?: string
+          organization_id?: string | null
+          reference_image_path?: string | null
+          styles?: string[]
+          supports_image?: boolean
+          supports_video?: boolean
+          updated_at?: string
+          usage_count?: number
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_characters_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_characters_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_characters_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_generation_jobs: {
+        Row: {
+          action: string | null
+          aspect_ratio: string
+          character_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          customer_media_path: string
+          duration_seconds: number | null
+          error_message: string | null
+          estimated_cost: number
+          extra_instruction: string | null
+          final_output_path: string | null
+          id: string
+          location_id: string | null
+          organization_id: string | null
+          output_type: Database["public"]["Enums"]["ai_output_type"]
+          people_count: number
+          point_of_sale_id: string | null
+          preview_path: string | null
+          progress: number
+          prompt_used: string | null
+          prompt_version: string
+          provider: string
+          provider_job_id: string | null
+          sale_id: string | null
+          scene_id: string | null
+          status: Database["public"]["Enums"]["ai_job_status"]
+          style: string | null
+          updated_at: string
+        }
+        Insert: {
+          action?: string | null
+          aspect_ratio?: string
+          character_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_media_path: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          estimated_cost?: number
+          extra_instruction?: string | null
+          final_output_path?: string | null
+          id?: string
+          location_id?: string | null
+          organization_id?: string | null
+          output_type?: Database["public"]["Enums"]["ai_output_type"]
+          people_count?: number
+          point_of_sale_id?: string | null
+          preview_path?: string | null
+          progress?: number
+          prompt_used?: string | null
+          prompt_version?: string
+          provider?: string
+          provider_job_id?: string | null
+          sale_id?: string | null
+          scene_id?: string | null
+          status?: Database["public"]["Enums"]["ai_job_status"]
+          style?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action?: string | null
+          aspect_ratio?: string
+          character_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_media_path?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          estimated_cost?: number
+          extra_instruction?: string | null
+          final_output_path?: string | null
+          id?: string
+          location_id?: string | null
+          organization_id?: string | null
+          output_type?: Database["public"]["Enums"]["ai_output_type"]
+          people_count?: number
+          point_of_sale_id?: string | null
+          preview_path?: string | null
+          progress?: number
+          prompt_used?: string | null
+          prompt_version?: string
+          provider?: string
+          provider_job_id?: string | null
+          sale_id?: string | null
+          scene_id?: string | null
+          status?: Database["public"]["Enums"]["ai_job_status"]
+          style?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generation_jobs_character_id_fkey"
+            columns: ["character_id"]
+            isOneToOne: false
+            referencedRelation: "ai_characters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generation_jobs_scene_id_fkey"
+            columns: ["scene_id"]
+            isOneToOne: false
+            referencedRelation: "ai_scenes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_scenes: {
+        Row: {
+          active: boolean
+          aspect_ratios: string[]
+          available_actions: string[]
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          output_type: Database["public"]["Enums"]["ai_output_type"]
+          prompt_template: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          aspect_ratios?: string[]
+          available_actions?: string[]
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          output_type?: Database["public"]["Enums"]["ai_output_type"]
+          prompt_template: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          aspect_ratios?: string[]
+          available_actions?: string[]
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          output_type?: Database["public"]["Enums"]["ai_output_type"]
+          prompt_template?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_souvenirs: {
         Row: {
           completed_at: string | null
@@ -342,6 +608,86 @@ export type Database = {
           symbol?: string
         }
         Relationships: []
+      }
+      customer_consents: {
+        Row: {
+          accepted_at: string
+          accepted_by: string | null
+          consent_type: string
+          created_at: string
+          customer_media_path: string | null
+          device_label: string | null
+          guardian_confirmation: boolean
+          id: string
+          job_id: string | null
+          location_id: string | null
+          organization_id: string | null
+          purpose: string
+          retention_policy: string
+          sale_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          accepted_by?: string | null
+          consent_type?: string
+          created_at?: string
+          customer_media_path?: string | null
+          device_label?: string | null
+          guardian_confirmation?: boolean
+          id?: string
+          job_id?: string | null
+          location_id?: string | null
+          organization_id?: string | null
+          purpose?: string
+          retention_policy?: string
+          sale_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          accepted_by?: string | null
+          consent_type?: string
+          created_at?: string
+          customer_media_path?: string | null
+          device_label?: string | null
+          guardian_confirmation?: boolean
+          id?: string
+          job_id?: string | null
+          location_id?: string | null
+          organization_id?: string | null
+          purpose?: string
+          retention_policy?: string
+          sale_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_consents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ai_generation_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_consents_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_consents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_consents_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -2291,6 +2637,18 @@ export type Database = {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
+      ai_job_status:
+        | "pendiente"
+        | "en_cola"
+        | "procesando"
+        | "generando_preview"
+        | "preview_listo"
+        | "aprobado"
+        | "generando_final"
+        | "completado"
+        | "error"
+        | "cancelado"
+      ai_output_type: "imagen" | "video"
       app_role:
         | "superadmin"
         | "direccion"
@@ -2474,6 +2832,19 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_job_status: [
+        "pendiente",
+        "en_cola",
+        "procesando",
+        "generando_preview",
+        "preview_listo",
+        "aprobado",
+        "generando_final",
+        "completado",
+        "error",
+        "cancelado",
+      ],
+      ai_output_type: ["imagen", "video"],
       app_role: [
         "superadmin",
         "direccion",
