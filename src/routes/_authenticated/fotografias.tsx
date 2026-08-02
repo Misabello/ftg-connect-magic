@@ -369,12 +369,8 @@ function Fotografias() {
         organizationId={profile?.organization_id ?? null}
         locations={locations.map((l) => ({ id: l.id, name: l.name }))}
         onAddToCart={(item) => {
-          window.localStorage.setItem(
-            "ftg.pos.pending",
-            JSON.stringify({ ...item, createdAt: new Date().toISOString() }),
-          );
-          toast.success("Enviado al punto de venta", {
-            description: `${item.label} quedó listo para cobrar en el POS.`,
+          toast.success("Agregado al punto de venta", {
+            description: `${item.label} aparece en “Recuerdos IA listos para cobrar”, dentro del punto de venta de la sede.`,
           });
         }}
       />

@@ -37,7 +37,7 @@ export type PaymentDraft = {
   reference: string;
 };
 
-export type CheckoutCustomer = { name: string; taxId: string; email: string };
+export type CheckoutCustomer = { name: string; taxId: string; email: string; phone: string };
 
 export function CheckoutDialog({
   open,
@@ -59,7 +59,7 @@ export function CheckoutDialog({
   onConfirm: (payments: PaymentDraft[], customer: CheckoutCustomer) => void;
 }) {
   const [payments, setPayments] = useState<PaymentDraft[]>([]);
-  const [customer, setCustomer] = useState<CheckoutCustomer>({ name: "", taxId: "", email: "" });
+  const [customer, setCustomer] = useState<CheckoutCustomer>({ name: "", taxId: "", email: "", phone: "" });
 
   useEffect(() => {
     if (!open) return;
@@ -67,7 +67,7 @@ export function CheckoutDialog({
     setPayments(
       first ? [{ key: crypto.randomUUID(), methodId: first.id, amount: total, reference: "" }] : [],
     );
-    setCustomer({ name: "", taxId: "", email: "" });
+    setCustomer({ name: "", taxId: "", email: "", phone: "" });
   }, [open, methods, total]);
 
   const paid = paidTotal(payments);
@@ -191,6 +191,25 @@ export function CheckoutDialog({
                 value={customer.taxId}
                 onChange={(e) => setCustomer((c) => ({ ...c, taxId: e.target.value }))}
                 placeholder="CUIT / CPF"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Email del cliente (para enviar la factura)</Label>
+              <Input
+                type="email"
+                className="mt-1"
+                value={customer.email}
+                onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
+                placeholder="cliente@correo.com"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">WhatsApp</Label>
+              <Input
+                className="mt-1"
+                value={customer.phone}
+                onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))}
+                placeholder="5492235550000"
               />
             </div>
           </div>
