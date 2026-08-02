@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/pos")({
 
 function Pos() {
   const { activeLocation, activeLocationId, online } = useScope();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const [selectedPosId, setSelectedPosId] = useState<string | null>(null);
@@ -477,8 +477,6 @@ function Pos() {
         submitting={registerSale.isPending}
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
       />
-
-      {profile === null && null}
     </div>
   );
 }
