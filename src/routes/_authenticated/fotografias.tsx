@@ -11,6 +11,7 @@ import { PhotoFormDialog, type PhotoDraft } from "@/components/ftg/photos/PhotoF
 import { PhotoGrid, type PhotoRow } from "@/components/ftg/photos/PhotoGrid";
 import { SouvenirStudio, type TemplateRow } from "@/components/ftg/photos/SouvenirStudio";
 import { MagicStudio } from "@/components/ftg/magic/MagicStudio";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
