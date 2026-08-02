@@ -2635,6 +2635,8 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      user_can_access_location: { Args: { _loc: string }; Returns: boolean }
+      user_can_access_org: { Args: { _org: string }; Returns: boolean }
     }
     Enums: {
       ai_job_status:
