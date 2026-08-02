@@ -198,6 +198,8 @@ export function MagicStudio({
     setConsent(false);
     setGuardian(false);
     setMinor(false);
+    setCustomerEmail("");
+    setCustomerPhone("");
     resetComposition();
     resetJob();
   }
@@ -631,7 +633,7 @@ export function MagicStudio({
                 selectedId={character?.id ?? null}
                 onSelect={(c) => {
                   setCharacter(c);
-                  resetComposition();
+                  restartFromComposition();
                 }}
                 locationOptions={locations}
               />
@@ -659,9 +661,9 @@ export function MagicStudio({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <LabeledSelect label="Fondo" value={background} onChange={(v) => { setBackground(v); resetComposition(); }} options={BACKGROUNDS} />
-                <LabeledSelect label="Estilo" value={style} onChange={(v) => { setStyle(v); resetComposition(); }} options={VISUAL_STYLES} />
-                <LabeledSelect label="Formato" value={aspectRatio} onChange={(v) => { setAspectRatio(v); resetComposition(); }} options={ASPECT_RATIOS} />
+                <LabeledSelect label="Fondo" value={background} onChange={(v) => { setBackground(v); restartFromComposition(); }} options={BACKGROUNDS} />
+                <LabeledSelect label="Estilo" value={style} onChange={(v) => { setStyle(v); restartFromComposition(); }} options={VISUAL_STYLES} />
+                <LabeledSelect label="Formato" value={aspectRatio} onChange={(v) => { setAspectRatio(v); restartFromComposition(); }} options={ASPECT_RATIOS} />
                 {outputType === "video" && (
                   <>
                     <LabeledSelect
