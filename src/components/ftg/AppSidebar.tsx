@@ -20,9 +20,9 @@ type Item = { key: ModuleKey; label: string; to: string; icon: typeof Home; stag
 
 const ITEMS: Item[] = [
   { key: "inicio", label: "Inicio", to: "/inicio", icon: Home },
-  { key: "pos", label: "Punto de venta", to: "/pos", icon: ShoppingCart, stage: "E2" },
+  { key: "pos", label: "Punto de venta", to: "/pos", icon: ShoppingCart },
   { key: "fotografias", label: "Fotografías", to: "/fotografias", icon: Camera, stage: "E4" },
-  { key: "operaciones", label: "Operaciones", to: "/operaciones", icon: ClipboardList, stage: "E5" },
+  { key: "operaciones", label: "Operaciones", to: "/operaciones", icon: ClipboardList },
   { key: "inventario", label: "Inventario", to: "/inventario", icon: Boxes, stage: "E5" },
   { key: "administracion", label: "Administración", to: "/administracion", icon: Wallet, stage: "E5" },
   { key: "clientes", label: "Clientes", to: "/clientes", icon: Users, stage: "E5" },
@@ -67,7 +67,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </ul>
       <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-foreground/50">
-        MVP · Etapa 2 completada
+        MVP · Etapa 3 completada
       </div>
     </nav>
   );
