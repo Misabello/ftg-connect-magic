@@ -179,7 +179,15 @@ export const falVideoProvider: VideoGenerationProvider = {
       }),
     });
 
-    if (submit.status === 401 || submit.status === 403) throw new Error("La clave del proveedor de video es inválida");
+    if (submit.status === 401 || submit.status === 403) {
+      const detail = await submit.text();
+      if (/balance|locked|billing|quota/i.test(detail)) {
+        throw new Error(
+          "La cuenta del proveedor de video (fal.ai) no tiene saldo disponible. Cargá crédito en fal.ai para poder generar videos.",
+        );
+      }
+      throw new Error(`La clave del proveedor de video es inválida (${submit.status})`);
+    }
     if (submit.status === 429) throw new Error("El proveedor de video está saturado, probá en unos minutos");
     if (!submit.ok) throw new Error(`Error del proveedor de video (${submit.status}): ${await submit.text()}`);
 
