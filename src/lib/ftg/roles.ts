@@ -28,6 +28,7 @@ export const ALL_ROLES = Object.keys(ROLE_LABELS) as AppRole[];
 export type ModuleKey =
   | "inicio"
   | "pos"
+  | "sedes"
   | "fotografias"
   | "operaciones"
   | "inventario"
@@ -39,6 +40,7 @@ export type ModuleKey =
 export const ALL_MODULES: ModuleKey[] = [
   "inicio",
   "pos",
+  "sedes",
   "fotografias",
   "operaciones",
   "inventario",
@@ -52,11 +54,11 @@ export const ALL_MODULES: ModuleKey[] = [
 export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
   superadmin: "*",
   direccion: "*",
-  administracion: ["inicio", "administracion", "clientes", "reportes", "inventario", "configuracion"],
-  operaciones: ["inicio", "operaciones", "inventario", "reportes", "fotografias"],
-  encargado_sede: ["inicio", "pos", "fotografias", "operaciones", "inventario", "reportes"],
-  supervisor: ["inicio", "pos", "fotografias", "operaciones", "reportes"],
-  cajero: ["inicio", "pos", "fotografias"],
+  administracion: ["inicio", "sedes", "administracion", "clientes", "reportes", "inventario", "configuracion"],
+  operaciones: ["inicio", "sedes", "operaciones", "inventario", "reportes", "fotografias"],
+  encargado_sede: ["inicio", "pos", "sedes", "fotografias", "operaciones", "inventario", "reportes"],
+  supervisor: ["inicio", "pos", "sedes", "fotografias", "operaciones", "reportes"],
+  cajero: ["inicio", "pos", "sedes", "fotografias"],
   fotografo: ["inicio", "fotografias"],
   deposito: ["inicio", "inventario"],
   auditor: ["inicio", "reportes", "administracion", "operaciones"],

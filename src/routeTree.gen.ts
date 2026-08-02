@@ -22,6 +22,8 @@ import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
+import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
+import { Route as AuthenticatedSedesLocationIdPosPosIdRouteImport } from './routes/_authenticated/sedes.$locationId.pos.$posId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -91,6 +93,18 @@ const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   path: '/sedes/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSedesLocationIdIndexRoute =
+  AuthenticatedSedesLocationIdIndexRouteImport.update({
+    id: '/sedes/$locationId/',
+    path: '/sedes/$locationId/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSedesLocationIdPosPosIdRoute =
+  AuthenticatedSedesLocationIdPosPosIdRouteImport.update({
+    id: '/sedes/$locationId/pos/$posId',
+    path: '/sedes/$locationId/pos/$posId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -105,6 +119,8 @@ export interface FileRoutesByFullPath {
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
+  '/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -119,6 +135,8 @@ export interface FileRoutesByTo {
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
+  '/sedes/$locationId': typeof AuthenticatedSedesLocationIdIndexRoute
+  '/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,6 +153,8 @@ export interface FileRoutesById {
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/_authenticated/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
+  '/_authenticated/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +171,8 @@ export interface FileRouteTypes {
     | '/pos'
     | '/reportes'
     | '/sedes/'
+    | '/sedes/$locationId/'
+    | '/sedes/$locationId/pos/$posId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -165,6 +187,8 @@ export interface FileRouteTypes {
     | '/pos'
     | '/reportes'
     | '/sedes'
+    | '/sedes/$locationId'
+    | '/sedes/$locationId/pos/$posId'
   id:
     | '__root__'
     | '/'
@@ -180,6 +204,8 @@ export interface FileRouteTypes {
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
     | '/_authenticated/sedes/'
+    | '/_authenticated/sedes/$locationId/'
+    | '/_authenticated/sedes/$locationId/pos/$posId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -281,6 +307,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSedesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/sedes/$locationId/': {
+      id: '/_authenticated/sedes/$locationId/'
+      path: '/sedes/$locationId'
+      fullPath: '/sedes/$locationId/'
+      preLoaderRoute: typeof AuthenticatedSedesLocationIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sedes/$locationId/pos/$posId': {
+      id: '/_authenticated/sedes/$locationId/pos/$posId'
+      path: '/sedes/$locationId/pos/$posId'
+      fullPath: '/sedes/$locationId/pos/$posId'
+      preLoaderRoute: typeof AuthenticatedSedesLocationIdPosPosIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -295,6 +335,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedSedesIndexRoute: typeof AuthenticatedSedesIndexRoute
+  AuthenticatedSedesLocationIdIndexRoute: typeof AuthenticatedSedesLocationIdIndexRoute
+  AuthenticatedSedesLocationIdPosPosIdRoute: typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -308,6 +350,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedSedesIndexRoute: AuthenticatedSedesIndexRoute,
+  AuthenticatedSedesLocationIdIndexRoute:
+    AuthenticatedSedesLocationIdIndexRoute,
+  AuthenticatedSedesLocationIdPosPosIdRoute:
+    AuthenticatedSedesLocationIdPosPosIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
