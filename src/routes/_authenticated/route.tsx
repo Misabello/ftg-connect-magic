@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { AppSidebar } from "@/components/ftg/AppSidebar";
+import { DataAgentDock } from "@/components/ftg/DataAgentDock";
 import { TopBar } from "@/components/ftg/TopBar";
 import { ScopeProvider } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +46,8 @@ function AppLayout() {
             <Outlet />
           </main>
         </div>
+
+        <DataAgentDock />
       </div>
     </ScopeProvider>
   );
