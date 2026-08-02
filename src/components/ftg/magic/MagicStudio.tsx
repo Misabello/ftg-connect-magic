@@ -263,6 +263,58 @@ export function MagicStudio({
     return data?.signedUrl ?? null;
   }
 
+  /** Enlace de descarga válido 7 días: es lo que se manda al cliente por email o WhatsApp. */
+  async function ensureShareLink() {
+    if (shareLink) return shareLink;
+    if (!deliveryPath) return null;
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(deliveryPath, 60 * 60 * 24 * 7);
+    const link = data?.signedUrl ?? null;
+    if (link) setShareLink(link);
+    return link;
+  }
+
+  function deliveryFileName() {
+    const extension = outputType === "video" ? (videoMeta?.mime === "video/webm" ? "webm" : "mp4") : "jpg";
+    return `recuerdo-ftg-${jobId ?? "cliente"}.${extension}`;
+  }
+
+  async function shareMessage() {
+    const link = await ensureShareLink();
+    return buildSouvenirMessage({
+      label: pricing.product,
+      link,
+      sellerName: profile?.full_name,
+      sellerPhone: profile?.phone,
+    });
+  }
+
+  /** Compartir el archivo real (se adjunta en WhatsApp/Mail nativos del dispositivo). */
+  async function shareFile() {
+    const source = outputType === "video" ? videoUrl : finalUrl;
+    if (!source) return;
+    setSharing(true);
+    try {
+      const blob = await (await fetch(source)).blob();
+      const file = new File([blob], deliveryFileName(), { type: blob.type || "application/octet-stream" });
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file], title: `Tu ${pricing.product} de FTG`, text: await shareMessage() });
+      } else {
+        const link = await ensureShareLink();
+        if (link) {
+          await navigator.clipboard.writeText(link);
+          toast.success("Este dispositivo no adjunta archivos: copiamos el enlace de descarga");
+        } else {
+          toast.error("No se pudo preparar el archivo para compartir");
+        }
+      }
+    } catch (error) {
+      if ((error as Error)?.name !== "AbortError") toast.error("No se pudo compartir el archivo");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   async function toDataUrl(src: string) {
     const res = await fetch(src);
     const blob = await res.blob();
