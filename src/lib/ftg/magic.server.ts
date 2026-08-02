@@ -23,8 +23,13 @@ export type ImageGenerationResult = {
   estimatedCost: number;
 };
 
+/** Motores de video disponibles en la interfaz. */
+export type VideoEngine = "estandar" | "abrazo" | "economico";
+
+/** Duración máxima que la interfaz permite pedir. */
+export const MAX_VIDEO_DURATION_SECONDS = 5;
+
 export type VideoRequest = {
-  /** Fotograma de composición aprobado: primer frame de la animación. */
   /** Fotograma de composición aprobado: primer frame de la animación. */
   compositionImageUrl: string;
   /** Referencias originales (se envían si el modelo las soporta). */
