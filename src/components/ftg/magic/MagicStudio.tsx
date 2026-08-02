@@ -30,8 +30,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/hooks/useI18n";
 import { cn } from "@/lib/utils";
-import { runMagicGeneration } from "@/lib/ftg/magic.functions";
+import {
+  buildVideoComposition,
+  improveVideoPrompt as _improveVideoPrompt,
+  runImageGeneration,
+  runVideoGeneration,
+} from "@/lib/ftg/magic.functions";
+import {
+  buildFinalVideoPrompt,
+  MAX_USER_PROMPT,
+  NEGATIVE_PROMPT,
+  PROMPT_TEMPLATE_VERSION,
+  VIDEO_MOTION_TEMPLATES,
+} from "@/lib/ftg/magic.prompts";
 import {
   ASPECT_RATIOS,
   BACKGROUNDS,
@@ -40,7 +53,6 @@ import {
   JOB_STATUS_TONE,
   PRICING,
   PROMPT_VERSION,
-  VIDEO_ACTIONS,
   VIDEO_DURATIONS,
   VISUAL_STYLES,
   buildInternalPrompt,
@@ -49,7 +61,11 @@ import {
   type OutputType,
 } from "@/lib/ftg/magic";
 import { CharacterLibrary, characterImage, type CharacterRow } from "./CharacterLibrary";
+import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
+import { VideoPromptPanel } from "./VideoPromptPanel";
+
+void _improveVideoPrompt;
 
 type SceneRow = {
   id: string;
@@ -83,6 +99,7 @@ export function MagicStudio({
   onAddToCart?: (item: { outputType: OutputType; jobId: string; price: number; label: string }) => void;
 }) {
   const { user } = useAuth();
+  const { language } = useI18n();
 
   const [outputType, setOutputType] = useState<OutputType>("imagen");
   const [photo, setPhoto] = useState<CustomerPhoto | null>(null);
@@ -91,22 +108,38 @@ export function MagicStudio({
   const [background, setBackground] = useState("parque");
   const [style, setStyle] = useState("realista");
   const [aspectRatio, setAspectRatio] = useState("9:16");
-  const [action, setAction] = useState("saludar");
+  const [motion, setMotion] = useState<string>("abrazo");
   const [duration, setDuration] = useState(5);
+  const [minResolution, setMinResolution] = useState<"720p" | "1080p">("720p");
+  const [userPrompt, setUserPrompt] = useState("");
   const [extra, setExtra] = useState("");
   const [consent, setConsent] = useState(false);
   const [guardian, setGuardian] = useState(false);
   const [minor, setMinor] = useState(false);
+
+  // Composición inicial (solo video)
+  const [personSide, setPersonSide] = useState<"izquierda" | "derecha">("izquierda");
+  const [gapLevel, setGapLevel] = useState<GapLevel>("media");
+  const [characterScale, setCharacterScale] = useState(1);
+  const [compositionUrl, setCompositionUrl] = useState<string | null>(null);
+  const [compositionApproved, setCompositionApproved] = useState(false);
+  const [compositionBusy, setCompositionBusy] = useState(false);
 
   const [status, setStatus] = useState<JobStatus>("pendiente");
   const [progress, setProgress] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
-  const [simulated, setSimulated] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoMeta, setVideoMeta] = useState<{ mime: string; seconds: number; width: number; height: number } | null>(
+    null,
+  );
+  const [videoApproved, setVideoApproved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const generate = useServerFn(runMagicGeneration);
+  const generateImage = useServerFn(runImageGeneration);
+  const generateComposition = useServerFn(buildVideoComposition);
+  const generateVideo = useServerFn(runVideoGeneration);
 
   const { data: characters = [] } = useQuery({
     queryKey: ["ai-characters"],
@@ -157,10 +190,18 @@ export function MagicStudio({
     setPhoto(null);
     setCharacter(null);
     setExtra("");
+    setUserPrompt("");
     setConsent(false);
     setGuardian(false);
     setMinor(false);
+    resetComposition();
     resetJob();
+  }
+
+  function resetComposition() {
+    setCompositionUrl(null);
+    setCompositionApproved(false);
+    setCompositionBusy(false);
   }
 
   function resetJob() {
@@ -169,29 +210,36 @@ export function MagicStudio({
     setJobId(null);
     setPreviewUrl(null);
     setFinalUrl(null);
-    setSimulated(false);
+    setVideoUrl(null);
+    setVideoMeta(null);
+    setVideoApproved(false);
     setErrorMessage(null);
   }
 
   const busy =
     status === "en_cola" || status === "procesando" || status === "generando_preview" || status === "generando_final";
 
-  const canGenerate =
-    !!photo && !!character && !!scene && consent && (!minor || guardian) && !busy && !!user;
+  const baseReady = !!photo && !!character && !!scene && consent && (!minor || guardian) && !busy && !!user;
+  const canGenerate = outputType === "imagen" ? baseReady : baseReady && compositionApproved;
 
   const pricing = PRICING[outputType];
 
-  /** Sube un archivo privado al bucket y devuelve la ruta. */
-  async function upload(path: string, dataUrl: string, contentType: string) {
-    const { error } = await supabase.storage.from(BUCKET).upload(path, dataUrlToBlob(dataUrl), {
-      contentType,
-      upsert: true,
-    });
+  const finalPromptPreview = useMemo(
+    () => buildFinalVideoPrompt({ motion, userPrompt, durationSeconds: duration, aspectRatio }),
+    [motion, userPrompt, duration, aspectRatio],
+  );
+
+  async function upload(path: string, body: Blob, contentType: string) {
+    const { error } = await supabase.storage.from(BUCKET).upload(path, body, { contentType, upsert: true });
     if (error) throw error;
     return path;
   }
 
-  /** Convierte una imagen local (personaje) a data URL para enviarla al proveedor. */
+  async function signedUrl(path: string) {
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
+    return data?.signedUrl ?? null;
+  }
+
   async function toDataUrl(src: string) {
     const res = await fetch(src);
     const blob = await res.blob();
@@ -202,183 +250,305 @@ export function MagicStudio({
     });
   }
 
-  async function startPreview() {
-    if (!photo || !character || !scene || !user) return;
-    resetJob();
-    setStatus("en_cola");
-    setProgress(8);
-
-    const prompt = buildInternalPrompt({
-      outputType,
-      characterName: character.name,
-      characterDescription: character.description,
-      sceneTemplate: scene.prompt_template,
-      background,
-      style,
-      peopleCount: photo.peopleCount,
-      action: outputType === "video" ? action : null,
-      durationSeconds: outputType === "video" ? duration : null,
-      extraInstruction: extra,
-    });
-
-    const timer = window.setInterval(() => setProgress((p) => Math.min(p + 4, 88)), 500);
-
-    try {
-      const mediaPath = `${user.id}/${crypto.randomUUID()}.jpg`;
-      await upload(mediaPath, photo.dataUrl, "image/jpeg");
-
-      setStatus("procesando");
-      const { data: job, error: jobError } = await supabase
-        .from("ai_generation_jobs")
-        .insert({
-          organization_id: organizationId,
-          location_id: locationId,
-          point_of_sale_id: pointOfSaleId ?? null,
-          output_type: outputType,
-          customer_media_path: mediaPath,
-          character_id: character.id,
-          scene_id: scene.id,
-          action: outputType === "video" ? action : null,
-          aspect_ratio: aspectRatio,
-          duration_seconds: outputType === "video" ? duration : null,
-          style,
-          people_count: photo.peopleCount,
-          extra_instruction: extra || null,
-          status: "generando_preview",
-          progress: 20,
-          provider: outputType === "video" ? "simulado-video" : "lovable-ai",
-          prompt_version: PROMPT_VERSION,
-          prompt_used: prompt,
-          created_by: user.id,
-        })
-        .select("id")
-        .single();
-      if (jobError) throw jobError;
-      setJobId(job.id);
-
-      await supabase.from("customer_consents").insert({
-        organization_id: organizationId,
-        location_id: locationId,
-        job_id: job.id,
-        customer_media_path: mediaPath,
-        consent_type: minor ? "menor_con_tutor" : "titular",
-        guardian_confirmation: minor ? guardian : false,
-        purpose: "Generación de recuerdo con IA y entrega al cliente",
-        retention_policy: "Se elimina a los 30 días salvo pedido del cliente",
-        device_label: navigator.userAgent.slice(0, 120),
-        accepted_by: user.id,
-      });
-
-      setStatus("generando_preview");
-      const characterUrl = await toDataUrl(characterImage(character));
-
-      const result = await generate({
-        data: {
-          prompt,
-          customerImageUrl: photo.dataUrl,
-          characterImageUrl: characterUrl,
-          aspectRatio,
-          quality: "preview",
-          outputType,
-          durationSeconds: outputType === "video" ? duration : undefined,
-          action: outputType === "video" ? action : undefined,
-        },
-      });
-
-      const media = result.mediaUrl ?? result.posterUrl;
-      if (!media) throw new Error("El proveedor no devolvió contenido");
-
-      const previewPath = `${user.id}/previews/${job.id}.jpg`;
-      await upload(previewPath, media, "image/jpeg");
-
-      setPreviewUrl(media);
-      setSimulated(result.simulated);
-      setStatus("preview_listo");
-      setProgress(100);
-
-      await supabase
-        .from("ai_generation_jobs")
-        .update({ status: "preview_listo", progress: 100, preview_path: previewPath, estimated_cost: result.estimatedCost, provider: result.provider })
-        .eq("id", job.id);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      setErrorMessage(message);
-      setStatus("error");
-      setProgress(0);
-      if (jobId) await supabase.from("ai_generation_jobs").update({ status: "error", error_message: message }).eq("id", jobId);
-      toast.error("No pudimos generar el recuerdo", { description: message });
-    } finally {
-      window.clearInterval(timer);
-    }
+  /** Lee duración y resolución reales del archivo generado y arma la miniatura. */
+  async function probeVideo(url: string) {
+    return await new Promise<{ seconds: number; width: number; height: number; thumbnail: string | null }>(
+      (resolve) => {
+        const el = document.createElement("video");
+        el.preload = "metadata";
+        el.muted = true;
+        el.crossOrigin = "anonymous";
+        el.onloadeddata = () => {
+          let thumbnail: string | null = null;
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = el.videoWidth;
+            canvas.height = el.videoHeight;
+            canvas.getContext("2d")?.drawImage(el, 0, 0);
+            thumbnail = canvas.toDataURL("image/jpeg", 0.8);
+          } catch {
+            thumbnail = null;
+          }
+          resolve({ seconds: el.duration || 0, width: el.videoWidth, height: el.videoHeight, thumbnail });
+        };
+        el.onerror = () => resolve({ seconds: 0, width: 0, height: 0, thumbnail: null });
+        el.src = url;
+      },
+    );
   }
 
-  async function approveAndFinish() {
-    if (!jobId || !photo || !character || !scene || !user) return;
-    setStatus("aprobado");
-    await supabase.from("ai_generation_jobs").update({ status: "aprobado" }).eq("id", jobId);
+  async function ensureJob(mediaPath: string) {
+    if (!user || !character || !scene) throw new Error("Faltan datos del trabajo");
+    if (jobId) return jobId;
 
-    setStatus("generando_final");
-    setProgress(20);
-    const timer = window.setInterval(() => setProgress((p) => Math.min(p + 5, 90)), 400);
+    const { data: job, error } = await supabase
+      .from("ai_generation_jobs")
+      .insert({
+        organization_id: organizationId,
+        location_id: locationId,
+        point_of_sale_id: pointOfSaleId ?? null,
+        output_type: outputType,
+        customer_media_path: mediaPath,
+        character_id: character.id,
+        scene_id: scene.id,
+        action: outputType === "video" ? motion : null,
+        aspect_ratio: aspectRatio,
+        duration_seconds: outputType === "video" ? duration : null,
+        style,
+        people_count: photo?.peopleCount ?? 1,
+        extra_instruction: extra || null,
+        status: "procesando",
+        progress: 10,
+        provider: outputType === "video" ? "fal-ai" : "lovable-ai",
+        prompt_version: outputType === "video" ? PROMPT_TEMPLATE_VERSION : PROMPT_VERSION,
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    await supabase.from("customer_consents").insert({
+      organization_id: organizationId,
+      location_id: locationId,
+      job_id: job.id,
+      customer_media_path: mediaPath,
+      consent_type: minor ? "menor_con_tutor" : "titular",
+      guardian_confirmation: minor ? guardian : false,
+      purpose: "Generación de recuerdo con IA y entrega al cliente",
+      retention_policy: "Se elimina a los 30 días salvo pedido del cliente",
+      device_label: navigator.userAgent.slice(0, 120),
+      accepted_by: user.id,
+    });
+
+    setJobId(job.id);
+    return job.id as string;
+  }
+
+  async function uploadCustomerPhoto() {
+    if (!photo || !user) throw new Error("Falta la foto del cliente");
+    const mediaPath = `${user.id}/${crypto.randomUUID()}.jpg`;
+    await upload(mediaPath, dataUrlToBlob(photo.dataUrl), "image/jpeg");
+    return mediaPath;
+  }
+
+  /* ───────────── Modo foto ───────────── */
+
+  async function runImageFlow(quality: "preview" | "final") {
+    if (!photo || !character || !scene || !user) return;
+    setErrorMessage(null);
+    setStatus(quality === "preview" ? "generando_preview" : "generando_final");
+    setProgress(15);
+    const timer = window.setInterval(() => setProgress((p) => Math.min(p + 4, 90)), 500);
+    let currentJob = jobId;
     try {
+      const mediaPath = await uploadCustomerPhoto();
+      currentJob = await ensureJob(mediaPath);
+
       const prompt = buildInternalPrompt({
-        outputType,
+        outputType: "imagen",
         characterName: character.name,
         characterDescription: character.description,
         sceneTemplate: scene.prompt_template,
         background,
         style,
         peopleCount: photo.peopleCount,
-        action: outputType === "video" ? action : null,
-        durationSeconds: outputType === "video" ? duration : null,
         extraInstruction: extra,
       });
 
-      const characterUrl = await toDataUrl(characterImage(character));
-      const result = await generate({
+      const result = await generateImage({
         data: {
           prompt,
           customerImageUrl: photo.dataUrl,
-          characterImageUrl: characterUrl,
+          characterImageUrl: await toDataUrl(characterImage(character)),
           aspectRatio,
-          quality: "final",
-          outputType,
-          durationSeconds: outputType === "video" ? duration : undefined,
-          action: outputType === "video" ? action : undefined,
+          quality,
         },
       });
 
-      const media = result.mediaUrl ?? result.posterUrl ?? previewUrl;
-      if (!media) throw new Error("El proveedor no devolvió contenido");
-      const finalPath = `${user.id}/finales/${jobId}.jpg`;
-      await upload(finalPath, media, "image/jpeg");
+      const path = `${user.id}/${quality === "preview" ? "previews" : "finales"}/${currentJob}.jpg`;
+      await upload(path, dataUrlToBlob(result.imageUrl), "image/jpeg");
 
-      setFinalUrl(media);
-      setSimulated(result.simulated);
-      setStatus("completado");
+      if (quality === "preview") {
+        setPreviewUrl(result.imageUrl);
+        setStatus("preview_listo");
+      } else {
+        setFinalUrl(result.imageUrl);
+        setStatus("completado");
+      }
       setProgress(100);
+
       await supabase
         .from("ai_generation_jobs")
         .update({
-          status: "completado",
+          status: quality === "preview" ? "preview_listo" : "completado",
           progress: 100,
-          final_output_path: finalPath,
-          completed_at: new Date().toISOString(),
+          prompt_used: prompt,
+          final_prompt: prompt,
+          model: result.model,
+          provider: result.provider,
+          output_mime_type: "image/jpeg",
+          estimated_cost: result.estimatedCost,
+          ...(quality === "preview" ? { preview_path: path } : { final_output_path: path, completed_at: new Date().toISOString() }),
         })
-        .eq("id", jobId);
-      toast.success("Recuerdo listo para entregar");
+        .eq("id", currentJob);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error desconocido";
-      setErrorMessage(message);
-      setStatus("error");
-      await supabase.from("ai_generation_jobs").update({ status: "error", error_message: message }).eq("id", jobId);
-      toast.error("No pudimos generar el archivo final", { description: message });
+      await failJob(currentJob, error);
     } finally {
       window.clearInterval(timer);
     }
   }
 
-  const displayed = finalUrl ?? previewUrl;
+  /* ───────────── Modo video ───────────── */
+
+  async function runComposition() {
+    if (!photo || !character) return;
+    setCompositionBusy(true);
+    setCompositionApproved(false);
+    setErrorMessage(null);
+    try {
+      const result = await generateComposition({
+        data: {
+          customerImageUrl: photo.dataUrl,
+          characterImageUrl: await toDataUrl(characterImage(character)),
+          characterName: character.name,
+          characterDescription: character.description,
+          background,
+          style,
+          aspectRatio: aspectRatio as "9:16" | "1:1" | "16:9",
+          personSide,
+          gapLevel,
+          characterScale,
+        },
+      });
+      setCompositionUrl(result.compositionUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
+      setErrorMessage(message);
+      toast.error("No pudimos armar la composición", { description: message });
+    } finally {
+      setCompositionBusy(false);
+    }
+  }
+
+  async function approveComposition() {
+    if (!compositionUrl || !user) return;
+    setCompositionApproved(true);
+    try {
+      const mediaPath = await uploadCustomerPhoto();
+      const job = await ensureJob(mediaPath);
+      const path = `${user.id}/composiciones/${job}.jpg`;
+      await upload(path, dataUrlToBlob(compositionUrl), "image/jpeg");
+      await supabase
+        .from("ai_generation_jobs")
+        .update({ composition_path: path, composition_approved: true })
+        .eq("id", job);
+      toast.success("Composición aprobada");
+    } catch (error) {
+      toast.error("No pudimos guardar la composición", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  }
+
+  async function runVideoFlow() {
+    if (!photo || !character || !compositionUrl || !user) return;
+    if (!compositionApproved) {
+      toast.error("Aprobá la composición inicial antes de generar el video");
+      return;
+    }
+    setErrorMessage(null);
+    setStatus("en_cola");
+    setProgress(10);
+    const timer = window.setInterval(() => setProgress((p) => Math.min(p + 2, 90)), 1500);
+    let currentJob = jobId;
+    try {
+      const mediaPath = await uploadCustomerPhoto();
+      currentJob = await ensureJob(mediaPath);
+      setStatus("procesando");
+
+      const result = await generateVideo({
+        data: {
+          compositionImageUrl: compositionUrl,
+          customerImageUrl: photo.dataUrl,
+          characterImageUrl: await toDataUrl(characterImage(character)),
+          motion,
+          userPrompt: userPrompt || null,
+          aspectRatio: aspectRatio as "9:16" | "1:1" | "16:9",
+          durationSeconds: duration,
+          minResolution,
+        },
+      });
+
+      const response = await fetch(result.videoUrl);
+      const blob = await response.blob();
+      const mime = (blob.type || result.mimeType).split(";")[0]!;
+      if (!["video/mp4", "video/webm"].includes(mime)) {
+        throw new Error(`El proveedor devolvió un archivo que no es video (${mime || "desconocido"}).`);
+      }
+
+      const extension = mime === "video/webm" ? "webm" : "mp4";
+      const videoPath = `${user.id}/videos/${currentJob}.${extension}`;
+      await upload(videoPath, blob, mime);
+
+      const playable = (await signedUrl(videoPath)) ?? URL.createObjectURL(blob);
+      const probe = await probeVideo(playable);
+
+      let thumbnailPath: string | null = null;
+      if (probe.thumbnail) {
+        thumbnailPath = `${user.id}/videos/${currentJob}-thumb.jpg`;
+        await upload(thumbnailPath, dataUrlToBlob(probe.thumbnail), "image/jpeg");
+      }
+
+      setVideoUrl(playable);
+      setVideoMeta({ mime, seconds: probe.seconds, width: probe.width, height: probe.height });
+      setStatus("completado");
+      setProgress(100);
+
+      await supabase
+        .from("ai_generation_jobs")
+        .update({
+          status: "completado",
+          progress: 100,
+          provider: result.provider,
+          provider_job_id: result.providerJobId,
+          model: result.model,
+          user_prompt: result.userPrompt || null,
+          final_prompt: result.finalPrompt,
+          prompt_used: result.finalPrompt,
+          negative_prompt: result.negativePrompt,
+          prompt_version: result.promptVersion,
+          provider_params: result.params,
+          output_mime_type: mime,
+          video_path: videoPath,
+          final_output_path: videoPath,
+          thumbnail_path: thumbnailPath,
+          output_width: probe.width,
+          output_height: probe.height,
+          estimated_cost: result.estimatedCost,
+          completed_at: new Date().toISOString(),
+        })
+        .eq("id", currentJob);
+
+      toast.success("Video listo para revisar");
+    } catch (error) {
+      await failJob(currentJob, error);
+    } finally {
+      window.clearInterval(timer);
+    }
+  }
+
+  async function failJob(currentJob: string | null, error: unknown) {
+    const message = error instanceof Error ? error.message : "Error desconocido";
+    setErrorMessage(message);
+    setStatus("error");
+    setProgress(0);
+    if (currentJob) {
+      await supabase.from("ai_generation_jobs").update({ status: "error", error_message: message }).eq("id", currentJob);
+    }
+    toast.error("No pudimos generar el recuerdo", { description: message });
+  }
+
+  const displayedImage = finalUrl ?? previewUrl;
   const showWatermark = !!previewUrl && !finalUrl;
 
   const stepsDone = useMemo(
@@ -398,7 +568,6 @@ export function MagicStudio({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Selector de formato */}
         <div className="grid grid-cols-2 gap-3">
           {(["imagen", "video"] as OutputType[]).map((type) => (
             <button
@@ -407,6 +576,7 @@ export function MagicStudio({
               disabled={busy}
               onClick={() => {
                 setOutputType(type);
+                resetComposition();
                 resetJob();
               }}
               className={cn(
@@ -422,9 +592,7 @@ export function MagicStudio({
               <span>
                 <span className="block font-medium">{type === "imagen" ? "Crear foto" : "Crear video"}</span>
                 <span className="block text-xs text-muted-foreground">
-                  {type === "imagen"
-                    ? "Composición fija lista para imprimir"
-                    : "Animación corta de 5 a 10 segundos"}
+                  {type === "imagen" ? "Composición fija lista para imprimir" : "Animación real de 5 a 10 segundos"}
                 </span>
               </span>
             </button>
@@ -432,7 +600,6 @@ export function MagicStudio({
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr_360px]">
-          {/* Paso 2 */}
           <section className="space-y-3">
             <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               2 · Foto del cliente
@@ -440,7 +607,6 @@ export function MagicStudio({
             <CustomerPhotoStep value={photo} aspectRatio={aspectRatio} onChange={setPhoto} />
           </section>
 
-          {/* Paso 3 y 4 */}
           <section className="space-y-4">
             <div className="space-y-2">
               <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">3 · Personaje</h3>
@@ -448,7 +614,10 @@ export function MagicStudio({
                 characters={characters}
                 outputType={outputType}
                 selectedId={character?.id ?? null}
-                onSelect={setCharacter}
+                onSelect={(c) => {
+                  setCharacter(c);
+                  resetComposition();
+                }}
                 locationOptions={locations}
               />
             </div>
@@ -475,23 +644,37 @@ export function MagicStudio({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <LabeledSelect label="Fondo" value={background} onChange={setBackground} options={BACKGROUNDS} />
-                <LabeledSelect label="Estilo" value={style} onChange={setStyle} options={VISUAL_STYLES} />
-                <LabeledSelect label="Formato" value={aspectRatio} onChange={setAspectRatio} options={ASPECT_RATIOS} />
+                <LabeledSelect label="Fondo" value={background} onChange={(v) => { setBackground(v); resetComposition(); }} options={BACKGROUNDS} />
+                <LabeledSelect label="Estilo" value={style} onChange={(v) => { setStyle(v); resetComposition(); }} options={VISUAL_STYLES} />
+                <LabeledSelect label="Formato" value={aspectRatio} onChange={(v) => { setAspectRatio(v); resetComposition(); }} options={ASPECT_RATIOS} />
                 {outputType === "video" && (
                   <>
-                    <LabeledSelect label="Acción" value={action} onChange={setAction} options={VIDEO_ACTIONS} />
+                    <LabeledSelect
+                      label="Movimiento"
+                      value={motion}
+                      onChange={setMotion}
+                      options={VIDEO_MOTION_TEMPLATES.map((m) => ({ value: m.value, label: m.label }))}
+                    />
                     <LabeledSelect
                       label="Duración"
                       value={String(duration)}
                       onChange={(v) => setDuration(Number(v))}
                       options={VIDEO_DURATIONS.map((d) => ({ value: String(d), label: `${d} segundos` }))}
                     />
+                    <LabeledSelect
+                      label="Resolución mínima"
+                      value={minResolution}
+                      onChange={(v) => setMinResolution(v as "720p" | "1080p")}
+                      options={[
+                        { value: "720p", label: "720p" },
+                        { value: "1080p", label: "1080p" },
+                      ]}
+                    />
                   </>
                 )}
               </div>
 
-              {scene?.code === "personalizada" && (
+              {scene?.code === "personalizada" && outputType === "imagen" && (
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground">Detalle de la escena personalizada</p>
                   <Input
@@ -502,10 +685,42 @@ export function MagicStudio({
                   />
                 </div>
               )}
+
+              {outputType === "video" && (
+                <>
+                  <CompositionStep
+                    url={compositionUrl}
+                    busy={compositionBusy}
+                    approved={compositionApproved}
+                    personSide={personSide}
+                    gapLevel={gapLevel}
+                    characterScale={characterScale}
+                    onSwapSides={() => {
+                      setPersonSide((s) => (s === "izquierda" ? "derecha" : "izquierda"));
+                      setCompositionApproved(false);
+                    }}
+                    onGapChange={(g) => {
+                      setGapLevel(g);
+                      setCompositionApproved(false);
+                    }}
+                    onScaleChange={(v) => {
+                      setCharacterScale(v);
+                      setCompositionApproved(false);
+                    }}
+                    onGenerate={() => void runComposition()}
+                    onApprove={() => void approveComposition()}
+                  />
+                  <VideoPromptPanel
+                    value={userPrompt}
+                    onChange={(v) => setUserPrompt(v.slice(0, MAX_USER_PROMPT))}
+                    finalPrompt={finalPromptPreview}
+                    language={language === "pt" ? "pt" : "es"}
+                  />
+                </>
+              )}
             </div>
           </section>
 
-          {/* Resultado */}
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resultado</h3>
@@ -513,10 +728,12 @@ export function MagicStudio({
             </div>
 
             <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-xl border border-border bg-muted">
-              {displayed ? (
+              {outputType === "video" && videoUrl ? (
+                <video src={videoUrl} controls playsInline className="h-full w-full object-contain" />
+              ) : outputType === "imagen" && displayedImage ? (
                 <>
                   <img
-                    src={displayed}
+                    src={displayedImage}
                     alt="Recuerdo generado"
                     className={cn("h-full w-full object-cover", showWatermark && "blur-[1px]")}
                   />
@@ -525,20 +742,24 @@ export function MagicStudio({
                       FTG · MUESTRA
                     </span>
                   )}
-                  {outputType === "video" && (
-                    <span className="absolute bottom-2 left-2 rounded-md bg-background/85 px-2 py-1 text-[11px]">
-                      Video simulado · {duration}s · {VIDEO_ACTIONS.find((a) => a.value === action)?.label}
-                    </span>
-                  )}
                 </>
               ) : busy ? (
                 <Loader2 className="h-7 w-7 animate-spin text-primary" />
               ) : (
                 <p className="px-6 text-center text-xs text-muted-foreground">
-                  Completá los pasos y generá la vista previa con marca de agua.
+                  {outputType === "video"
+                    ? "Aprobá la composición inicial y generá el video."
+                    : "Completá los pasos y generá la vista previa con marca de agua."}
                 </p>
               )}
             </div>
+
+            {videoMeta && (
+              <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">
+                {videoMeta.mime} · {videoMeta.seconds ? `${videoMeta.seconds.toFixed(1)}s` : "duración desconocida"} ·{" "}
+                {videoMeta.width}×{videoMeta.height}
+              </p>
+            )}
 
             {(busy || status === "preview_listo" || status === "completado") && (
               <div className="space-y-1">
@@ -553,15 +774,8 @@ export function MagicStudio({
               </p>
             )}
 
-            {simulated && (
-              <p className="rounded-lg bg-muted p-2 text-xs text-muted-foreground">
-                Generación simulada para el MVP: el proveedor real de video se conecta desde el backend sin tocar la interfaz.
-              </p>
-            )}
-
             <Separator />
 
-            {/* Consentimiento */}
             <div className="space-y-2 rounded-lg border border-border p-3">
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 Consentimiento del cliente
@@ -586,29 +800,58 @@ export function MagicStudio({
             </div>
 
             <div className="space-y-2">
-              {status !== "completado" && (
-                <Button className="w-full" disabled={!canGenerate} onClick={() => void startPreview()}>
-                  {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Sparkles className="mr-1.5 h-4 w-4" />}
-                  {previewUrl ? "Regenerar vista previa" : "Generar vista previa"}
-                </Button>
-              )}
-
-              {status === "preview_listo" && (
-                <Button className="w-full" variant="secondary" onClick={() => void approveAndFinish()}>
-                  <Check className="mr-1.5 h-4 w-4" /> Aprobar y generar final
-                </Button>
+              {outputType === "imagen" ? (
+                <>
+                  {status !== "completado" && (
+                    <Button className="w-full" disabled={!canGenerate} onClick={() => void runImageFlow("preview")}>
+                      {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Sparkles className="mr-1.5 h-4 w-4" />}
+                      {previewUrl ? "Regenerar vista previa" : "Generar vista previa"}
+                    </Button>
+                  )}
+                  {status === "preview_listo" && (
+                    <Button className="w-full" variant="secondary" onClick={() => void runImageFlow("final")}>
+                      <Check className="mr-1.5 h-4 w-4" /> Aprobar y generar final
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  {status !== "completado" && (
+                    <Button className="w-full" disabled={!canGenerate} onClick={() => void runVideoFlow()}>
+                      {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Video className="mr-1.5 h-4 w-4" />}
+                      Generar video
+                    </Button>
+                  )}
+                  {status === "completado" && videoUrl && !videoApproved && (
+                    <div className="flex gap-2">
+                      <Button className="flex-1" variant="secondary" onClick={() => void runVideoFlow()}>
+                        <RefreshCw className="mr-1.5 h-4 w-4" /> Regenerar
+                      </Button>
+                      <Button className="flex-1" onClick={() => setVideoApproved(true)}>
+                        <Check className="mr-1.5 h-4 w-4" /> Aprobar
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
 
               {status === "error" && (
-                <Button className="w-full" variant="secondary" onClick={() => void startPreview()}>
+                <Button
+                  className="w-full"
+                  variant="secondary"
+                  onClick={() => void (outputType === "video" ? runVideoFlow() : runImageFlow("preview"))}
+                >
                   <RefreshCw className="mr-1.5 h-4 w-4" /> Reintentar
                 </Button>
               )}
 
-              {status === "completado" && finalUrl && (
+              {status === "completado" && (outputType === "imagen" ? !!finalUrl : videoApproved) && (
                 <>
                   <Button className="w-full" variant="secondary" asChild>
-                    <a href={finalUrl} download={`recuerdo-${jobId}.jpg`}>
+                    <a
+                      href={(outputType === "video" ? videoUrl : finalUrl) ?? "#"}
+                      download={`recuerdo-${jobId}.${outputType === "video" ? (videoMeta?.mime === "video/webm" ? "webm" : "mp4") : "jpg"}`}
+                    >
                       <Download className="mr-1.5 h-4 w-4" /> Descargar sin marca de agua
                     </a>
                   </Button>
@@ -629,6 +872,11 @@ export function MagicStudio({
                 </>
               )}
             </div>
+
+            <p className="text-[11px] text-muted-foreground">
+              Prompt negativo interno activo ({NEGATIVE_PROMPT.split(",").length} reglas) para evitar figuras
+              superpuestas o duplicadas.
+            </p>
           </section>
         </div>
       </DialogContent>
