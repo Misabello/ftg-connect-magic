@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useI18n } from "@/hooks/useI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_ROLES, ROLE_LABELS, type AppRole } from "@/lib/ftg/roles";
@@ -52,6 +53,7 @@ const locationSchema = z.object({
 
 function Configuracion() {
   const { roles, user } = useAuth();
+  const { t } = useI18n();
   const isAdmin = roles.includes("superadmin") || roles.includes("direccion");
   const isSuperadmin = roles.includes("superadmin");
   const queryClient = useQueryClient();

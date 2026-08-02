@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, formatNumber } from "@/lib/ftg/format";
@@ -38,6 +39,7 @@ const RANGES = [
 
 function Reportes() {
   const { activeLocation, activeLocationId } = useScope();
+  const { t } = useI18n();
   const [range, setRange] = useState("30");
 
   const since = useMemo(() => {

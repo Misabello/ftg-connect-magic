@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ export const Route = createFileRoute("/_authenticated/administracion")({
 
 function Administracion() {
   const { activeLocation, activeLocationId } = useScope();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<FinanceDocKind>("cobrar");
   const [open, setOpen] = useState(false);

@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ftg/PageHeader";
 import { StatCard } from "@/components/ftg/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { relativeTime } from "@/lib/ftg/format";
@@ -33,6 +34,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 function Inicio() {
   const { activeLocation, activeLocationId, locations } = useScope();
+  const { t } = useI18n();
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", activeLocationId],
