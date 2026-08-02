@@ -402,7 +402,8 @@ function Configuracion() {
 
 /** Datos de contacto del vendedor usados al enviar comprobantes y recuerdos. */
 function SellerContactCard() {
-  const { user, profile, refresh } = useAuth();
+  const { user, profile } = useAuth();
+  const queryClient = useQueryClient();
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [saving, setSaving] = useState(false);
@@ -439,8 +440,11 @@ function SellerContactCard() {
             .update({ full_name: fullName.trim(), phone: phone.trim() || null })
             .eq("id", user!.id);
           setSaving(false);
-          if (error) return toast.error(error.message);
-          await refresh?.();
+          if (error) {
+            toast.error(error.message);
+            return;
+          }
+          await queryClient.invalidateQueries({ queryKey: ["me"] });
           toast.success("Datos actualizados");
         }}
       >
