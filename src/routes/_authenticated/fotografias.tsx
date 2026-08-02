@@ -10,6 +10,7 @@ import { StatCard } from "@/components/ftg/StatCard";
 import { PhotoFormDialog, type PhotoDraft } from "@/components/ftg/photos/PhotoFormDialog";
 import { PhotoGrid, type PhotoRow } from "@/components/ftg/photos/PhotoGrid";
 import { SouvenirStudio, type TemplateRow } from "@/components/ftg/photos/SouvenirStudio";
+import { MagicStudio } from "@/components/ftg/magic/MagicStudio";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -68,9 +69,9 @@ type SouvenirRow = {
 };
 
 function Fotografias() {
-  const { activeLocation } = useScope();
+  const { activeLocation, locations } = useScope();
   const { t } = useI18n();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const runGenerate = useServerFn(generateSouvenir);
 
@@ -78,6 +79,7 @@ function Fotografias() {
   const [status, setStatus] = useState<PhotoStatus | "todas">("todas");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [studioPhoto, setStudioPhoto] = useState<PhotoRow | null>(null);
+  const [magicOpen, setMagicOpen] = useState(false);
 
   const locationId = activeLocation?.id ?? null;
 
