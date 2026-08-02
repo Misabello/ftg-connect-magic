@@ -520,6 +520,40 @@ export function PosWorkspace({
           />
 
           <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+            <div className="space-y-5 xl:col-span-2">
+              {magicItems.length > 0 && (
+                <section className="surface-card p-5">
+                  <h2 className="flex items-center gap-2 text-base font-semibold">
+                    <Sparkles className="h-4 w-4 text-primary" /> Recuerdos IA listos para cobrar
+                  </h2>
+                  <ul className="mt-4 grid gap-2 md:grid-cols-2">
+                    {magicItems.map((item) => (
+                      <li
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{item.label}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {formatMoney(item.price, currency, locale)} ·{" "}
+                            {item.customerEmail || item.customerPhone || "sin contacto del cliente"}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 gap-1.5">
+                          <Button size="sm" onClick={() => addMagicItemToCart(item)} disabled={!session}>
+                            <Send className="mr-1.5 h-3.5 w-3.5" /> Al carrito
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => removeMagicItem(item.id)}>
+                            Quitar
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
+
             <CatalogPanel
               products={products}
               categories={catalog?.categories ?? []}
