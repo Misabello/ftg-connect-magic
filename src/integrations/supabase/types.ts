@@ -962,6 +962,7 @@ export type Database = {
           notes: string | null
           organization_id: string
           paid_amount: number
+          receipt_path: string | null
           status: Database["public"]["Enums"]["finance_doc_status"]
           supplier_id: string | null
           updated_at: string
@@ -983,6 +984,7 @@ export type Database = {
           notes?: string | null
           organization_id: string
           paid_amount?: number
+          receipt_path?: string | null
           status?: Database["public"]["Enums"]["finance_doc_status"]
           supplier_id?: string | null
           updated_at?: string
@@ -1004,6 +1006,7 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           paid_amount?: number
+          receipt_path?: string | null
           status?: Database["public"]["Enums"]["finance_doc_status"]
           supplier_id?: string | null
           updated_at?: string
