@@ -183,8 +183,8 @@ function Administracion() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Administración y finanzas"
-        description="Cuentas por cobrar y pagar, antigüedad de deuda, tesorería y arqueos por punto de venta."
+        title={t("page.administracion.title")}
+        description={t("page.administracion.desc")}
         actions={
           <Button onClick={() => setOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" /> Nuevo documento

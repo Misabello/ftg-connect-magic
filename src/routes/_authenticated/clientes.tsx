@@ -151,8 +151,8 @@ function Clientes() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Clientes"
-        description="Clientes corporativos (parques y predios) y consumidores finales con datos fiscales, saldos e historial."
+        title={t("page.clientes.title")}
+        description={t("page.clientes.desc")}
         actions={
           <Button onClick={() => setOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" /> Nuevo cliente

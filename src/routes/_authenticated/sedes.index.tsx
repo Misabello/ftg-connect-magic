@@ -40,8 +40,8 @@ function SedesIndex() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Sedes"
-        description="Entrá a una sede para administrar sus puntos de venta, cajas y cobros."
+        title={t("page.sedes.title")}
+        description={t("page.sedes.desc")}
       />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {locations.map((l) => (

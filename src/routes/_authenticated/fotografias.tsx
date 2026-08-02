@@ -236,8 +236,8 @@ function Fotografias() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Fotografías"
-        description={`Galería, consentimientos y recuerdos con IA${activeLocation ? ` · ${activeLocation.name}` : ""}`}
+        title={t("page.fotografias.title")}
+        description={`${t("page.fotografias.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
         actions={<PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />}
       />
 

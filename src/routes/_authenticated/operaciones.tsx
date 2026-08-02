@@ -360,8 +360,8 @@ function Operaciones() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Operaciones"
-        description="Jornadas por sede: estado, checklists de apertura y cierre, personal e incidentes."
+        title={t("page.operaciones.title")}
+        description={t("page.operaciones.desc")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {days.length > 0 && (

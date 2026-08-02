@@ -164,8 +164,8 @@ function Inventario() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Inventario"
-        description={`Stock por sede, alertas de mínimo y movimientos trazables en ${activeLocation?.name ?? "la sede activa"}.`}
+        title={t("page.inventario.title")}
+        description={`${t("page.inventario.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
         actions={
           <Button
             onClick={() => {

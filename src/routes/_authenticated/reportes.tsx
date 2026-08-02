@@ -123,8 +123,8 @@ function Reportes() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reportes"
-        description="Ventas, medios de pago, conversión fotográfica y costos de IA por sede y período."
+        title={t("page.reportes.title")}
+        description={t("page.reportes.desc")}
         actions={
           <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="w-48">

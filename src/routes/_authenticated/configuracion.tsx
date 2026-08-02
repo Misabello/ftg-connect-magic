@@ -146,17 +146,17 @@ function Configuracion() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Configuración"
-        description="Estructura organizativa del MVP: países y monedas, sedes, puntos de venta, usuarios y roles."
+        title={t("page.configuracion.title")}
+        description={t("page.configuracion.desc")}
       />
 
       <Tabs defaultValue="sedes">
         <TabsList>
-          <TabsTrigger value="sedes">Sedes</TabsTrigger>
-          <TabsTrigger value="pos">Puntos de venta</TabsTrigger>
-          <TabsTrigger value="paises">Países y monedas</TabsTrigger>
-          <TabsTrigger value="usuarios">Usuarios y roles</TabsTrigger>
-          <TabsTrigger value="cuenta">Mi cuenta</TabsTrigger>
+          <TabsTrigger value="sedes">{t("config.tab.sedes")}</TabsTrigger>
+          <TabsTrigger value="pos">{t("config.tab.pos")}</TabsTrigger>
+          <TabsTrigger value="paises">{t("config.tab.paises")}</TabsTrigger>
+          <TabsTrigger value="usuarios">{t("config.tab.usuarios")}</TabsTrigger>
+          <TabsTrigger value="cuenta">{t("config.tab.cuenta")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sedes" className="space-y-5 pt-5">
