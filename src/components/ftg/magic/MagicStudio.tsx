@@ -725,14 +725,17 @@ export function MagicStudio({
                     onSwapSides={() => {
                       setPersonSide((s) => (s === "izquierda" ? "derecha" : "izquierda"));
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onGapChange={(g) => {
                       setGapLevel(g);
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onScaleChange={(v) => {
                       setCharacterScale(v);
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onGenerate={() => void runComposition()}
                     onApprove={() => void approveComposition()}
