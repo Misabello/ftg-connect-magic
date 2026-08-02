@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { useI18n } from "@/hooks/useI18n";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, Loader2, Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -25,9 +26,10 @@ export function DataAgentDock() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const ask = useServerFn(askDataAgent);
+  const { language } = useI18n();
 
   const mutation = useMutation({
-    mutationFn: (history: ChatMessage[]) => ask({ data: { messages: history } }),
+    mutationFn: (history: ChatMessage[]) => ask({ data: { messages: history, language } }),
     onSuccess: (result) => {
       setMessages((prev) => [...prev, { role: "assistant", content: result.content }]);
     },
