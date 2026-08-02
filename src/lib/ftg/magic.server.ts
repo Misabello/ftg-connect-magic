@@ -1,12 +1,14 @@
 /**
- * Proveedores de generación desacoplados.
+ * Proveedores de generación desacoplados (solo backend).
  *
- * ▸ Para conectar un proveedor REAL solo hay que implementar estas interfaces
- *   y reemplazar `imageProvider` / `videoProvider` al final del archivo.
- *   Las claves de API viven exclusivamente acá (backend), nunca en el frontend.
+ * ▸ Imagen  → Lovable AI Gateway (Gemini image).
+ * ▸ Video   → fal.ai (Kling image-to-video). Requiere el secreto FAL_KEY.
+ *
+ * El modo Foto NUNCA usa el proveedor de video y el modo Video NUNCA usa el
+ * endpoint de imágenes para producir el archivo final.
  */
 
-export type GenerationRequest = {
+export type ImageRequest = {
   prompt: string;
   customerImageUrl: string;
   characterImageUrl?: string | null;
@@ -17,30 +19,61 @@ export type GenerationRequest = {
 export type ImageGenerationResult = {
   imageUrl: string;
   provider: string;
+  model: string;
   estimatedCost: number;
-  simulated: boolean;
+};
+
+export type VideoRequest = {
+  /** Fotograma de composición aprobado: primer frame de la animación. */
+  compositionImageUrl: string;
+  /** Referencias originales (se envían si el modelo las soporta). */
+  customerImageUrl: string;
+  characterImageUrl?: string | null;
+  prompt: string;
+  negativePrompt: string;
+  aspectRatio: string;
+  durationSeconds: number;
+  minResolution: "720p" | "1080p";
 };
 
 export type VideoGenerationResult = {
-  /** URL del video; null mientras el proveedor real de video no esté conectado */
-  videoUrl: string | null;
-  posterUrl: string | null;
+  videoUrl: string;
+  mimeType: string;
+  sizeBytes: number | null;
   provider: string;
+  model: string;
+  providerJobId: string | null;
   estimatedCost: number;
-  simulated: boolean;
 };
 
 export interface ImageGenerationProvider {
   readonly name: string;
-  generate(req: GenerationRequest): Promise<ImageGenerationResult>;
+  generate(req: ImageRequest): Promise<ImageGenerationResult>;
 }
 
 export interface VideoGenerationProvider {
   readonly name: string;
-  generate(
-    req: GenerationRequest & { durationSeconds: number; action: string },
-  ): Promise<VideoGenerationResult>;
+  readonly supportsTwoReferenceImages: boolean;
+  generate(req: VideoRequest): Promise<VideoGenerationResult>;
 }
+
+export const UNSUPPORTED_VIDEO_MESSAGE =
+  "El proveedor configurado no admite este tipo de generación de video.";
+
+export const ALLOWED_VIDEO_MIME = ["video/mp4", "video/webm"];
+
+/** Falla si el proveedor devolvió una imagen u otro archivo que no es video. */
+export function assertVideoMime(mime: string | null | undefined) {
+  const value = (mime ?? "").split(";")[0]!.trim().toLowerCase();
+  if (!ALLOWED_VIDEO_MIME.includes(value)) {
+    throw new Error(
+      `El proveedor devolvió un archivo que no es video (${value || "desconocido"}). Se esperaba video/mp4 o video/webm.`,
+    );
+  }
+  return value;
+}
+
+/* ───────────────────────────── Imagen ───────────────────────────── */
 
 type GatewayResponse = {
   data?: Array<{ b64_json?: string; url?: string }>;
@@ -55,7 +88,8 @@ function extractImage(payload: GatewayResponse): string | null {
   return first?.url ?? null;
 }
 
-/** Proveedor real de imagen (Lovable AI Gateway). */
+const IMAGE_MODEL = "google/gemini-3.1-flash-image";
+
 export const lovableImageProvider: ImageGenerationProvider = {
   name: "lovable-ai",
   async generate(req) {
@@ -79,7 +113,7 @@ export const lovableImageProvider: ImageGenerationProvider = {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-3.1-flash-image",
+        model: IMAGE_MODEL,
         messages: [{ role: "user", content }],
         modalities: ["image", "text"],
         stream: false,
@@ -97,48 +131,101 @@ export const lovableImageProvider: ImageGenerationProvider = {
     return {
       imageUrl: image,
       provider: "lovable-ai",
+      model: IMAGE_MODEL,
       estimatedCost: req.quality === "final" ? 0.06 : 0.03,
-      simulated: false,
     };
   },
 };
 
-/** Proveedor simulado de imagen: devuelve la propia foto del cliente, sin costo. */
-export const simulatedImageProvider: ImageGenerationProvider = {
-  name: "simulado",
-  async generate(req) {
-    await new Promise((r) => setTimeout(r, 1200));
-    return { imageUrl: req.customerImageUrl, provider: "simulado", estimatedCost: 0, simulated: true };
+/* ───────────────────────────── Video ───────────────────────────── */
+
+/** Proveedor sin capacidad de video: siempre devuelve el error claro. */
+export const unsupportedVideoProvider: VideoGenerationProvider = {
+  name: "no-configurado",
+  supportsTwoReferenceImages: false,
+  async generate() {
+    throw new Error(UNSUPPORTED_VIDEO_MESSAGE);
   },
 };
 
+const FAL_MODEL = "fal-ai/kling-video/v2.5-turbo/pro/image-to-video";
+
+function falDuration(seconds: number) {
+  return seconds >= 9 ? "10" : "5";
+}
+
 /**
- * Proveedor de video SIMULADO.
- * ▸ REEMPLAZAR ACÁ para conectar el proveedor real de video (image-to-video).
- *   Debe devolver `videoUrl` con el archivo generado o el id del trabajo remoto.
+ * fal.ai · Kling image-to-video.
+ * Limitación real del proveedor: acepta UNA imagen inicial, por eso el flujo
+ * compone antes las dos referencias en un fotograma aprobado y lo anima.
  */
-export const simulatedVideoProvider: VideoGenerationProvider = {
-  name: "simulado-video",
+export const falVideoProvider: VideoGenerationProvider = {
+  name: "fal-ai",
+  supportsTwoReferenceImages: false,
   async generate(req) {
-    let poster: string | null = null;
-    try {
-      const frame = await lovableImageProvider.generate({
-        ...req,
-        prompt: `${req.prompt}\nFotograma clave representativo de la animación.`,
-      });
-      poster = frame.imageUrl;
-    } catch {
-      poster = req.customerImageUrl;
+    const key = process.env["FAL_KEY"];
+    if (!key) throw new Error("Falta la clave del proveedor de video (FAL_KEY)");
+
+    const submit = await fetch(`https://queue.fal.run/${FAL_MODEL}`, {
+      method: "POST",
+      headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt: req.prompt,
+        negative_prompt: req.negativePrompt,
+        image_url: req.compositionImageUrl,
+        duration: falDuration(req.durationSeconds),
+        aspect_ratio: req.aspectRatio,
+        cfg_scale: 0.5,
+      }),
+    });
+
+    if (submit.status === 401 || submit.status === 403) throw new Error("La clave del proveedor de video es inválida");
+    if (submit.status === 429) throw new Error("El proveedor de video está saturado, probá en unos minutos");
+    if (!submit.ok) throw new Error(`Error del proveedor de video (${submit.status}): ${await submit.text()}`);
+
+    const queued = (await submit.json()) as { request_id?: string; status_url?: string; response_url?: string };
+    const requestId = queued.request_id ?? null;
+    const statusUrl = queued.status_url;
+    const responseUrl = queued.response_url;
+    if (!statusUrl || !responseUrl) throw new Error("El proveedor de video no devolvió un trabajo válido");
+
+    const deadline = Date.now() + 8 * 60 * 1000;
+    let payload: unknown = null;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 4000));
+      const poll = await fetch(statusUrl, { headers: { Authorization: `Key ${key}` } });
+      if (!poll.ok) throw new Error(`Error consultando el trabajo de video (${poll.status})`);
+      const state = (await poll.json()) as { status?: string };
+      if (state.status === "COMPLETED") {
+        const done = await fetch(responseUrl, { headers: { Authorization: `Key ${key}` } });
+        if (!done.ok) throw new Error(`Error obteniendo el video (${done.status})`);
+        payload = await done.json();
+        break;
+      }
+      if (state.status === "FAILED" || state.status === "ERROR") {
+        throw new Error("El proveedor de video no pudo completar el trabajo");
+      }
     }
+    if (!payload) throw new Error("El proveedor de video agotó el tiempo de espera");
+
+    const video = (payload as { video?: { url?: string; content_type?: string; file_size?: number } }).video;
+    if (!video?.url) throw new Error("El proveedor de video no devolvió un archivo");
+
+    const mimeType = assertVideoMime(video.content_type ?? "video/mp4");
+
     return {
-      videoUrl: null,
-      posterUrl: poster,
-      provider: "simulado-video",
-      estimatedCost: 0.05 * (req.durationSeconds / 5),
-      simulated: true,
+      videoUrl: video.url,
+      mimeType,
+      sizeBytes: video.file_size ?? null,
+      provider: "fal-ai",
+      model: FAL_MODEL,
+      providerJobId: requestId,
+      estimatedCost: req.durationSeconds >= 9 ? 0.7 : 0.35,
     };
   },
 };
 
 export const imageProvider: ImageGenerationProvider = lovableImageProvider;
-export const videoProvider: VideoGenerationProvider = simulatedVideoProvider;
+export const videoProvider: VideoGenerationProvider = process.env["FAL_KEY"]
+  ? falVideoProvider
+  : unsupportedVideoProvider;
