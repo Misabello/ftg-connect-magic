@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
 import { toast } from "sonner";
@@ -45,7 +45,7 @@ type PosWorkspaceProps = {
   posId?: string;
   title?: string;
   description?: string;
-  headerActions?: React.ReactNode;
+  headerActions?: ReactNode;
 };
 
 export function PosWorkspace({
