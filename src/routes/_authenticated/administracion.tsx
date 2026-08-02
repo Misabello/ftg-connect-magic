@@ -338,6 +338,8 @@ function Administracion() {
         </Table>
       </section>
 
+      <SedeAccounting />
+
       <section className="surface-card p-5">
         <h2 className="text-base font-semibold">Arqueos y cajas recientes</h2>
         <ul className="mt-4 space-y-2">
