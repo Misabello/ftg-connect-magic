@@ -23,6 +23,12 @@ export type ImageGenerationResult = {
   estimatedCost: number;
 };
 
+/** Motores de video disponibles en la interfaz. */
+export type VideoEngine = "estandar" | "abrazo" | "economico";
+
+/** Duración máxima que la interfaz permite pedir. */
+export const MAX_VIDEO_DURATION_SECONDS = 5;
+
 export type VideoRequest = {
   /** Fotograma de composición aprobado: primer frame de la animación. */
   compositionImageUrl: string;
@@ -34,6 +40,10 @@ export type VideoRequest = {
   aspectRatio: string;
   durationSeconds: number;
   minResolution: "720p" | "1080p";
+  /** Motor de video elegido en la interfaz. */
+  engine?: VideoEngine | undefined;
+  /** Movimiento seleccionado (define el ruteo automático al modelo de abrazo). */
+  motion?: string | undefined;
 };
 
 export type VideoGenerationResult = {
@@ -148,11 +158,62 @@ export const unsupportedVideoProvider: VideoGenerationProvider = {
   },
 };
 
-const FAL_MODEL = "fal-ai/kling-video/v2.5-turbo/pro/image-to-video";
+/** Catálogo de modelos fal.ai por motor. */
+export const VIDEO_MODELS = {
+  /** Video estándar: rápido y económico, 6 s a 768p. */
+  estandar: "fal-ai/minimax/hailuo-2.3-fast/standard/image-to-video",
+  /** Video abrazo: plantilla nativa "hug" de Vidu Q3. */
+  abrazo: "fal-ai/vidu/q3/image-to-video",
+  /** Modo económico: Wan 2.2 turbo a 720p. */
+  economico: "fal-ai/wan/v2.2-a14b/image-to-video/turbo",
+} as const satisfies Record<VideoEngine, string>;
 
-function falDuration(seconds: number) {
-  return seconds >= 9 ? "10" : "5";
+/** Elige el motor: el modo económico manda, luego los movimientos de abrazo. */
+export function resolveVideoEngine(req: Pick<VideoRequest, "engine" | "motion">): VideoEngine {
+  if (req.engine === "economico") return "economico";
+  if (req.engine === "abrazo") return "abrazo";
+  if (req.engine === "estandar") return "estandar";
+  return (req.motion ?? "").startsWith("abrazo") ? "abrazo" : "estandar";
 }
+
+function clampDuration(seconds: number) {
+  return Math.min(Math.max(Math.round(seconds), 3), MAX_VIDEO_DURATION_SECONDS);
+}
+
+/** Cada modelo expone parámetros distintos: el cuerpo se arma por modelo. */
+export function buildFalPayload(engine: VideoEngine, req: VideoRequest): Record<string, unknown> {
+  const duration = clampDuration(req.durationSeconds);
+  if (engine === "abrazo") {
+    return {
+      image_url: req.compositionImageUrl,
+      template: "hug",
+      prompt: req.prompt,
+      duration,
+      aspect_ratio: req.aspectRatio,
+    };
+  }
+  if (engine === "economico") {
+    return {
+      prompt: req.prompt,
+      negative_prompt: req.negativePrompt,
+      image_url: req.compositionImageUrl,
+      resolution: "720p",
+    };
+  }
+  return {
+    prompt: req.prompt,
+    image_url: req.compositionImageUrl,
+    duration: "6",
+    resolution: "768P",
+    prompt_optimizer: true,
+  };
+}
+
+const ENGINE_COST: Record<VideoEngine, number> = {
+  estandar: 0.22,
+  abrazo: 0.35,
+  economico: 0.1,
+};
 
 /**
  * fal.ai · Kling image-to-video.
@@ -166,17 +227,13 @@ export const falVideoProvider: VideoGenerationProvider = {
     const key = process.env["FAL_KEY"];
     if (!key) throw new Error("Falta la clave del proveedor de video (FAL_KEY)");
 
-    const submit = await fetch(`https://queue.fal.run/${FAL_MODEL}`, {
+    const engine = resolveVideoEngine(req);
+    const model = VIDEO_MODELS[engine];
+
+    const submit = await fetch(`https://queue.fal.run/${model}`, {
       method: "POST",
       headers: { Authorization: `Key ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: req.prompt,
-        negative_prompt: req.negativePrompt,
-        image_url: req.compositionImageUrl,
-        duration: falDuration(req.durationSeconds),
-        aspect_ratio: req.aspectRatio,
-        cfg_scale: 0.5,
-      }),
+      body: JSON.stringify(buildFalPayload(engine, req)),
     });
 
     if (submit.status === 401 || submit.status === 403) {
@@ -226,9 +283,9 @@ export const falVideoProvider: VideoGenerationProvider = {
       mimeType,
       sizeBytes: video.file_size ?? null,
       provider: "fal-ai",
-      model: FAL_MODEL,
+      model,
       providerJobId: requestId,
-      estimatedCost: req.durationSeconds >= 9 ? 0.7 : 0.35,
+      estimatedCost: ENGINE_COST[engine],
     };
   },
 };

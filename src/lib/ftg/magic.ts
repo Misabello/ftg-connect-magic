@@ -88,7 +88,8 @@ export const BACKGROUNDS = [
   { value: "original", label: "Mantener el fondo original" },
 ] as const;
 
-export const VIDEO_DURATIONS = [5, 8, 10];
+/** Duraciones ofrecidas en la interfaz: el máximo permitido es 5 segundos. */
+export const VIDEO_DURATIONS = [3, 4, 5];
 
 /** Precio sugerido de venta y costo estimado de generación. */
 export const PRICING: Record<OutputType, { price: number; cost: number; product: string }> = {

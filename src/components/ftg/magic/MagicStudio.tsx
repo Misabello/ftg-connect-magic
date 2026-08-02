@@ -107,6 +107,7 @@ export function MagicStudio({
   const [aspectRatio, setAspectRatio] = useState("9:16");
   const [motion, setMotion] = useState<string>("abrazo");
   const [duration, setDuration] = useState(5);
+  const [engine, setEngine] = useState<"estandar" | "abrazo" | "economico">("abrazo");
   const [minResolution, setMinResolution] = useState<"720p" | "1080p">("720p");
   const [userPrompt, setUserPrompt] = useState("");
   const [extra, setExtra] = useState("");
@@ -473,6 +474,7 @@ export function MagicStudio({
           aspectRatio: aspectRatio as "9:16" | "1:1" | "16:9",
           durationSeconds: duration,
           minResolution,
+          engine,
         },
       });
 
@@ -651,6 +653,16 @@ export function MagicStudio({
                       value={motion}
                       onChange={setMotion}
                       options={VIDEO_MOTION_TEMPLATES.map((m) => ({ value: m.value, label: m.label }))}
+                    />
+                    <LabeledSelect
+                      label="Motor de video"
+                      value={engine}
+                      onChange={(v) => setEngine(v as "estandar" | "abrazo" | "economico")}
+                      options={[
+                        { value: "estandar", label: "Estándar (6 s · 768p)" },
+                        { value: "abrazo", label: "Abrazo (plantilla hug)" },
+                        { value: "economico", label: "Económico (720p)" },
+                      ]}
                     />
                     <LabeledSelect
                       label="Duración"
