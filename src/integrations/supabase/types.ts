@@ -14,6 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_souvenirs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          estimated_cost: number
+          id: string
+          location_id: string | null
+          photo_id: string
+          prompt_used: string | null
+          requested_by: string | null
+          result_url: string | null
+          sale_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["souvenir_status"]
+          template_id: string | null
+          updated_at: string
+          watermarked: boolean
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_cost?: number
+          id?: string
+          location_id?: string | null
+          photo_id: string
+          prompt_used?: string | null
+          requested_by?: string | null
+          result_url?: string | null
+          sale_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["souvenir_status"]
+          template_id?: string | null
+          updated_at?: string
+          watermarked?: boolean
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          estimated_cost?: number
+          id?: string
+          location_id?: string | null
+          photo_id?: string
+          prompt_used?: string | null
+          requested_by?: string | null
+          result_url?: string | null
+          sale_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["souvenir_status"]
+          template_id?: string | null
+          updated_at?: string
+          watermarked?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_souvenirs_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_souvenirs_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_souvenirs_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_souvenirs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "souvenir_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -866,6 +952,135 @@ export type Database = {
           },
         ]
       }
+      photo_consents: {
+        Row: {
+          accepts_image_use: boolean
+          accepts_marketing: boolean
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          location_id: string | null
+          signed_at: string
+          updated_at: string
+          visitor_code: string
+          visitor_name: string | null
+        }
+        Insert: {
+          accepts_image_use?: boolean
+          accepts_marketing?: boolean
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          signed_at?: string
+          updated_at?: string
+          visitor_code: string
+          visitor_name?: string | null
+        }
+        Update: {
+          accepts_image_use?: boolean
+          accepts_marketing?: boolean
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          signed_at?: string
+          updated_at?: string
+          visitor_code?: string
+          visitor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_consents_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photos: {
+        Row: {
+          captured_at: string
+          created_at: string
+          event_id: string | null
+          has_consent: boolean
+          id: string
+          image_url: string
+          location_id: string
+          notes: string | null
+          photographer_id: string | null
+          photographer_name: string | null
+          point_of_sale_id: string | null
+          retention_until: string | null
+          status: Database["public"]["Enums"]["photo_status"]
+          thumbnail_url: string | null
+          updated_at: string
+          visitor_code: string
+        }
+        Insert: {
+          captured_at?: string
+          created_at?: string
+          event_id?: string | null
+          has_consent?: boolean
+          id?: string
+          image_url: string
+          location_id: string
+          notes?: string | null
+          photographer_id?: string | null
+          photographer_name?: string | null
+          point_of_sale_id?: string | null
+          retention_until?: string | null
+          status?: Database["public"]["Enums"]["photo_status"]
+          thumbnail_url?: string | null
+          updated_at?: string
+          visitor_code: string
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          event_id?: string | null
+          has_consent?: boolean
+          id?: string
+          image_url?: string
+          location_id?: string
+          notes?: string | null
+          photographer_id?: string | null
+          photographer_name?: string | null
+          point_of_sale_id?: string | null
+          retention_until?: string | null
+          status?: Database["public"]["Enums"]["photo_status"]
+          thumbnail_url?: string | null
+          updated_at?: string
+          visitor_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "photos_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       points_of_sale: {
         Row: {
           code: string
@@ -1490,6 +1705,48 @@ export type Database = {
           },
         ]
       }
+      souvenir_templates: {
+        Row: {
+          code: string
+          country_code: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          license_owner: string | null
+          name: string
+          prompt: string
+          style: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          license_owner?: string | null
+          name: string
+          prompt: string
+          style: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country_code?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          license_owner?: string | null
+          name?: string
+          prompt?: string
+          style?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           country_code: string | null
@@ -1651,10 +1908,17 @@ export type Database = {
         | "transferencia"
         | "voucher"
         | "otro"
+      photo_status: "capturada" | "publicada" | "vendida" | "archivada"
       pos_type: "tienda" | "kiosco" | "movil" | "puesto_fotografico"
       product_kind: "fotografia" | "merchandising" | "servicio" | "combo"
       sale_source: "online" | "offline"
       sale_status: "completada" | "anulada"
+      souvenir_status:
+        | "en_cola"
+        | "procesando"
+        | "listo"
+        | "error"
+        | "entregado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1815,10 +2079,12 @@ export const Constants = {
         "voucher",
         "otro",
       ],
+      photo_status: ["capturada", "publicada", "vendida", "archivada"],
       pos_type: ["tienda", "kiosco", "movil", "puesto_fotografico"],
       product_kind: ["fotografia", "merchandising", "servicio", "combo"],
       sale_source: ["online", "offline"],
       sale_status: ["completada", "anulada"],
+      souvenir_status: ["en_cola", "procesando", "listo", "error", "entregado"],
     },
   },
 } as const
