@@ -25,6 +25,7 @@ export type ImageGenerationResult = {
 
 export type VideoRequest = {
   /** Fotograma de composición aprobado: primer frame de la animación. */
+  /** Fotograma de composición aprobado: primer frame de la animación. */
   compositionImageUrl: string;
   /** Referencias originales (se envían si el modelo las soporta). */
   customerImageUrl: string;
