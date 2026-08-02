@@ -23,10 +23,10 @@ const ITEMS: Item[] = [
   { key: "pos", label: "Punto de venta", to: "/pos", icon: ShoppingCart },
   { key: "fotografias", label: "Fotografías", to: "/fotografias", icon: Camera },
   { key: "operaciones", label: "Operaciones", to: "/operaciones", icon: ClipboardList },
-  { key: "inventario", label: "Inventario", to: "/inventario", icon: Boxes, stage: "E5" },
-  { key: "administracion", label: "Administración", to: "/administracion", icon: Wallet, stage: "E5" },
-  { key: "clientes", label: "Clientes", to: "/clientes", icon: Users, stage: "E5" },
-  { key: "reportes", label: "Reportes", to: "/reportes", icon: BarChart3, stage: "E5" },
+  { key: "inventario", label: "Inventario", to: "/inventario", icon: Boxes },
+  { key: "administracion", label: "Administración", to: "/administracion", icon: Wallet },
+  { key: "clientes", label: "Clientes", to: "/clientes", icon: Users },
+  { key: "reportes", label: "Reportes", to: "/reportes", icon: BarChart3 },
   { key: "configuracion", label: "Configuración", to: "/configuracion", icon: Settings },
 ];
 
@@ -67,7 +67,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </ul>
       <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-foreground/50">
-        MVP · Etapa 4 completada
+        MVP · Etapa 5 completada
       </div>
     </nav>
   );
