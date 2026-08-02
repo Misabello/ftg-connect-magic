@@ -10,6 +10,7 @@ import {
   Mail,
   MessageCircle,
   RefreshCw,
+  Share2,
   ShoppingCart,
   Sparkles,
   Video,
@@ -137,6 +138,10 @@ export function MagicStudio({
     null,
   );
   const [videoApproved, setVideoApproved] = useState(false);
+  /** Ruta en almacenamiento del archivo final entregable (imagen o video). */
+  const [deliveryPath, setDeliveryPath] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
