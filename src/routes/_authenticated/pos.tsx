@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Receipt, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -15,6 +15,7 @@ import {
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -23,9 +24,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
+import { enqueueSale } from "@/lib/ftg/offline";
 import {
   buildSaleNumber,
   computeTotals,
@@ -52,6 +55,7 @@ function Pos() {
   const { activeLocation, activeLocationId, online } = useScope();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { pending, pendingCount, syncing, sync } = useOfflineQueue();
 
   const [selectedPosId, setSelectedPosId] = useState<string | null>(null);
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -265,40 +269,40 @@ function Pos() {
       customer: CheckoutCustomer;
     }) => {
       if (!activePos || !activeLocationId || !session) throw new Error("Abrí la caja antes de vender");
-      const { count } = await supabase
-        .from("sales")
-        .select("id", { count: "exact", head: true })
-        .eq("point_of_sale_id", activePos.id);
-      const saleNumber = buildSaleNumber(activePos.code, (count ?? 0) + 1);
+      const localSequence = sessionSales.length + pendingCount + 1;
+      const count = online
+        ? (
+            await supabase
+              .from("sales")
+              .select("id", { count: "exact", head: true })
+              .eq("point_of_sale_id", activePos.id)
+          ).count
+        : null;
+      const saleNumber = buildSaleNumber(activePos.code, (count ?? 0) + (online ? 1 : localSequence));
+      const localCreatedAt = new Date().toISOString();
 
-      const { data: sale, error } = await supabase
-        .from("sales")
-        .insert({
-          organization_id: activePos.organization_id,
-          location_id: activeLocationId,
-          point_of_sale_id: activePos.id,
-          event_id: activePos.event_id,
-          cash_session_id: session.id,
-          sale_number: saleNumber,
-          sold_by: user?.id ?? null,
-          customer_name: customer.name || null,
-          customer_tax_id: customer.taxId || null,
-          customer_email: customer.email || null,
-          currency_code: currency,
-          subtotal: totals.subtotal,
-          discount_total: totals.discountTotal,
-          tax_total: totals.taxTotal,
-          total: totals.total,
-          source: online ? "online" : "offline",
-          idempotency_key: newIdempotencyKey(),
-        })
-        .select("id, sale_number")
-        .single();
-      if (error) throw error;
+      const salePayload = {
+        organization_id: activePos.organization_id,
+        location_id: activeLocationId,
+        point_of_sale_id: activePos.id,
+        event_id: activePos.event_id,
+        cash_session_id: session.id,
+        sale_number: saleNumber,
+        sold_by: user?.id ?? null,
+        customer_name: customer.name || null,
+        customer_tax_id: customer.taxId || null,
+        customer_email: customer.email || null,
+        currency_code: currency,
+        subtotal: totals.subtotal,
+        discount_total: totals.discountTotal,
+        tax_total: totals.taxTotal,
+        total: totals.total,
+        source: (online ? "online" : "offline") as "online" | "offline",
+        idempotency_key: newIdempotencyKey(),
+        local_created_at: localCreatedAt,
+      };
 
-      const { error: itemsError } = await supabase.from("sale_items").insert(
-        lines.map((line) => ({
-          sale_id: sale.id,
+      const itemsPayload = lines.map((line) => ({
           product_id: line.productId,
           description: line.name,
           quantity: line.quantity,
@@ -308,38 +312,78 @@ function Pos() {
           tax_amount: lineTax(line),
           line_total: lineGross(line),
           photo_code: line.photoCode,
-        })),
-      );
-      if (itemsError) throw itemsError;
+      }));
 
-      const { error: paymentsError } = await supabase.from("sale_payments").insert(
-        payments.map((p) => ({
-          sale_id: sale.id,
+      const paymentsPayload = payments.map((p) => ({
           payment_method_id: p.methodId,
           method_name: methods.find((m) => m.id === p.methodId)?.name ?? "Sin especificar",
           amount: p.amount,
           currency_code: currency,
           reference: p.reference || null,
-        })),
-      );
-      if (paymentsError) throw paymentsError;
+      }));
 
-      await supabase.from("audit_logs").insert({
+      const auditPayload = {
         organization_id: activePos.organization_id,
         location_id: activeLocationId,
         user_id: user?.id ?? null,
         action: "venta_registrada",
         entity: "sales",
-        entity_id: sale.id,
-        details: { sale_number: sale.sale_number, total: totals.total, currency },
-      });
+        details: { sale_number: saleNumber, total: totals.total, currency, source: salePayload.source },
+        local_created_at: localCreatedAt,
+      };
 
-      return sale;
+      const queueLocally = () => {
+        enqueueSale({
+          saleNumber,
+          posCode: activePos.code,
+          total: totals.total,
+          currency,
+          sale: { ...salePayload, source: "offline" },
+          items: itemsPayload,
+          payments: paymentsPayload,
+          audit: auditPayload,
+        });
+        return { sale_number: saleNumber, queued: true };
+      };
+
+      if (!online) return queueLocally();
+
+      try {
+        const { data: sale, error } = await supabase
+          .from("sales")
+          .insert(salePayload)
+          .select("id, sale_number")
+          .single();
+        if (error) throw error;
+
+        const { error: itemsError } = await supabase
+          .from("sale_items")
+          .insert(itemsPayload.map((i) => ({ ...i, sale_id: sale.id })));
+        if (itemsError) throw itemsError;
+
+        const { error: paymentsError } = await supabase
+          .from("sale_payments")
+          .insert(paymentsPayload.map((p) => ({ ...p, sale_id: sale.id })));
+        if (paymentsError) throw paymentsError;
+
+        await supabase.from("audit_logs").insert({ ...auditPayload, entity_id: sale.id });
+
+        return { sale_number: sale.sale_number, queued: false };
+      } catch (error) {
+        if (!navigator.onLine) return queueLocally();
+        throw error;
+      }
     },
     onSuccess: (sale) => {
-      toast.success(`Venta ${sale.sale_number} registrada`, {
-        description: formatMoney(totals.total, currency, locale),
-      });
+      if (sale.queued) {
+        toast.success(`Venta ${sale.sale_number} guardada sin conexión`, {
+          description: `${formatMoney(totals.total, currency, locale)} · se sincroniza al volver en línea`,
+        });
+      } else {
+        toast.success(`Venta ${sale.sale_number} registrada`, {
+          description: formatMoney(totals.total, currency, locale),
+        });
+      }
       setLines([]);
       setCheckoutOpen(false);
       queryClient.invalidateQueries({ queryKey: ["session-sales"] });
@@ -365,6 +409,12 @@ function Pos() {
               <Badge variant="secondary" className="gap-1.5 text-warning">
                 <WifiOff className="h-3.5 w-3.5" /> Sin conexión
               </Badge>
+            )}
+            {pendingCount > 0 && (
+              <Button variant="secondary" size="sm" className="gap-1.5" onClick={() => void sync()} disabled={syncing}>
+                <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+                {syncing ? "Sincronizando…" : `Sincronizar ${pendingCount}`}
+              </Button>
             )}
             <Select value={activePos?.id ?? ""} onValueChange={setSelectedPosId}>
               <SelectTrigger className="w-[16rem]">
@@ -444,6 +494,26 @@ function Pos() {
             <h2 className="flex items-center gap-2 text-base font-semibold">
               <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
             </h2>
+            {pending.length > 0 && (
+              <ul className="mt-4 space-y-2">
+                {pending.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{p.saleNumber}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Pendiente de sincronizar{p.lastError ? ` · ${p.lastError}` : ""}
+                      </p>
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
+                      <CloudUpload className="h-3.5 w-3.5" /> {formatMoney(p.total, p.currency, locale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <ul className="mt-4 space-y-2">
               {sessionSales.length === 0 && (
                 <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">

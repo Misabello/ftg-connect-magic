@@ -10,13 +10,13 @@
  │                                                                                     │
  │  Estado: TanStack Query · Contextos: AuthProvider (sesión, perfil, roles)           │
  │                                      ScopeProvider (sede activa, online, idioma)    │
- │  Etapa 3: IndexedDB (Dexie) + cola de sincronización por lotes (UUID + idempotencia)│
+ │  Offline-first: cola local de ventas (localStorage) + sync por lotes con idempotencia│
  └───────────────┬─────────────────────────────────────────────┬───────────────────────┘
                  │ Supabase JS (RLS como usuario)              │ createServerFn (server)
                  ▼                                             ▼
  ┌────────────────────────── Backend central (Lovable Cloud / Postgres) ───────────────┐
  │  Auth  ·  Storage (fotos)  ·  Postgres con RLS  ·  Auditoría                        │
- │  Etapa 4: generación de imágenes vía función segura del servidor (clave nunca en el │
+ │  IA: generación de imágenes vía función segura del servidor (clave nunca en el      │
  │  frontend) con interfaz desacoplada de proveedor                                    │
  │  Capa fiscal: ArgentinaFiscalAdapter · BrazilFiscalAdapter · PortugalFiscalAdapter  │
  │               · GenericFiscalAdapter  (simulados en el MVP)                          │
@@ -36,9 +36,19 @@ Funciones: `has_role(user, role)`, `is_admin(user)` (SECURITY DEFINER, evitan re
 | Elemento | Estado |
 | --- | --- |
 | Autenticación, perfiles y roles | Real |
-| Sedes, parques, eventos, puntos de venta, dispositivos | Real (CRUD de sedes + lectura del resto) |
+| Sedes, parques, eventos, puntos de venta, dispositivos | Real |
 | Permisos por rol y módulo | Real (menú y RLS) |
-| Auditoría | Real (tabla + registro de altas de sedes) |
-| Indicadores del dashboard | Reales sobre estructura; los comerciales llegan con la Etapa 2 |
-| POS, offline, IA, inventario, administración | Aún no implementados (Etapas 2 a 5) |
+| Auditoría | Real (tabla + registro de operaciones clave) |
+| POS: catálogo, carrito, pagos combinados, caja y arqueo | Real |
+| Offline-first | Real: si no hay conexión la venta se guarda en el dispositivo y se sincroniza al volver en línea, sin duplicar (clave de idempotencia) |
+| Operaciones: jornadas, checklists, personal, incidentes | Real |
+| Fotografías, consentimientos y recuerdos con IA | Real (IA vía Lovable AI) |
+| Inventario, clientes, administración y reportes | Real |
 | Integración fiscal (ARCA, Brasil, Portugal) | No existe integración real; sólo adaptadores previstos |
+
+## Sincronización offline
+
+1. La venta se calcula íntegra en el cliente (totales, impuestos, descuentos) y recibe un UUID de idempotencia.
+2. Sin conexión se encola en `ftg.offline.sales` con sus líneas, cobros y auditoría.
+3. Al recuperar la conexión (evento `online` o botón *Sincronizar*) se envía por lotes; antes de insertar se verifica la clave de idempotencia, de modo que un reintento nunca duplica la venta.
+4. La cola muestra el estado en la barra superior y en el detalle del turno del POS.
