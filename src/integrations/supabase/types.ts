@@ -467,6 +467,291 @@ export type Database = {
           },
         ]
       }
+      operation_checklist_items: {
+        Row: {
+          created_at: string
+          done_at: string | null
+          done_by: string | null
+          id: string
+          is_done: boolean
+          is_required: boolean
+          label: string
+          notes: string | null
+          operation_day_id: string
+          phase: Database["public"]["Enums"]["checklist_phase"]
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          is_done?: boolean
+          is_required?: boolean
+          label: string
+          notes?: string | null
+          operation_day_id: string
+          phase: Database["public"]["Enums"]["checklist_phase"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          done_at?: string | null
+          done_by?: string | null
+          id?: string
+          is_done?: boolean
+          is_required?: boolean
+          label?: string
+          notes?: string | null
+          operation_day_id?: string
+          phase?: Database["public"]["Enums"]["checklist_phase"]
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_checklist_items_operation_day_id_fkey"
+            columns: ["operation_day_id"]
+            isOneToOne: false
+            referencedRelation: "operation_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operation_days: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          day: string
+          event_id: string | null
+          expected_visitors: number | null
+          id: string
+          location_id: string
+          manager_name: string | null
+          notes: string | null
+          opened_at: string | null
+          opened_by: string | null
+          organization_id: string
+          sales_target: number | null
+          status: Database["public"]["Enums"]["operational_status"]
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          day: string
+          event_id?: string | null
+          expected_visitors?: number | null
+          id?: string
+          location_id: string
+          manager_name?: string | null
+          notes?: string | null
+          opened_at?: string | null
+          opened_by?: string | null
+          organization_id: string
+          sales_target?: number | null
+          status?: Database["public"]["Enums"]["operational_status"]
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          day?: string
+          event_id?: string | null
+          expected_visitors?: number | null
+          id?: string
+          location_id?: string
+          manager_name?: string | null
+          notes?: string | null
+          opened_at?: string | null
+          opened_by?: string | null
+          organization_id?: string
+          sales_target?: number | null
+          status?: Database["public"]["Enums"]["operational_status"]
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_days_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_days_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_days_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_days_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operation_incidents: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          location_id: string
+          operation_day_id: string | null
+          organization_id: string
+          point_of_sale_id: string | null
+          reported_by: string | null
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["incident_severity"]
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id: string
+          operation_day_id?: string | null
+          organization_id: string
+          point_of_sale_id?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          location_id?: string
+          operation_day_id?: string | null
+          organization_id?: string
+          point_of_sale_id?: string | null
+          reported_by?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["incident_severity"]
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_incidents_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_incidents_operation_day_id_fkey"
+            columns: ["operation_day_id"]
+            isOneToOne: false
+            referencedRelation: "operation_days"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_incidents_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operation_staff: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          operation_day_id: string
+          person_name: string
+          point_of_sale_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          shift_end: string | null
+          shift_start: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          operation_day_id: string
+          person_name: string
+          point_of_sale_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          operation_day_id?: string
+          person_name?: string
+          point_of_sale_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_staff_operation_day_id_fkey"
+            columns: ["operation_day_id"]
+            isOneToOne: false
+            referencedRelation: "operation_days"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_staff_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           country_code: string
@@ -1348,6 +1633,9 @@ export type Database = {
         | "deposito"
         | "auditor"
       cash_session_status: "abierta" | "cerrada" | "arqueada"
+      checklist_phase: "apertura" | "cierre"
+      incident_severity: "baja" | "media" | "alta" | "critica"
+      incident_status: "abierto" | "en_curso" | "resuelto"
       operational_status:
         | "planificado"
         | "preparacion"
@@ -1507,6 +1795,9 @@ export const Constants = {
         "auditor",
       ],
       cash_session_status: ["abierta", "cerrada", "arqueada"],
+      checklist_phase: ["apertura", "cierre"],
+      incident_severity: ["baja", "media", "alta", "critica"],
+      incident_status: ["abierto", "en_curso", "resuelto"],
       operational_status: [
         "planificado",
         "preparacion",
