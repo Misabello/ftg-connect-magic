@@ -410,6 +410,12 @@ function Pos() {
                 <WifiOff className="h-3.5 w-3.5" /> Sin conexión
               </Badge>
             )}
+            {pendingCount > 0 && (
+              <Button variant="secondary" size="sm" className="gap-1.5" onClick={() => void sync()} disabled={syncing}>
+                <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+                {syncing ? "Sincronizando…" : `Sincronizar ${pendingCount}`}
+              </Button>
+            )}
             <Select value={activePos?.id ?? ""} onValueChange={setSelectedPosId}>
               <SelectTrigger className="w-[16rem]">
                 <SelectValue placeholder="Seleccionar punto de venta" />
