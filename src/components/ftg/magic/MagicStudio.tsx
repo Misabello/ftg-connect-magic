@@ -7,6 +7,8 @@ import {
   Download,
   Image as ImageIcon,
   Loader2,
+  Mail,
+  MessageCircle,
   RefreshCw,
   ShoppingCart,
   Sparkles,
@@ -63,6 +65,8 @@ import { CharacterLibrary, characterImage, type CharacterRow } from "./Character
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
 import { VideoPromptPanel } from "./VideoPromptPanel";
+import { addMagicItem } from "@/lib/ftg/magic-cart";
+import { buildSouvenirMessage, mailtoLink, whatsappLink } from "@/lib/ftg/share";
 
 type SceneRow = {
   id: string;
@@ -95,7 +99,7 @@ export function MagicStudio({
   locations: { id: string; name: string }[];
   onAddToCart?: (item: { outputType: OutputType; jobId: string; price: number; label: string }) => void;
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { language } = useI18n();
 
   const [outputType, setOutputType] = useState<OutputType>("imagen");
@@ -134,6 +138,8 @@ export function MagicStudio({
   );
   const [videoApproved, setVideoApproved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
 
   const generateImage = useServerFn(runImageGeneration);
   const generateComposition = useServerFn(buildVideoComposition);
@@ -200,6 +206,16 @@ export function MagicStudio({
     setCompositionUrl(null);
     setCompositionApproved(false);
     setCompositionBusy(false);
+  }
+
+  /**
+   * Cambiar fondo, estilo, formato o personaje invalida la composición y
+   * también el video ya generado: se vuelve al estado inicial para poder
+   * generar de nuevo desde la columna de resultado.
+   */
+  function restartFromComposition() {
+    resetComposition();
+    resetJob();
   }
 
   function resetJob() {
