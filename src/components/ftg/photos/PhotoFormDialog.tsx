@@ -25,7 +25,7 @@ export type PhotoDraft = {
   contact_email: string;
 };
 
-const SAMPLES = [
+const SAMPLES: string[] = [
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800",
   "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800",
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800",
@@ -42,7 +42,7 @@ export function PhotoFormDialog({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<PhotoDraft>(() => ({
     visitor_code: generateVisitorCode(),
-    image_url: SAMPLES[0],
+    image_url: SAMPLES[0] ?? "",
     photographer_name: "",
     has_consent: true,
     visitor_name: "",
