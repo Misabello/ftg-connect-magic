@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Receipt, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -15,6 +15,7 @@ import {
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -23,9 +24,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
+import { enqueueSale } from "@/lib/ftg/offline";
 import {
   buildSaleNumber,
   computeTotals,
@@ -52,6 +55,7 @@ function Pos() {
   const { activeLocation, activeLocationId, online } = useScope();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { pending, pendingCount, syncing, sync } = useOfflineQueue();
 
   const [selectedPosId, setSelectedPosId] = useState<string | null>(null);
   const [lines, setLines] = useState<CartLine[]>([]);
