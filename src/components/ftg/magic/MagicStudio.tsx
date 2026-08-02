@@ -958,40 +958,41 @@ export function MagicStudio({
                       className="h-9"
                     />
                     <div className="flex gap-2">
-                      <Button className="flex-1" size="sm" variant="outline" asChild>
-                        <a
-                          href={mailtoLink(
-                            customerEmail,
-                            `Tu ${pricing.product} de FTG`,
-                            buildSouvenirMessage({
-                              label: pricing.product,
-                              sellerName: profile?.full_name,
-                              sellerPhone: profile?.phone,
-                            }),
-                          )}
-                        >
-                          <Mail className="mr-1.5 h-4 w-4" /> Email
-                        </a>
+                      <Button
+                        className="flex-1"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          const message = await shareMessage();
+                          window.location.href = mailtoLink(customerEmail, `Tu ${pricing.product} de FTG`, message);
+                        }}
+                      >
+                        <Mail className="mr-1.5 h-4 w-4" /> Email
                       </Button>
-                      <Button className="flex-1" size="sm" variant="outline" asChild>
-                        <a
-                          href={whatsappLink(
-                            customerPhone,
-                            buildSouvenirMessage({
-                              label: pricing.product,
-                              sellerName: profile?.full_name,
-                              sellerPhone: profile?.phone,
-                            }),
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
-                        </a>
+                      <Button
+                        className="flex-1"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          const message = await shareMessage();
+                          window.open(whatsappLink(customerPhone, message), "_blank", "noopener");
+                        }}
+                      >
+                        <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
                       </Button>
                     </div>
+                    <Button className="w-full" size="sm" disabled={sharing} onClick={() => void shareFile()}>
+                      {sharing ? (
+                        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Share2 className="mr-1.5 h-4 w-4" />
+                      )}
+                      Compartir archivo adjunto
+                    </Button>
                     <p className="text-[11px] text-muted-foreground">
-                      El archivo se descarga desde este equipo y se adjunta al mensaje.
+                      Email y WhatsApp envían el mensaje con un enlace de descarga válido 7 días. “Compartir archivo
+                      adjunto” abre el menú del dispositivo y manda el {outputType === "video" ? "video" : "archivo"} en
+                      el chat.
                     </p>
                   </div>
 
