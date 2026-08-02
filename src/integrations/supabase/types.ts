@@ -81,6 +81,105 @@ export type Database = {
           },
         ]
       }
+      cash_sessions: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          counted_amount: number | null
+          created_at: string
+          currency_code: string
+          device_id: string | null
+          difference_amount: number | null
+          expected_amount: number | null
+          id: string
+          location_id: string
+          notes: string | null
+          opened_at: string
+          opened_by: string | null
+          opening_amount: number
+          organization_id: string
+          point_of_sale_id: string
+          status: Database["public"]["Enums"]["cash_session_status"]
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          counted_amount?: number | null
+          created_at?: string
+          currency_code: string
+          device_id?: string | null
+          difference_amount?: number | null
+          expected_amount?: number | null
+          id?: string
+          location_id: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_amount?: number
+          organization_id: string
+          point_of_sale_id: string
+          status?: Database["public"]["Enums"]["cash_session_status"]
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          counted_amount?: number | null
+          created_at?: string
+          currency_code?: string
+          device_id?: string | null
+          difference_amount?: number | null
+          expected_amount?: number | null
+          id?: string
+          location_id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_amount?: number
+          organization_id?: string
+          point_of_sale_id?: string
+          status?: Database["public"]["Enums"]["cash_session_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sessions_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "cash_sessions_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sessions_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       countries: {
         Row: {
           code: string
@@ -425,6 +524,63 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          code: string
+          country_code: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["payment_kind"]
+          name: string
+          organization_id: string
+          requires_reference: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["payment_kind"]
+          name: string
+          organization_id: string
+          requires_reference?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["payment_kind"]
+          name?: string
+          organization_id?: string
+          requires_reference?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "payment_methods_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       points_of_sale: {
         Row: {
           code: string
@@ -512,6 +668,231 @@ export type Database = {
           },
         ]
       }
+      price_lists: {
+        Row: {
+          created_at: string
+          currency_code: string
+          id: string
+          is_active: boolean
+          location_id: string | null
+          name: string
+          organization_id: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency_code: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          name: string
+          organization_id: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency_code?: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          name?: string
+          organization_id?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_lists_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "price_lists_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_lists_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_categories: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["product_kind"]
+          name: string
+          organization_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["product_kind"]
+          name: string
+          organization_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["product_kind"]
+          name?: string
+          organization_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_prices: {
+        Row: {
+          created_at: string
+          id: string
+          includes_tax: boolean
+          price: number
+          price_list_id: string
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          includes_tax?: boolean
+          price: number
+          price_list_id: string
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          includes_tax?: boolean
+          price?: number
+          price_list_id?: string
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_prices_price_list_id_fkey"
+            columns: ["price_list_id"]
+            isOneToOne: false
+            referencedRelation: "price_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_prices_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          barcode: string | null
+          category_id: string | null
+          cost: number
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          kind: Database["public"]["Enums"]["product_kind"]
+          name: string
+          organization_id: string
+          requires_photo: boolean
+          sku: string
+          tax_rate: number
+          track_stock: boolean
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          category_id?: string | null
+          cost?: number
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["product_kind"]
+          name: string
+          organization_id: string
+          requires_photo?: boolean
+          sku: string
+          tax_rate?: number
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          category_id?: string | null
+          cost?: number
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["product_kind"]
+          name?: string
+          organization_id?: string
+          requires_photo?: boolean
+          sku?: string
+          tax_rate?: number
+          track_stock?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -565,6 +946,261 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_items: {
+        Row: {
+          created_at: string
+          description: string
+          discount_amount: number
+          id: string
+          line_total: number
+          photo_code: string | null
+          product_id: string | null
+          quantity: number
+          sale_id: string
+          tax_amount: number
+          tax_rate: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discount_amount?: number
+          id?: string
+          line_total?: number
+          photo_code?: string | null
+          product_id?: string | null
+          quantity?: number
+          sale_id: string
+          tax_amount?: number
+          tax_rate?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discount_amount?: number
+          id?: string
+          line_total?: number
+          photo_code?: string | null
+          product_id?: string | null
+          quantity?: number
+          sale_id?: string
+          tax_amount?: number
+          tax_rate?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_items_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sale_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency_code: string
+          id: string
+          method_name: string
+          payment_method_id: string | null
+          received_at: string
+          reference: string | null
+          sale_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency_code: string
+          id?: string
+          method_name: string
+          payment_method_id?: string | null
+          received_at?: string
+          reference?: string | null
+          sale_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency_code?: string
+          id?: string
+          method_name?: string
+          payment_method_id?: string | null
+          received_at?: string
+          reference?: string | null
+          sale_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sale_payments_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "sale_payments_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_payments_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          cash_session_id: string | null
+          created_at: string
+          currency_code: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_tax_id: string | null
+          device_id: string | null
+          discount_total: number
+          event_id: string | null
+          id: string
+          idempotency_key: string
+          local_created_at: string
+          location_id: string
+          notes: string | null
+          organization_id: string
+          point_of_sale_id: string
+          sale_number: string
+          sold_by: string | null
+          source: Database["public"]["Enums"]["sale_source"]
+          status: Database["public"]["Enums"]["sale_status"]
+          subtotal: number
+          synced_at: string
+          tax_total: number
+          total: number
+          updated_at: string
+          void_reason: string | null
+        }
+        Insert: {
+          cash_session_id?: string | null
+          created_at?: string
+          currency_code: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          device_id?: string | null
+          discount_total?: number
+          event_id?: string | null
+          id?: string
+          idempotency_key: string
+          local_created_at?: string
+          location_id: string
+          notes?: string | null
+          organization_id: string
+          point_of_sale_id: string
+          sale_number: string
+          sold_by?: string | null
+          source?: Database["public"]["Enums"]["sale_source"]
+          status?: Database["public"]["Enums"]["sale_status"]
+          subtotal?: number
+          synced_at?: string
+          tax_total?: number
+          total?: number
+          updated_at?: string
+          void_reason?: string | null
+        }
+        Update: {
+          cash_session_id?: string | null
+          created_at?: string
+          currency_code?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          device_id?: string | null
+          discount_total?: number
+          event_id?: string | null
+          id?: string
+          idempotency_key?: string
+          local_created_at?: string
+          location_id?: string
+          notes?: string | null
+          organization_id?: string
+          point_of_sale_id?: string
+          sale_number?: string
+          sold_by?: string | null
+          source?: Database["public"]["Enums"]["sale_source"]
+          status?: Database["public"]["Enums"]["sale_status"]
+          subtotal?: number
+          synced_at?: string
+          tax_total?: number
+          total?: number
+          updated_at?: string
+          void_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "sales_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
             referencedColumns: ["id"]
           },
         ]
@@ -711,6 +1347,7 @@ export type Database = {
         | "fotografo"
         | "deposito"
         | "auditor"
+      cash_session_status: "abierta" | "cerrada" | "arqueada"
       operational_status:
         | "planificado"
         | "preparacion"
@@ -718,7 +1355,18 @@ export type Database = {
         | "en_operacion"
         | "incidente"
         | "cerrado"
+      payment_kind:
+        | "efectivo"
+        | "tarjeta_debito"
+        | "tarjeta_credito"
+        | "qr"
+        | "transferencia"
+        | "voucher"
+        | "otro"
       pos_type: "tienda" | "kiosco" | "movil" | "puesto_fotografico"
+      product_kind: "fotografia" | "merchandising" | "servicio" | "combo"
+      sale_source: "online" | "offline"
+      sale_status: "completada" | "anulada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -858,6 +1506,7 @@ export const Constants = {
         "deposito",
         "auditor",
       ],
+      cash_session_status: ["abierta", "cerrada", "arqueada"],
       operational_status: [
         "planificado",
         "preparacion",
@@ -866,7 +1515,19 @@ export const Constants = {
         "incidente",
         "cerrado",
       ],
+      payment_kind: [
+        "efectivo",
+        "tarjeta_debito",
+        "tarjeta_credito",
+        "qr",
+        "transferencia",
+        "voucher",
+        "otro",
+      ],
       pos_type: ["tienda", "kiosco", "movil", "puesto_fotografico"],
+      product_kind: ["fotografia", "merchandising", "servicio", "combo"],
+      sale_source: ["online", "offline"],
+      sale_status: ["completada", "anulada"],
     },
   },
 } as const

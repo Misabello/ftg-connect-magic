@@ -67,7 +67,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </ul>
       <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-foreground/50">
-        MVP · Etapa 1 completada
+        MVP · Etapa 2 completada
       </div>
     </nav>
   );
