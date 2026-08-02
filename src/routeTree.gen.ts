@@ -19,6 +19,7 @@ import { Route as AuthenticatedFotografiasRouteImport } from './routes/_authenti
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
 import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenticated/operaciones'
+import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 
 const IndexRoute = IndexRouteImport.update({
@@ -74,6 +75,11 @@ const AuthenticatedOperacionesRoute =
     path: '/operaciones',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPosRoute = AuthenticatedPosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
+  '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
 }
 export interface FileRoutesByTo {
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
+  '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
 }
 export interface FileRoutesById {
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
+  '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/inventario'
     | '/operaciones'
+    | '/pos'
     | '/reportes'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/inventario'
     | '/operaciones'
+    | '/pos'
     | '/reportes'
   id:
     | '__root__'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/_authenticated/inicio'
     | '/_authenticated/inventario'
     | '/_authenticated/operaciones'
+    | '/_authenticated/pos'
     | '/_authenticated/reportes'
   fileRoutesById: FileRoutesById
 }
@@ -236,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOperacionesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/pos': {
+      id: '/_authenticated/pos'
+      path: '/pos'
+      fullPath: '/pos'
+      preLoaderRoute: typeof AuthenticatedPosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reportes': {
       id: '/_authenticated/reportes'
       path: '/reportes'
@@ -254,6 +273,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
+  AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
 }
 
@@ -265,6 +285,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
+  AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
 }
 
