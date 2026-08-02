@@ -236,14 +236,17 @@ export const falVideoProvider: VideoGenerationProvider = {
       body: JSON.stringify(buildFalPayload(engine, req)),
     });
 
-    if (submit.status === 401 || submit.status === 403) {
-      const detail = await submit.text();
-      if (/balance|locked|billing|quota/i.test(detail)) {
+    if (submit.status === 401 || submit.status === 402 || submit.status === 403) {
+      const detail = (await submit.text()).slice(0, 400);
+      if (/exhausted balance|insufficient|no balance|out of credit/i.test(detail)) {
         throw new Error(
           "La cuenta del proveedor de video (fal.ai) no tiene saldo disponible. Cargá crédito en fal.ai para poder generar videos.",
         );
       }
-      throw new Error(`La clave del proveedor de video es inválida (${submit.status})`);
+      if (/invalid|unauthor|forbidden|api key/i.test(detail)) {
+        throw new Error(`La clave del proveedor de video fue rechazada (${submit.status}): ${detail}`);
+      }
+      throw new Error(`El proveedor de video rechazó la solicitud (${submit.status}): ${detail}`);
     }
     if (submit.status === 429) throw new Error("El proveedor de video está saturado, probá en unos minutos");
     if (!submit.ok) throw new Error(`Error del proveedor de video (${submit.status}): ${await submit.text()}`);
@@ -269,7 +272,8 @@ export const falVideoProvider: VideoGenerationProvider = {
         break;
       }
       if (state.status === "FAILED" || state.status === "ERROR") {
-        throw new Error("El proveedor de video no pudo completar el trabajo");
+        const reason = JSON.stringify(state).slice(0, 400);
+        throw new Error(`El proveedor de video no pudo completar el trabajo: ${reason}`);
       }
     }
     if (!payload) throw new Error("El proveedor de video agotó el tiempo de espera");
