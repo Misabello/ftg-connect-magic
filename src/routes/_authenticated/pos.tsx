@@ -494,6 +494,26 @@ function Pos() {
             <h2 className="flex items-center gap-2 text-base font-semibold">
               <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
             </h2>
+            {pending.length > 0 && (
+              <ul className="mt-4 space-y-2">
+                {pending.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{p.saleNumber}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Pendiente de sincronizar{p.lastError ? ` · ${p.lastError}` : ""}
+                      </p>
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
+                      <CloudUpload className="h-3.5 w-3.5" /> {formatMoney(p.total, p.currency, locale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
             <ul className="mt-4 space-y-2">
               {sessionSales.length === 0 && (
                 <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
