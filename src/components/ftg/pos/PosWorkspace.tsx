@@ -67,7 +67,7 @@ export function PosWorkspace({
   const { online, locations } = scope;
   const activeLocationId = locationId ?? scope.activeLocationId;
   const activeLocation = locations.find((l) => l.id === activeLocationId) ?? null;
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const { pending, pendingCount, syncing, sync } = useOfflineQueue();
 
@@ -426,7 +426,7 @@ export function PosWorkspace({
         throw error;
       }
     },
-    onSuccess: (sale) => {
+    onSuccess: (sale, variables) => {
       if (sale.queued) {
         toast.success(`Venta ${sale.sale_number} guardada sin conexión`, {
           description: `${formatMoney(totals.total, currency, locale)} · se sincroniza al volver en línea`,
@@ -440,9 +440,14 @@ export function PosWorkspace({
         saleNumber: sale.sale_number,
         totalLabel: formatMoney(totals.total, currency, locale),
         items: lines.map((l) => ({ name: l.name, quantity: l.quantity })),
-        customerName: null,
-        sellerName: user?.user_metadata?.["full_name"] as string | undefined,
+        customerName: variables.customer.name || null,
+        sellerName: profile?.full_name ?? null,
+        sellerPhone: profile?.phone ?? null,
         posName: activePos?.name ?? null,
+      });
+      setLastContact({
+        email: variables.customer.email || lastContact.email,
+        phone: variables.customer.phone || lastContact.phone,
       });
       setShareOpen(true);
       setLines([]);
