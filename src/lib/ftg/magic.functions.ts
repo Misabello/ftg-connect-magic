@@ -80,8 +80,9 @@ const VideoInput = z.object({
   motion: z.string().min(1).max(40),
   userPrompt: z.string().max(MAX_USER_PROMPT).nullable().optional(),
   aspectRatio: z.enum(["9:16", "1:1", "16:9"]),
-  durationSeconds: z.number().int().min(5).max(10),
+  durationSeconds: z.number().int().min(3).max(5),
   minResolution: z.enum(["720p", "1080p"]).default("720p"),
+  engine: z.enum(["estandar", "abrazo", "economico"]).optional(),
 });
 
 /** MODO VIDEO: usa exclusivamente el proveedor de video y valida el MIME type. */
@@ -107,6 +108,8 @@ export const runVideoGeneration = createServerFn({ method: "POST" })
       aspectRatio: data.aspectRatio,
       durationSeconds: data.durationSeconds,
       minResolution: data.minResolution,
+      engine: data.engine,
+      motion: data.motion,
     });
 
     return {
@@ -122,6 +125,7 @@ export const runVideoGeneration = createServerFn({ method: "POST" })
         aspectRatio: data.aspectRatio,
         durationSeconds: data.durationSeconds,
         minResolution: data.minResolution,
+        engine: data.engine ?? null,
       },
     };
   });
