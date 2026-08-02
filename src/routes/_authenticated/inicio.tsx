@@ -64,12 +64,14 @@ function Inicio() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Buen día · ${activeLocation?.name ?? "FTG ONE"}`}
-        description="Estado general de la operación. Los indicadores comerciales se activan al implementarse el punto de venta (Etapa 2)."
+        title={`${t("page.inicio.title")} · ${activeLocation?.name ?? "FTG ONE"}`}
+        description={t("page.inicio.desc")}
         actions={
           <Badge variant="secondary" className="gap-1.5">
             <MapPin className="h-3.5 w-3.5" />
-            {activeLocation ? `${activeLocation.city ?? activeLocation.name} · ${activeLocation.currency_code}` : "Sin sede"}
+            {activeLocation
+              ? `${activeLocation.city ?? activeLocation.name} · ${activeLocation.currency_code}`
+              : t("page.inicio.noLocation")}
           </Badge>
         }
       />
