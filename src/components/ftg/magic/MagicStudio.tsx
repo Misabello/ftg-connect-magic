@@ -877,6 +877,61 @@ export function MagicStudio({
 
               {status === "completado" && (outputType === "imagen" ? !!finalUrl : videoApproved) && (
                 <>
+                  <div className="space-y-2 rounded-lg border border-border p-3">
+                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Entrega al cliente
+                    </p>
+                    <Input
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="Email del cliente"
+                      className="h-9"
+                    />
+                    <Input
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="WhatsApp del cliente (con código de país)"
+                      className="h-9"
+                    />
+                    <div className="flex gap-2">
+                      <Button className="flex-1" size="sm" variant="outline" asChild>
+                        <a
+                          href={mailtoLink(
+                            customerEmail,
+                            `Tu ${pricing.product} de FTG`,
+                            buildSouvenirMessage({
+                              label: pricing.product,
+                              sellerName: profile?.full_name,
+                              sellerPhone: profile?.phone,
+                            }),
+                          )}
+                        >
+                          <Mail className="mr-1.5 h-4 w-4" /> Email
+                        </a>
+                      </Button>
+                      <Button className="flex-1" size="sm" variant="outline" asChild>
+                        <a
+                          href={whatsappLink(
+                            customerPhone,
+                            buildSouvenirMessage({
+                              label: pricing.product,
+                              sellerName: profile?.full_name,
+                              sellerPhone: profile?.phone,
+                            }),
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+                        </a>
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      El archivo se descarga desde este equipo y se adjunta al mensaje.
+                    </p>
+                  </div>
+
                   <Button className="w-full" variant="secondary" asChild>
                     <a
                       href={(outputType === "video" ? videoUrl : finalUrl) ?? "#"}
@@ -888,6 +943,16 @@ export function MagicStudio({
                   <Button
                     className="w-full"
                     onClick={() => {
+                      addMagicItem({
+                        jobId: jobId!,
+                        outputType,
+                        label: pricing.product,
+                        price: pricing.price,
+                        locationId,
+                        mediaUrl: (outputType === "video" ? videoUrl : finalUrl) ?? null,
+                        customerEmail: customerEmail || null,
+                        customerPhone: customerPhone || null,
+                      });
                       onAddToCart?.({
                         outputType,
                         jobId: jobId!,
@@ -897,7 +962,7 @@ export function MagicStudio({
                       onOpenChange(false);
                     }}
                   >
-                    <ShoppingCart className="mr-1.5 h-4 w-4" /> Enviar al punto de venta
+                    <ShoppingCart className="mr-1.5 h-4 w-4" /> Enviar al carrito del punto de venta
                   </Button>
                 </>
               )}
