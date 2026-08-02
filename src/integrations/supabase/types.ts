@@ -102,6 +102,8 @@ export type Database = {
           aspect_ratio: string
           character_id: string | null
           completed_at: string | null
+          composition_approved: boolean
+          composition_path: string | null
           created_at: string
           created_by: string | null
           customer_media_path: string
@@ -110,10 +112,16 @@ export type Database = {
           estimated_cost: number
           extra_instruction: string | null
           final_output_path: string | null
+          final_prompt: string | null
           id: string
           location_id: string | null
+          model: string | null
+          negative_prompt: string | null
           organization_id: string | null
+          output_height: number | null
+          output_mime_type: string | null
           output_type: Database["public"]["Enums"]["ai_output_type"]
+          output_width: number | null
           people_count: number
           point_of_sale_id: string | null
           preview_path: string | null
@@ -122,17 +130,23 @@ export type Database = {
           prompt_version: string
           provider: string
           provider_job_id: string | null
+          provider_params: Json
           sale_id: string | null
           scene_id: string | null
           status: Database["public"]["Enums"]["ai_job_status"]
           style: string | null
+          thumbnail_path: string | null
           updated_at: string
+          user_prompt: string | null
+          video_path: string | null
         }
         Insert: {
           action?: string | null
           aspect_ratio?: string
           character_id?: string | null
           completed_at?: string | null
+          composition_approved?: boolean
+          composition_path?: string | null
           created_at?: string
           created_by?: string | null
           customer_media_path: string
@@ -141,10 +155,16 @@ export type Database = {
           estimated_cost?: number
           extra_instruction?: string | null
           final_output_path?: string | null
+          final_prompt?: string | null
           id?: string
           location_id?: string | null
+          model?: string | null
+          negative_prompt?: string | null
           organization_id?: string | null
+          output_height?: number | null
+          output_mime_type?: string | null
           output_type?: Database["public"]["Enums"]["ai_output_type"]
+          output_width?: number | null
           people_count?: number
           point_of_sale_id?: string | null
           preview_path?: string | null
@@ -153,17 +173,23 @@ export type Database = {
           prompt_version?: string
           provider?: string
           provider_job_id?: string | null
+          provider_params?: Json
           sale_id?: string | null
           scene_id?: string | null
           status?: Database["public"]["Enums"]["ai_job_status"]
           style?: string | null
+          thumbnail_path?: string | null
           updated_at?: string
+          user_prompt?: string | null
+          video_path?: string | null
         }
         Update: {
           action?: string | null
           aspect_ratio?: string
           character_id?: string | null
           completed_at?: string | null
+          composition_approved?: boolean
+          composition_path?: string | null
           created_at?: string
           created_by?: string | null
           customer_media_path?: string
@@ -172,10 +198,16 @@ export type Database = {
           estimated_cost?: number
           extra_instruction?: string | null
           final_output_path?: string | null
+          final_prompt?: string | null
           id?: string
           location_id?: string | null
+          model?: string | null
+          negative_prompt?: string | null
           organization_id?: string | null
+          output_height?: number | null
+          output_mime_type?: string | null
           output_type?: Database["public"]["Enums"]["ai_output_type"]
+          output_width?: number | null
           people_count?: number
           point_of_sale_id?: string | null
           preview_path?: string | null
@@ -184,11 +216,15 @@ export type Database = {
           prompt_version?: string
           provider?: string
           provider_job_id?: string | null
+          provider_params?: Json
           sale_id?: string | null
           scene_id?: string | null
           status?: Database["public"]["Enums"]["ai_job_status"]
           style?: string | null
+          thumbnail_path?: string | null
           updated_at?: string
+          user_prompt?: string | null
+          video_path?: string | null
         }
         Relationships: [
           {
