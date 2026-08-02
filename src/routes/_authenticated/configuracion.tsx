@@ -362,6 +362,10 @@ function Configuracion() {
             })}
           </section>
         </TabsContent>
+
+        <TabsContent value="cuenta" className="pt-5">
+          <GoogleAccountCard />
+        </TabsContent>
       </Tabs>
     </div>
   );
