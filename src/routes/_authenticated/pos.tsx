@@ -297,7 +297,7 @@ function Pos() {
         discount_total: totals.discountTotal,
         tax_total: totals.taxTotal,
         total: totals.total,
-        source: online ? "online" : "offline",
+        source: (online ? "online" : "offline") as "online" | "offline",
         idempotency_key: newIdempotencyKey(),
         local_created_at: localCreatedAt,
       };
