@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDownLeft, ArrowUpRight, Plus, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Paperclip, Plus, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -58,6 +58,8 @@ function Administracion() {
   const [tab, setTab] = useState<FinanceDocKind>("cobrar");
   const [open, setOpen] = useState(false);
   const [payDoc, setPayDoc] = useState<{ id: string; balance: number; currency: string; amount: number; paid: number } | null>(null);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [payAmount, setPayAmount] = useState("");
   const [draft, setDraft] = useState({
     concept: "",
