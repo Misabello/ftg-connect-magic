@@ -254,7 +254,8 @@ export const falVideoProvider: VideoGenerationProvider = {
     const responseUrl = queued.response_url;
     if (!statusUrl || !responseUrl) throw new Error("El proveedor de video no devolvió un trabajo válido");
 
-    const deadline = Date.now() + 8 * 60 * 1000;
+    // Hailuo estándar puede tardar ~7 min en cola: margen holgado.
+    const deadline = Date.now() + 14 * 60 * 1000;
     let payload: unknown = null;
     while (Date.now() < deadline) {
       await new Promise((r) => setTimeout(r, 4000));
