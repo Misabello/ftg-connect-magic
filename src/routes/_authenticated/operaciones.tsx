@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, formatNumber } from "@/lib/ftg/format";
@@ -72,6 +73,7 @@ function today() {
 
 function Operaciones() {
   const { activeLocation, activeLocationId } = useScope();
+  const { t } = useI18n();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedDayId, setSelectedDayId] = useState<string | null>(null);
@@ -358,8 +360,8 @@ function Operaciones() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Operaciones"
-        description="Jornadas por sede: estado, checklists de apertura y cierre, personal e incidentes."
+        title={t("page.operaciones.title")}
+        description={t("page.operaciones.desc")}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {days.length > 0 && (

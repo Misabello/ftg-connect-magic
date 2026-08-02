@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Building2, ChevronRight, Store } from "lucide-react";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/sedes/")({
 
 function SedesIndex() {
   const { locations } = useScope();
+  const { t } = useI18n();
 
   const { data: posCounts = {} } = useQuery({
     queryKey: ["pos-count-by-location"],
@@ -38,8 +40,8 @@ function SedesIndex() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Sedes"
-        description="Entrá a una sede para administrar sus puntos de venta, cajas y cobros."
+        title={t("page.sedes.title")}
+        description={t("page.sedes.desc")}
       />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {locations.map((l) => (

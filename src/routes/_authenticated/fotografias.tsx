@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { relativeTime } from "@/lib/ftg/format";
@@ -68,6 +69,7 @@ type SouvenirRow = {
 
 function Fotografias() {
   const { activeLocation } = useScope();
+  const { t } = useI18n();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const runGenerate = useServerFn(generateSouvenir);
@@ -234,8 +236,8 @@ function Fotografias() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Fotografías"
-        description={`Galería, consentimientos y recuerdos con IA${activeLocation ? ` · ${activeLocation.name}` : ""}`}
+        title={t("page.fotografias.title")}
+        description={`${t("page.fotografias.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
         actions={<PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />}
       />
 

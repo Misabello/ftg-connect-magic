@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
@@ -65,6 +66,7 @@ const EMPTY: Draft = {
 
 function Clientes() {
   const { activeLocation, activeLocationId } = useScope();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<"todos" | CustomerKind>("todos");
   const [search, setSearch] = useState("");
@@ -149,8 +151,8 @@ function Clientes() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Clientes"
-        description="Clientes corporativos (parques y predios) y consumidores finales con datos fiscales, saldos e historial."
+        title={t("page.clientes.title")}
+        description={t("page.clientes.desc")}
         actions={
           <Button onClick={() => setOpen(true)}>
             <Plus className="mr-1.5 h-4 w-4" /> Nuevo cliente

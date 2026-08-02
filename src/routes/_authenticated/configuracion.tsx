@@ -26,9 +26,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useI18n } from "@/hooks/useI18n";
+import { LANGUAGES } from "@/lib/ftg/i18n";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { ALL_ROLES, ROLE_LABELS, type AppRole } from "@/lib/ftg/roles";
+import { ALL_ROLES, type AppRole } from "@/lib/ftg/roles";
 
 export const Route = createFileRoute("/_authenticated/configuracion")({
   head: () => ({
@@ -52,6 +54,7 @@ const locationSchema = z.object({
 
 function Configuracion() {
   const { roles, user } = useAuth();
+  const { t, tRole, language, setLanguage } = useI18n();
   const isAdmin = roles.includes("superadmin") || roles.includes("direccion");
   const isSuperadmin = roles.includes("superadmin");
   const queryClient = useQueryClient();
@@ -144,17 +147,17 @@ function Configuracion() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Configuración"
-        description="Estructura organizativa del MVP: países y monedas, sedes, puntos de venta, usuarios y roles."
+        title={t("page.configuracion.title")}
+        description={t("page.configuracion.desc")}
       />
 
       <Tabs defaultValue="sedes">
         <TabsList>
-          <TabsTrigger value="sedes">Sedes</TabsTrigger>
-          <TabsTrigger value="pos">Puntos de venta</TabsTrigger>
-          <TabsTrigger value="paises">Países y monedas</TabsTrigger>
-          <TabsTrigger value="usuarios">Usuarios y roles</TabsTrigger>
-          <TabsTrigger value="cuenta">Mi cuenta</TabsTrigger>
+          <TabsTrigger value="sedes">{t("config.tab.sedes")}</TabsTrigger>
+          <TabsTrigger value="pos">{t("config.tab.pos")}</TabsTrigger>
+          <TabsTrigger value="paises">{t("config.tab.paises")}</TabsTrigger>
+          <TabsTrigger value="usuarios">{t("config.tab.usuarios")}</TabsTrigger>
+          <TabsTrigger value="cuenta">{t("config.tab.cuenta")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sedes" className="space-y-5 pt-5">
@@ -352,7 +355,7 @@ function Configuracion() {
                               : "rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary disabled:opacity-60"
                           }
                         >
-                          {ROLE_LABELS[role]}
+                          {tRole(role)}
                         </button>
                       );
                     })}
@@ -363,7 +366,32 @@ function Configuracion() {
           </section>
         </TabsContent>
 
-        <TabsContent value="cuenta" className="pt-5">
+        <TabsContent value="cuenta" className="space-y-6 pt-5">
+          <section className="surface-card space-y-4 p-6">
+            <div>
+              <h2 className="text-base font-semibold">{t("config.language.title")}</h2>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                {t("config.language.desc")}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {LANGUAGES.map((l) => (
+                <button
+                  key={l.value}
+                  type="button"
+                  onClick={() => setLanguage(l.value)}
+                  className={
+                    language === l.value
+                      ? "rounded-xl border-2 border-primary bg-primary/5 px-5 py-3 text-sm font-medium"
+                      : "rounded-xl border border-border px-5 py-3 text-sm text-muted-foreground hover:border-primary/40"
+                  }
+                >
+                  <span className="mr-2 text-xs font-semibold tracking-wide">{l.flag}</span>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </section>
           <GoogleAccountCard />
         </TabsContent>
       </Tabs>

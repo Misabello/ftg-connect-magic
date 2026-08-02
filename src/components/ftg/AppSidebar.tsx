@@ -15,27 +15,29 @@ import {
 
 import { Logo } from "@/components/ftg/Logo";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { cn } from "@/lib/utils";
 import type { ModuleKey } from "@/lib/ftg/roles";
 
-type Item = { key: ModuleKey; label: string; to: string; icon: typeof Home; stage?: string };
+type Item = { key: ModuleKey; to: string; icon: typeof Home; stage?: string };
 
 const ITEMS: Item[] = [
-  { key: "inicio", label: "Inicio", to: "/inicio", icon: Home },
-  { key: "pos", label: "Punto de venta", to: "/pos", icon: ShoppingCart },
-  { key: "fotografias", label: "Fotografías", to: "/fotografias", icon: Camera },
-  { key: "operaciones", label: "Operaciones", to: "/operaciones", icon: ClipboardList },
-  { key: "inventario", label: "Inventario", to: "/inventario", icon: Boxes },
-  { key: "administracion", label: "Administración", to: "/administracion", icon: Wallet },
-  { key: "clientes", label: "Clientes", to: "/clientes", icon: Users },
-  { key: "reportes", label: "Reportes", to: "/reportes", icon: BarChart3 },
-  { key: "configuracion", label: "Configuración", to: "/configuracion", icon: Settings },
+  { key: "inicio", to: "/inicio", icon: Home },
+  { key: "pos", to: "/pos", icon: ShoppingCart },
+  { key: "fotografias", to: "/fotografias", icon: Camera },
+  { key: "operaciones", to: "/operaciones", icon: ClipboardList },
+  { key: "inventario", to: "/inventario", icon: Boxes },
+  { key: "administracion", to: "/administracion", icon: Wallet },
+  { key: "clientes", to: "/clientes", icon: Users },
+  { key: "reportes", to: "/reportes", icon: BarChart3 },
+  { key: "configuracion", to: "/configuracion", icon: Settings },
 ];
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { can } = useAuth();
   const { locations } = useScope();
+  const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
@@ -59,7 +61,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
                 )}
               >
                 <item.icon className="h-[18px] w-[18px]" />
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1">{t(`nav.${item.key}`)}</span>
                 {item.stage && !active && (
                   <span className="rounded-md bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-medium text-sidebar-accent-foreground/70">
                     {item.stage}
@@ -83,7 +85,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
               )}
             >
               <Building2 className="h-[18px] w-[18px]" />
-              <span className="flex-1">Sedes</span>
+              <span className="flex-1">{t("nav.sedes")}</span>
             </Link>
             <ul className="mt-1 space-y-0.5 border-l border-sidebar-border pl-3">
               {locations.map((loc) => (
@@ -109,7 +111,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </ul>
       <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-foreground/50">
-        MVP · Etapa 5 completada
+        {t("nav.footer")}
       </div>
     </nav>
   );

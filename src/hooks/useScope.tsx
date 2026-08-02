@@ -14,6 +14,7 @@ export type LocationRow = {
 };
 
 const STORAGE_KEY = "ftg.active_location";
+const LANG_KEY = "ftg.language";
 
 type ScopeContextValue = {
   locations: LocationRow[];
@@ -31,7 +32,7 @@ const ScopeContext = createContext<ScopeContextValue | null>(null);
 export function ScopeProvider({ children }: { children: ReactNode }) {
   const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
   const [online, setOnline] = useState(true);
-  const [language, setLanguage] = useState<"es" | "pt">("es");
+  const [language, setLanguageState] = useState<"es" | "pt">("es");
   const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
 
   const { data: locations = [] } = useQuery({
@@ -49,6 +50,9 @@ export function ScopeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored) setActiveLocationId(stored);
+    const storedLang = window.localStorage.getItem(LANG_KEY);
+    if (storedLang === "es" || storedLang === "pt") setLanguageState(storedLang);
+    else if (navigator.language?.toLowerCase().startsWith("pt")) setLanguageState("pt");
     setOnline(navigator.onLine);
     setLastSyncAt(new Date());
     const on = () => setOnline(true);
@@ -70,6 +74,15 @@ export function ScopeProvider({ children }: { children: ReactNode }) {
   const setActiveLocation = (id: string) => {
     setActiveLocationId(id);
     window.localStorage.setItem(STORAGE_KEY, id);
+  };
+
+  const setLanguage = (lang: "es" | "pt") => {
+    setLanguageState(lang);
+    window.localStorage.setItem(LANG_KEY, lang);
+    document.documentElement.lang = lang === "pt" ? "pt-BR" : "es";
+    void supabase.auth.getUser().then(({ data }) => {
+      if (data.user) void supabase.from("profiles").update({ language: lang }).eq("id", data.user.id);
+    });
   };
 
   const activeLocation = locations.find((l) => l.id === activeLocationId) ?? null;

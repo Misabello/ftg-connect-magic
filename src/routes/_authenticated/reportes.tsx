@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney, formatNumber } from "@/lib/ftg/format";
@@ -38,6 +39,7 @@ const RANGES = [
 
 function Reportes() {
   const { activeLocation, activeLocationId } = useScope();
+  const { t } = useI18n();
   const [range, setRange] = useState("30");
 
   const since = useMemo(() => {
@@ -121,8 +123,8 @@ function Reportes() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reportes"
-        description="Ventas, medios de pago, conversión fotográfica y costos de IA por sede y período."
+        title={t("page.reportes.title")}
+        description={t("page.reportes.desc")}
         actions={
           <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="w-48">

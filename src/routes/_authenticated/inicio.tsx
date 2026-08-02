@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ftg/PageHeader";
 import { StatCard } from "@/components/ftg/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { relativeTime } from "@/lib/ftg/format";
@@ -33,6 +34,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 function Inicio() {
   const { activeLocation, activeLocationId, locations } = useScope();
+  const { t } = useI18n();
 
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard", activeLocationId],
@@ -64,12 +66,14 @@ function Inicio() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Buen día · ${activeLocation?.name ?? "FTG ONE"}`}
-        description="Estado general de la operación. Los indicadores comerciales se activan al implementarse el punto de venta (Etapa 2)."
+        title={`${t("page.inicio.title")} · ${activeLocation?.name ?? "FTG ONE"}`}
+        description={t("page.inicio.desc")}
         actions={
           <Badge variant="secondary" className="gap-1.5">
             <MapPin className="h-3.5 w-3.5" />
-            {activeLocation ? `${activeLocation.city ?? activeLocation.name} · ${activeLocation.currency_code}` : "Sin sede"}
+            {activeLocation
+              ? `${activeLocation.city ?? activeLocation.name} · ${activeLocation.currency_code}`
+              : t("page.inicio.noLocation")}
           </Badge>
         }
       />

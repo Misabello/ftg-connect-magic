@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatNumber, relativeTime } from "@/lib/ftg/format";
@@ -50,6 +51,7 @@ const MOVEMENT_OPTIONS: StockMovementKind[] = ["recepcion", "ajuste", "merma", "
 
 function Inventario() {
   const { activeLocationId, activeLocation, locations } = useScope();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [productId, setProductId] = useState<string>("");
@@ -162,8 +164,8 @@ function Inventario() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Inventario"
-        description={`Stock por sede, alertas de mínimo y movimientos trazables en ${activeLocation?.name ?? "la sede activa"}.`}
+        title={t("page.inventario.title")}
+        description={`${t("page.inventario.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
         actions={
           <Button
             onClick={() => {

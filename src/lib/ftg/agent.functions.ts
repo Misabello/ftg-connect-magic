@@ -14,6 +14,7 @@ const Input = z.object({
     )
     .min(1)
     .max(20),
+  language: z.enum(["es", "pt"]).optional(),
 });
 
 type ChatResponse = {
@@ -37,6 +38,13 @@ export const askDataAgent = createServerFn({ method: "POST" })
         model: "google/gemini-3.6-flash",
         messages: [
           { role: "system", content: AGENT_SYSTEM_PROMPT },
+          {
+            role: "system",
+            content:
+              data.language === "pt"
+                ? "Responda sempre em português do Brasil, com termos de varejo e ERP."
+                : "Respondé siempre en español rioplatense.",
+          },
           {
             role: "system",
             content: `Snapshot actual de la base (JSON):\n${JSON.stringify(snapshot)}`,
