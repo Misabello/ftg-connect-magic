@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/reportes")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Reportes;
+  component: Reportes,
 });
 
 const RANGES = [
