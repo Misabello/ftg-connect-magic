@@ -10,6 +10,7 @@ import {
   Mail,
   MessageCircle,
   RefreshCw,
+  Share2,
   ShoppingCart,
   Sparkles,
   Video,
@@ -137,6 +138,10 @@ export function MagicStudio({
     null,
   );
   const [videoApproved, setVideoApproved] = useState(false);
+  /** Ruta en almacenamiento del archivo final entregable (imagen o video). */
+  const [deliveryPath, setDeliveryPath] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -230,6 +235,8 @@ export function MagicStudio({
     setVideoMeta(null);
     setVideoApproved(false);
     setErrorMessage(null);
+    setDeliveryPath(null);
+    setShareLink(null);
   }
 
   const busy =
@@ -254,6 +261,58 @@ export function MagicStudio({
   async function signedUrl(path: string) {
     const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
     return data?.signedUrl ?? null;
+  }
+
+  /** Enlace de descarga válido 7 días: es lo que se manda al cliente por email o WhatsApp. */
+  async function ensureShareLink() {
+    if (shareLink) return shareLink;
+    if (!deliveryPath) return null;
+    const { data } = await supabase.storage.from(BUCKET).createSignedUrl(deliveryPath, 60 * 60 * 24 * 7);
+    const link = data?.signedUrl ?? null;
+    if (link) setShareLink(link);
+    return link;
+  }
+
+  function deliveryFileName() {
+    const extension = outputType === "video" ? (videoMeta?.mime === "video/webm" ? "webm" : "mp4") : "jpg";
+    return `recuerdo-ftg-${jobId ?? "cliente"}.${extension}`;
+  }
+
+  async function shareMessage() {
+    const link = await ensureShareLink();
+    return buildSouvenirMessage({
+      label: pricing.product,
+      link,
+      sellerName: profile?.full_name,
+      sellerPhone: profile?.phone,
+    });
+  }
+
+  /** Compartir el archivo real (se adjunta en WhatsApp/Mail nativos del dispositivo). */
+  async function shareFile() {
+    const source = outputType === "video" ? videoUrl : finalUrl;
+    if (!source) return;
+    setSharing(true);
+    try {
+      const blob = await (await fetch(source)).blob();
+      const file = new File([blob], deliveryFileName(), { type: blob.type || "application/octet-stream" });
+      const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({ files: [file], title: `Tu ${pricing.product} de FTG`, text: await shareMessage() });
+      } else {
+        const link = await ensureShareLink();
+        if (link) {
+          await navigator.clipboard.writeText(link);
+          toast.success("Este dispositivo no adjunta archivos: copiamos el enlace de descarga");
+        } else {
+          toast.error("No se pudo preparar el archivo para compartir");
+        }
+      }
+    } catch (error) {
+      if ((error as Error)?.name !== "AbortError") toast.error("No se pudo compartir el archivo");
+    } finally {
+      setSharing(false);
+    }
   }
 
   async function toDataUrl(src: string) {
@@ -389,6 +448,8 @@ export function MagicStudio({
         setStatus("preview_listo");
       } else {
         setFinalUrl(result.imageUrl);
+        setDeliveryPath(path);
+        setShareLink(null);
         setStatus("completado");
       }
       setProgress(100);
@@ -517,6 +578,8 @@ export function MagicStudio({
       }
 
       setVideoUrl(playable);
+      setDeliveryPath(videoPath);
+      setShareLink(null);
       setVideoMeta({ mime, seconds: probe.seconds, width: probe.width, height: probe.height });
       setStatus("completado");
       setProgress(100);
@@ -895,40 +958,41 @@ export function MagicStudio({
                       className="h-9"
                     />
                     <div className="flex gap-2">
-                      <Button className="flex-1" size="sm" variant="outline" asChild>
-                        <a
-                          href={mailtoLink(
-                            customerEmail,
-                            `Tu ${pricing.product} de FTG`,
-                            buildSouvenirMessage({
-                              label: pricing.product,
-                              sellerName: profile?.full_name,
-                              sellerPhone: profile?.phone,
-                            }),
-                          )}
-                        >
-                          <Mail className="mr-1.5 h-4 w-4" /> Email
-                        </a>
+                      <Button
+                        className="flex-1"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          const message = await shareMessage();
+                          window.location.href = mailtoLink(customerEmail, `Tu ${pricing.product} de FTG`, message);
+                        }}
+                      >
+                        <Mail className="mr-1.5 h-4 w-4" /> Email
                       </Button>
-                      <Button className="flex-1" size="sm" variant="outline" asChild>
-                        <a
-                          href={whatsappLink(
-                            customerPhone,
-                            buildSouvenirMessage({
-                              label: pricing.product,
-                              sellerName: profile?.full_name,
-                              sellerPhone: profile?.phone,
-                            }),
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
-                        </a>
+                      <Button
+                        className="flex-1"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          const message = await shareMessage();
+                          window.open(whatsappLink(customerPhone, message), "_blank", "noopener");
+                        }}
+                      >
+                        <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
                       </Button>
                     </div>
+                    <Button className="w-full" size="sm" disabled={sharing} onClick={() => void shareFile()}>
+                      {sharing ? (
+                        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Share2 className="mr-1.5 h-4 w-4" />
+                      )}
+                      Compartir archivo adjunto
+                    </Button>
                     <p className="text-[11px] text-muted-foreground">
-                      El archivo se descarga desde este equipo y se adjunta al mensaje.
+                      Email y WhatsApp envían el mensaje con un enlace de descarga válido 7 días. “Compartir archivo
+                      adjunto” abre el menú del dispositivo y manda el {outputType === "video" ? "video" : "archivo"} en
+                      el chat.
                     </p>
                   </div>
 
