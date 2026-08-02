@@ -7,6 +7,8 @@ import {
   Download,
   Image as ImageIcon,
   Loader2,
+  Mail,
+  MessageCircle,
   RefreshCw,
   ShoppingCart,
   Sparkles,
@@ -63,6 +65,8 @@ import { CharacterLibrary, characterImage, type CharacterRow } from "./Character
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
 import { VideoPromptPanel } from "./VideoPromptPanel";
+import { addMagicItem } from "@/lib/ftg/magic-cart";
+import { buildSouvenirMessage, mailtoLink, whatsappLink } from "@/lib/ftg/share";
 
 type SceneRow = {
   id: string;
@@ -95,7 +99,7 @@ export function MagicStudio({
   locations: { id: string; name: string }[];
   onAddToCart?: (item: { outputType: OutputType; jobId: string; price: number; label: string }) => void;
 }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { language } = useI18n();
 
   const [outputType, setOutputType] = useState<OutputType>("imagen");
@@ -134,6 +138,8 @@ export function MagicStudio({
   );
   const [videoApproved, setVideoApproved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
 
   const generateImage = useServerFn(runImageGeneration);
   const generateComposition = useServerFn(buildVideoComposition);
@@ -192,6 +198,8 @@ export function MagicStudio({
     setConsent(false);
     setGuardian(false);
     setMinor(false);
+    setCustomerEmail("");
+    setCustomerPhone("");
     resetComposition();
     resetJob();
   }
@@ -200,6 +208,16 @@ export function MagicStudio({
     setCompositionUrl(null);
     setCompositionApproved(false);
     setCompositionBusy(false);
+  }
+
+  /**
+   * Cambiar fondo, estilo, formato o personaje invalida la composición y
+   * también el video ya generado: se vuelve al estado inicial para poder
+   * generar de nuevo desde la columna de resultado.
+   */
+  function restartFromComposition() {
+    resetComposition();
+    resetJob();
   }
 
   function resetJob() {
@@ -615,7 +633,7 @@ export function MagicStudio({
                 selectedId={character?.id ?? null}
                 onSelect={(c) => {
                   setCharacter(c);
-                  resetComposition();
+                  restartFromComposition();
                 }}
                 locationOptions={locations}
               />
@@ -643,9 +661,9 @@ export function MagicStudio({
               </div>
 
               <div className="grid gap-2 sm:grid-cols-2">
-                <LabeledSelect label="Fondo" value={background} onChange={(v) => { setBackground(v); resetComposition(); }} options={BACKGROUNDS} />
-                <LabeledSelect label="Estilo" value={style} onChange={(v) => { setStyle(v); resetComposition(); }} options={VISUAL_STYLES} />
-                <LabeledSelect label="Formato" value={aspectRatio} onChange={(v) => { setAspectRatio(v); resetComposition(); }} options={ASPECT_RATIOS} />
+                <LabeledSelect label="Fondo" value={background} onChange={(v) => { setBackground(v); restartFromComposition(); }} options={BACKGROUNDS} />
+                <LabeledSelect label="Estilo" value={style} onChange={(v) => { setStyle(v); restartFromComposition(); }} options={VISUAL_STYLES} />
+                <LabeledSelect label="Formato" value={aspectRatio} onChange={(v) => { setAspectRatio(v); restartFromComposition(); }} options={ASPECT_RATIOS} />
                 {outputType === "video" && (
                   <>
                     <LabeledSelect
@@ -707,14 +725,17 @@ export function MagicStudio({
                     onSwapSides={() => {
                       setPersonSide((s) => (s === "izquierda" ? "derecha" : "izquierda"));
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onGapChange={(g) => {
                       setGapLevel(g);
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onScaleChange={(v) => {
                       setCharacterScale(v);
                       setCompositionApproved(false);
+                      resetJob();
                     }}
                     onGenerate={() => void runComposition()}
                     onApprove={() => void approveComposition()}
@@ -856,6 +877,61 @@ export function MagicStudio({
 
               {status === "completado" && (outputType === "imagen" ? !!finalUrl : videoApproved) && (
                 <>
+                  <div className="space-y-2 rounded-lg border border-border p-3">
+                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Entrega al cliente
+                    </p>
+                    <Input
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="Email del cliente"
+                      className="h-9"
+                    />
+                    <Input
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="WhatsApp del cliente (con código de país)"
+                      className="h-9"
+                    />
+                    <div className="flex gap-2">
+                      <Button className="flex-1" size="sm" variant="outline" asChild>
+                        <a
+                          href={mailtoLink(
+                            customerEmail,
+                            `Tu ${pricing.product} de FTG`,
+                            buildSouvenirMessage({
+                              label: pricing.product,
+                              sellerName: profile?.full_name,
+                              sellerPhone: profile?.phone,
+                            }),
+                          )}
+                        >
+                          <Mail className="mr-1.5 h-4 w-4" /> Email
+                        </a>
+                      </Button>
+                      <Button className="flex-1" size="sm" variant="outline" asChild>
+                        <a
+                          href={whatsappLink(
+                            customerPhone,
+                            buildSouvenirMessage({
+                              label: pricing.product,
+                              sellerName: profile?.full_name,
+                              sellerPhone: profile?.phone,
+                            }),
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+                        </a>
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      El archivo se descarga desde este equipo y se adjunta al mensaje.
+                    </p>
+                  </div>
+
                   <Button className="w-full" variant="secondary" asChild>
                     <a
                       href={(outputType === "video" ? videoUrl : finalUrl) ?? "#"}
@@ -867,6 +943,16 @@ export function MagicStudio({
                   <Button
                     className="w-full"
                     onClick={() => {
+                      addMagicItem({
+                        jobId: jobId!,
+                        outputType,
+                        label: pricing.product,
+                        price: pricing.price,
+                        locationId,
+                        mediaUrl: (outputType === "video" ? videoUrl : finalUrl) ?? null,
+                        customerEmail: customerEmail || null,
+                        customerPhone: customerPhone || null,
+                      });
                       onAddToCart?.({
                         outputType,
                         jobId: jobId!,
@@ -876,7 +962,7 @@ export function MagicStudio({
                       onOpenChange(false);
                     }}
                   >
-                    <ShoppingCart className="mr-1.5 h-4 w-4" /> Enviar al punto de venta
+                    <ShoppingCart className="mr-1.5 h-4 w-4" /> Enviar al carrito del punto de venta
                   </Button>
                 </>
               )}

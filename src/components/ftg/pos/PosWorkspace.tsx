@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CloudUpload, Receipt, RefreshCw, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, Send, Sparkles, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -13,6 +13,7 @@ import {
   type PaymentDraft,
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
+import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,13 @@ import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 import { enqueueSale } from "@/lib/ftg/offline";
+import {
+  listMagicItems,
+  removeMagicItem,
+  subscribeMagicItems,
+  type MagicPendingItem,
+} from "@/lib/ftg/magic-cart";
+import type { ReceiptShareData } from "@/lib/ftg/share";
 import {
   buildSaleNumber,
   computeTotals,
@@ -59,7 +67,7 @@ export function PosWorkspace({
   const { online, locations } = scope;
   const activeLocationId = locationId ?? scope.activeLocationId;
   const activeLocation = locations.find((l) => l.id === activeLocationId) ?? null;
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const { pending, pendingCount, syncing, sync } = useOfflineQueue();
 
@@ -68,6 +76,16 @@ export function PosWorkspace({
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [magicItems, setMagicItems] = useState<MagicPendingItem[]>([]);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
+  const [lastContact, setLastContact] = useState({ email: "", phone: "" });
+
+  useEffect(() => {
+    const refresh = () => setMagicItems(listMagicItems());
+    refresh();
+    return subscribeMagicItems(refresh);
+  }, []);
 
   const currency = activeLocation?.currency_code ?? "ARS";
   const locale = activeLocation?.country_code === "BR" ? "pt-BR" : "es-AR";
@@ -223,6 +241,32 @@ export function PosWorkspace({
     });
   };
 
+  /** Suma al carrito un recuerdo IA ya aprobado en el estudio mágico. */
+  const addMagicItemToCart = (item: MagicPendingItem) => {
+    setLines((prev) => {
+      const id = `magic:${item.id}`;
+      if (prev.some((l) => l.productId === id)) return prev;
+      return [
+        ...prev,
+        {
+          productId: id,
+          sku: item.jobId.slice(0, 8).toUpperCase(),
+          name: item.label,
+          unitPrice: item.price,
+          quantity: 1,
+          discountAmount: 0,
+          taxRate: 21,
+          includesTax: true,
+          requiresPhoto: false,
+          photoCode: item.jobId,
+        },
+      ];
+    });
+    setLastContact({ email: item.customerEmail ?? "", phone: item.customerPhone ?? "" });
+    removeMagicItem(item.id);
+    toast.success(`${item.label} agregado al carrito`);
+  };
+
   const openSession = useMutation({
     mutationFn: async (amount: number) => {
       if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
@@ -311,7 +355,7 @@ export function PosWorkspace({
       };
 
       const itemsPayload = lines.map((line) => ({
-          product_id: line.productId,
+          product_id: line.productId.startsWith("magic:") ? null : line.productId,
           description: line.name,
           quantity: line.quantity,
           unit_price: line.unitPrice,
@@ -382,7 +426,7 @@ export function PosWorkspace({
         throw error;
       }
     },
-    onSuccess: (sale) => {
+    onSuccess: (sale, variables) => {
       if (sale.queued) {
         toast.success(`Venta ${sale.sale_number} guardada sin conexión`, {
           description: `${formatMoney(totals.total, currency, locale)} · se sincroniza al volver en línea`,
@@ -392,6 +436,20 @@ export function PosWorkspace({
           description: formatMoney(totals.total, currency, locale),
         });
       }
+      setLastReceipt({
+        saleNumber: sale.sale_number,
+        totalLabel: formatMoney(totals.total, currency, locale),
+        items: lines.map((l) => ({ name: l.name, quantity: l.quantity })),
+        customerName: variables.customer.name || null,
+        sellerName: profile?.full_name ?? null,
+        sellerPhone: profile?.phone ?? null,
+        posName: activePos?.name ?? null,
+      });
+      setLastContact({
+        email: variables.customer.email || lastContact.email,
+        phone: variables.customer.phone || lastContact.phone,
+      });
+      setShareOpen(true);
       setLines([]);
       setCheckoutOpen(false);
       queryClient.invalidateQueries({ queryKey: ["session-sales"] });
@@ -460,6 +518,38 @@ export function PosWorkspace({
             onOpen={(amount) => openSession.mutate(amount)}
             onClose={(counted, notes) => closeSession.mutate({ counted, notes })}
           />
+
+          {magicItems.length > 0 && (
+                <section className="surface-card p-5">
+                  <h2 className="flex items-center gap-2 text-base font-semibold">
+                    <Sparkles className="h-4 w-4 text-primary" /> Recuerdos IA listos para cobrar
+                  </h2>
+                  <ul className="mt-4 grid gap-2 md:grid-cols-2">
+                    {magicItems.map((item) => (
+                      <li
+                        key={item.id}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium">{item.label}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {formatMoney(item.price, currency, locale)} ·{" "}
+                            {item.customerEmail || item.customerPhone || "sin contacto del cliente"}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 gap-1.5">
+                          <Button size="sm" onClick={() => addMagicItemToCart(item)} disabled={!session}>
+                            <Send className="mr-1.5 h-3.5 w-3.5" /> Al carrito
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => removeMagicItem(item.id)}>
+                            Quitar
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+          )}
 
           <div className="grid gap-5 xl:grid-cols-[1.6fr_1fr]">
             <CatalogPanel
@@ -557,6 +647,14 @@ export function PosWorkspace({
         methods={methods}
         submitting={registerSale.isPending}
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
+      />
+
+      <ReceiptShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        receipt={lastReceipt}
+        defaultEmail={lastContact.email}
+        defaultPhone={lastContact.phone}
       />
     </div>
   );
