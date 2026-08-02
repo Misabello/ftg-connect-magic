@@ -240,7 +240,14 @@ function Fotografias() {
       <PageHeader
         title={t("page.fotografias.title")}
         description={`${t("page.fotografias.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
-        actions={<PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />}
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => setMagicOpen(true)}>
+              <Sparkles className="h-4 w-4" /> Crear recuerdo mágico
+            </Button>
+            <PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />
+          </div>
+        }
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -352,6 +359,23 @@ function Fotografias() {
           return result.imageUrl;
         }}
         onSave={(args) => saveSouvenir.mutateAsync(args)}
+      />
+
+      <MagicStudio
+        open={magicOpen}
+        onOpenChange={setMagicOpen}
+        locationId={locationId}
+        organizationId={profile?.organization_id ?? null}
+        locations={locations.map((l) => ({ id: l.id, name: l.name }))}
+        onAddToCart={(item) => {
+          window.localStorage.setItem(
+            "ftg.pos.pending",
+            JSON.stringify({ ...item, createdAt: new Date().toISOString() }),
+          );
+          toast.success("Enviado al punto de venta", {
+            description: `${item.label} quedó listo para cobrar en el POS.`,
+          });
+        }}
       />
     </div>
   );
