@@ -165,11 +165,21 @@ function Administracion() {
       if (!payDoc) return;
       const value = Number(payAmount);
       if (!Number.isFinite(value) || value <= 0) throw new Error("Importe inválido");
+      if (!receipt) throw new Error("Adjuntá el comprobante: subí un archivo o sacá una foto");
+
+      const ext = (receipt.name.split(".").pop() ?? "jpg").toLowerCase();
+      const path = `${payDoc.id}/${Date.now()}.${ext}`;
+      const upload = await supabase.storage.from("finance-receipts").upload(path, receipt, {
+        contentType: receipt.type || "application/octet-stream",
+        upsert: false,
+      });
+      if (upload.error) throw new Error(`No pudimos subir el comprobante: ${upload.error.message}`);
+
       const paid = Math.min(payDoc.amount, payDoc.paid + value);
       const status: FinanceDocStatus = paid >= payDoc.amount ? "pagado" : "parcial";
       const { error } = await supabase
         .from("finance_documents")
-        .update({ paid_amount: paid, status })
+        .update({ paid_amount: paid, status, receipt_path: path })
         .eq("id", payDoc.id);
       if (error) throw error;
     },
@@ -177,10 +187,30 @@ function Administracion() {
       toast.success("Movimiento de tesorería registrado");
       setPayDoc(null);
       setPayAmount("");
+      clearReceipt();
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
+  function clearReceipt() {
+    setReceipt(null);
+    setReceiptPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }
+
+  function pickReceipt(file: File | null) {
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("El comprobante no puede superar 15 MB");
+      return;
+    }
+    clearReceipt();
+    setReceipt(file);
+    if (file.type.startsWith("image/")) setReceiptPreview(URL.createObjectURL(file));
+  }
 
   return (
     <div className="space-y-6">
