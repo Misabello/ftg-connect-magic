@@ -236,7 +236,13 @@ function Operaciones() {
   const setStatus = useMutation({
     mutationFn: async (status: OperationalStatus) => {
       if (!activeDay) return;
-      const patch: Record<string, unknown> = { status };
+      const patch: {
+        status: OperationalStatus;
+        opened_at?: string;
+        opened_by?: string | null;
+        closed_at?: string;
+        closed_by?: string | null;
+      } = { status };
       if (status === "en_operacion" && !activeDay.opened_at) {
         patch['opened_at'] = new Date().toISOString();
         patch['opened_by'] = user?.id ?? null;
@@ -278,7 +284,7 @@ function Operaciones() {
       const { error } = await supabase.from("operation_staff").insert({
         operation_day_id: activeDay.id,
         person_name: draft.person_name,
-        role: draft.role as StaffRow["role"],
+        role: draft.role as "cajero",
         point_of_sale_id: draft.point_of_sale_id,
         shift_start: draft.shift_start || null,
         shift_end: draft.shift_end || null,
