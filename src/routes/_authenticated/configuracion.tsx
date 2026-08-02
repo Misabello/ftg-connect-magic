@@ -367,6 +367,7 @@ function Configuracion() {
         </TabsContent>
 
         <TabsContent value="cuenta" className="space-y-6 pt-5">
+          <SellerContactCard />
           <section className="surface-card space-y-4 p-6">
             <div>
               <h2 className="text-base font-semibold">{t("config.language.title")}</h2>
@@ -396,5 +397,55 @@ function Configuracion() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+/** Datos de contacto del vendedor usados al enviar comprobantes y recuerdos. */
+function SellerContactCard() {
+  const { user, profile, refresh } = useAuth();
+  const [fullName, setFullName] = useState(profile?.full_name ?? "");
+  const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <section className="surface-card space-y-4 p-6">
+      <div>
+        <h2 className="text-base font-semibold">Mis datos de contacto</h2>
+        <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+          Se incluyen en los comprobantes y recuerdos que enviás al cliente por email o WhatsApp.
+        </p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label className="text-xs text-muted-foreground">Nombre</Label>
+          <Input className="mt-1" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">WhatsApp (con código de país)</Label>
+          <Input
+            className="mt-1"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="5492235550000"
+          />
+        </div>
+      </div>
+      <Button
+        disabled={saving || !user}
+        onClick={async () => {
+          setSaving(true);
+          const { error } = await supabase
+            .from("profiles")
+            .update({ full_name: fullName.trim(), phone: phone.trim() || null })
+            .eq("id", user!.id);
+          setSaving(false);
+          if (error) return toast.error(error.message);
+          await refresh?.();
+          toast.success("Datos actualizados");
+        }}
+      >
+        Guardar
+      </Button>
+    </section>
   );
 }
