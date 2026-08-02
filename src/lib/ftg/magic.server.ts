@@ -41,9 +41,9 @@ export type VideoRequest = {
   durationSeconds: number;
   minResolution: "720p" | "1080p";
   /** Motor de video elegido en la interfaz. */
-  engine?: VideoEngine;
+  engine?: VideoEngine | undefined;
   /** Movimiento seleccionado (define el ruteo automático al modelo de abrazo). */
-  motion?: string;
+  motion?: string | undefined;
 };
 
 export type VideoGenerationResult = {
