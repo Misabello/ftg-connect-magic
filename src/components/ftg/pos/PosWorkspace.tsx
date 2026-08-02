@@ -241,6 +241,32 @@ export function PosWorkspace({
     });
   };
 
+  /** Suma al carrito un recuerdo IA ya aprobado en el estudio mágico. */
+  const addMagicItemToCart = (item: MagicPendingItem) => {
+    setLines((prev) => {
+      const id = `magic:${item.id}`;
+      if (prev.some((l) => l.productId === id)) return prev;
+      return [
+        ...prev,
+        {
+          productId: id,
+          sku: item.jobId.slice(0, 8).toUpperCase(),
+          name: item.label,
+          unitPrice: item.price,
+          quantity: 1,
+          discountAmount: 0,
+          taxRate: 21,
+          includesTax: true,
+          requiresPhoto: false,
+          photoCode: item.jobId,
+        },
+      ];
+    });
+    setLastContact({ email: item.customerEmail ?? "", phone: item.customerPhone ?? "" });
+    removeMagicItem(item.id);
+    toast.success(`${item.label} agregado al carrito`);
+  };
+
   const openSession = useMutation({
     mutationFn: async (amount: number) => {
       if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
@@ -329,7 +355,7 @@ export function PosWorkspace({
       };
 
       const itemsPayload = lines.map((line) => ({
-          product_id: line.productId,
+          product_id: line.productId.startsWith("magic:") ? null : line.productId,
           description: line.name,
           quantity: line.quantity,
           unit_price: line.unitPrice,
@@ -410,6 +436,15 @@ export function PosWorkspace({
           description: formatMoney(totals.total, currency, locale),
         });
       }
+      setLastReceipt({
+        saleNumber: sale.sale_number,
+        totalLabel: formatMoney(totals.total, currency, locale),
+        items: lines.map((l) => ({ name: l.name, quantity: l.quantity })),
+        customerName: null,
+        sellerName: user?.user_metadata?.["full_name"] as string | undefined,
+        posName: activePos?.name ?? null,
+      });
+      setShareOpen(true);
       setLines([]);
       setCheckoutOpen(false);
       queryClient.invalidateQueries({ queryKey: ["session-sales"] });
