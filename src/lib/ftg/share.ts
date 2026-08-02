@@ -18,10 +18,10 @@ export type ReceiptShareData = {
   saleNumber: string;
   totalLabel: string;
   items: { name: string; quantity: number }[];
-  customerName?: string | null;
-  sellerName?: string | null;
-  sellerPhone?: string | null;
-  posName?: string | null;
+  customerName?: string | null | undefined;
+  sellerName?: string | null | undefined;
+  sellerPhone?: string | null | undefined;
+  posName?: string | null | undefined;
 };
 
 /** Texto del comprobante para enviar al cliente. */
@@ -46,9 +46,9 @@ export function buildReceiptMessage(data: ReceiptShareData) {
 /** Texto para compartir un recuerdo generado con IA. */
 export function buildSouvenirMessage(opts: {
   label: string;
-  link?: string | null;
-  sellerName?: string | null;
-  sellerPhone?: string | null;
+  link?: string | null | undefined;
+  sellerName?: string | null | undefined;
+  sellerPhone?: string | null | undefined;
 }) {
   return [
     `¡Tu ${opts.label} de FTG está listo!`,
