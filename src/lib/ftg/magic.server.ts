@@ -226,6 +226,42 @@ export const falVideoProvider: VideoGenerationProvider = {
 };
 
 export const imageProvider: ImageGenerationProvider = lovableImageProvider;
-export const videoProvider: VideoGenerationProvider = process.env["FAL_KEY"]
-  ? falVideoProvider
-  : unsupportedVideoProvider;
+
+/** Se resuelve en tiempo de ejecución: sin FAL_KEY no se simula video, se informa el error. */
+export function getVideoProvider(): VideoGenerationProvider {
+  return process.env["FAL_KEY"] ? falVideoProvider : unsupportedVideoProvider;
+}
+
+/** Mejora el prompt del vendedor con un modelo de chat, sin romper las reglas internas. */
+export async function improvePromptWithAI(userPrompt: string, language: "es" | "pt") {
+  const key = process.env["LOVABLE_API_KEY"];
+  if (!key) throw new Error("Falta la clave del servicio de IA");
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-3.6-flash",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Reescribís descripciones cortas de una animación entre una persona real y un personaje. " +
+            "Devolvés UNA sola frase clara, concreta y visual, de menos de 300 caracteres, " +
+            "sin instrucciones técnicas, sin pedir cambiar la identidad de las personas y sin superponer los cuerpos. " +
+            (language === "pt" ? "Respondé en portugués." : "Respondé en español rioplatense."),
+        },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (response.status === 429) throw new Error("Límite de solicitudes alcanzado, probá en unos minutos");
+  if (response.status === 402) throw new Error("Créditos de IA agotados en el espacio de trabajo");
+  if (!response.ok) throw new Error(`Error del servicio de IA (${response.status})`);
+
+  const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const text = payload.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("El servicio no devolvió una sugerencia");
+  return text;
+}
