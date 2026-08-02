@@ -56,7 +56,7 @@ function Index() {
 
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-10">
         <span className="inline-flex items-center gap-2 rounded-full bg-accent/20 px-3 py-1 text-xs font-medium text-accent-foreground">
-          <Sparkles className="h-3.5 w-3.5" /> MVP · Etapa 1 disponible
+          <Sparkles className="h-3.5 w-3.5" /> MVP completo · 5 etapas operativas
         </span>
         <h1 className="mt-6 max-w-3xl text-4xl leading-tight font-semibold sm:text-5xl">
           Una sola plataforma para toda la operación de Fotográfica
