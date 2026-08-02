@@ -5,6 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Paperclip, Plus, Wallet, 
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
+import { SedeAccounting } from "@/components/ftg/SedeAccounting";
 import { StatCard } from "@/components/ftg/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
