@@ -1043,6 +1043,8 @@ export function MagicStudio({
                         price: pricing.price,
                         locationId,
                         mediaUrl: (outputType === "video" ? videoUrl : finalUrl) ?? null,
+                        mediaPath: deliveryPath,
+                        mediaBucket: BUCKET,
                         customerEmail: customerEmail || null,
                         customerPhone: customerPhone || null,
                       });
