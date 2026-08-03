@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Receipt } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { BookOpen, Receipt, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,7 @@ type TicketRow = {
   issued_on: string | null;
   image_path: string;
   created_at: string;
+  journal_entry_id: string | null;
 };
 
 /** Libro contable del punto de venta: saldos por cuenta y últimos asientos. */
@@ -43,9 +44,12 @@ export function PosLedgerPanel({
   locale: string;
 }) {
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["pos-ledger", pointOfSaleId],
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const { data, error } = await supabase
         .from("journal_entries")
@@ -63,10 +67,14 @@ export function PosLedgerPanel({
   /** Comprobantes cargados con OCR en este puesto. */
   const { data: tickets = [] } = useQuery({
     queryKey: ["pos-tickets", pointOfSaleId],
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pos_tickets")
-        .select("id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at")
+        .select(
+          "id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at, journal_entry_id",
+        )
         .eq("point_of_sale_id", pointOfSaleId)
         .order("created_at", { ascending: false })
         .limit(30);
@@ -104,9 +112,22 @@ export function PosLedgerPanel({
 
   return (
     <section className="surface-card p-6">
-      <h2 className="flex items-center gap-2 text-base font-semibold">
-        <BookOpen className="h-4 w-4 text-primary" /> Contabilidad del punto de venta
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 text-base font-semibold">
+          <BookOpen className="h-4 w-4 text-primary" /> Contabilidad del punto de venta
+        </h2>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={() => {
+            void queryClient.invalidateQueries({ queryKey: ["pos-ledger", pointOfSaleId] });
+            void queryClient.invalidateQueries({ queryKey: ["pos-tickets", pointOfSaleId] });
+          }}
+        >
+          <RefreshCw className="h-3.5 w-3.5" /> Actualizar
+        </Button>
+      </div>
       <p className="mt-1 text-xs text-muted-foreground">
         Partida doble: cada venta, cobro y ticket genera su asiento en esta caja.
       </p>
@@ -201,6 +222,7 @@ export function PosLedgerPanel({
                     {Number(ticket.tax_amount) > 0
                       ? ` · imp. ${formatMoney(Number(ticket.tax_amount), currency, locale)}`
                       : ""}
+                    {ticket.journal_entry_id ? " · asiento registrado" : " · sin asiento contable"}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
