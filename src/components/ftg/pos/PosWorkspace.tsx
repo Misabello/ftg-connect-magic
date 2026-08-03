@@ -56,6 +56,8 @@ type PosWorkspaceProps = {
   title?: string;
   description?: string;
   headerActions?: ReactNode;
+  /** Llega desde el carrito global: pasa los ítems pendientes al cobro. */
+  autoCheckout?: boolean;
 };
 
 export function PosWorkspace({
