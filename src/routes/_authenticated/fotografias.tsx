@@ -33,7 +33,7 @@ import {
   type PhotoStatus,
   type SouvenirStatus,
 } from "@/lib/ftg/photos";
-import { addMagicItem } from "@/lib/ftg/magic-cart";
+import { addMagicItem, openCartDock } from "@/lib/ftg/magic-cart";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/fotografias")({
