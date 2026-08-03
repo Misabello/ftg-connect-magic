@@ -3,9 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PosWorkspace } from "@/components/ftg/pos/PosWorkspace";
 
 export const Route = createFileRoute("/_authenticated/pos")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    cobrar: search.cobrar === "1" || search.cobrar === 1 || search.cobrar === true ? true : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>) => {
+    const raw = search["cobrar"];
+    return { cobrar: raw === "1" || raw === 1 || raw === true ? true : undefined };
+  },
   head: () => ({
     meta: [
       { title: "Punto de venta — FTG ONE" },
