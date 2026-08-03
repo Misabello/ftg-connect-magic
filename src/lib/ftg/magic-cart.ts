@@ -11,6 +11,11 @@ export type MagicPendingItem = {
   customerEmail: string | null;
   customerPhone: string | null;
   createdAt: string;
+  /** Producto real del catálogo cuando el ítem no es un recuerdo IA. */
+  productId?: string | null;
+  sku?: string | null;
+  /** Código de visitante u otra referencia de la fotografía. */
+  photoCode?: string | null;
 };
 
 const KEY = "ftg.pos.magic-items";
