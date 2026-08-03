@@ -17,15 +17,17 @@ export function mailtoLink(email: string | null | undefined, subject: string, bo
 export type ReceiptShareData = {
   saleNumber: string;
   totalLabel: string;
-  items: { name: string; quantity: number }[];
+  items: { name: string; quantity: number; link?: string | null }[];
   customerName?: string | null | undefined;
   sellerName?: string | null | undefined;
   sellerPhone?: string | null | undefined;
+  sellerEmail?: string | null | undefined;
   posName?: string | null | undefined;
 };
 
 /** Texto del comprobante para enviar al cliente. */
 export function buildReceiptMessage(data: ReceiptShareData) {
+  const downloads = data.items.filter((i) => i.link);
   const lines = [
     `Hola${data.customerName ? ` ${data.customerName}` : ""}, ¡gracias por tu compra en FTG!`,
     "",
@@ -36,9 +38,17 @@ export function buildReceiptMessage(data: ReceiptShareData) {
     ...data.items.map((i) => `• ${i.quantity} × ${i.name}`),
     "",
     `Total: ${data.totalLabel}`,
+    ...(downloads.length > 0
+      ? [
+          "",
+          "Tus fotos y videos (enlaces válidos por 7 días):",
+          ...downloads.map((i) => `• ${i.name}: ${i.link}`),
+        ]
+      : []),
     "",
     data.sellerName ? `Te atendió: ${data.sellerName}` : null,
     data.sellerPhone ? `Consultas por WhatsApp: ${data.sellerPhone}` : null,
+    data.sellerEmail ? `Consultas por email: ${data.sellerEmail}` : null,
   ].filter(Boolean);
   return lines.join("\n");
 }
