@@ -247,13 +247,13 @@ export function PosWorkspace({
   /** Suma al carrito un recuerdo IA ya aprobado en el estudio mágico. */
   const addMagicItemToCart = (item: MagicPendingItem) => {
     setLines((prev) => {
-      const id = `magic:${item.id}`;
+      const id = item.productId ?? `magic:${item.id}`;
       if (prev.some((l) => l.productId === id)) return prev;
       return [
         ...prev,
         {
           productId: id,
-          sku: item.jobId.slice(0, 8).toUpperCase(),
+          sku: item.sku ?? item.jobId.slice(0, 8).toUpperCase(),
           name: item.label,
           unitPrice: item.price,
           quantity: 1,
@@ -261,7 +261,7 @@ export function PosWorkspace({
           taxRate: 21,
           includesTax: true,
           requiresPhoto: false,
-          photoCode: item.jobId,
+          photoCode: item.photoCode ?? item.jobId,
         },
       ];
     });
