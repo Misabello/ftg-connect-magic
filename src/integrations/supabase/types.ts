@@ -1049,6 +1049,168 @@ export type Database = {
           },
         ]
       }
+      journal_entries: {
+        Row: {
+          cash_session_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          description: string
+          entry_date: string
+          id: string
+          location_id: string | null
+          organization_id: string
+          point_of_sale_id: string | null
+          source_id: string | null
+          source_type: string
+        }
+        Insert: {
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description: string
+          entry_date?: string
+          id?: string
+          location_id?: string | null
+          organization_id: string
+          point_of_sale_id?: string | null
+          source_id?: string | null
+          source_type: string
+        }
+        Update: {
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string
+          entry_date?: string
+          id?: string
+          location_id?: string | null
+          organization_id?: string
+          point_of_sale_id?: string | null
+          source_id?: string | null
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "journal_entries_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_entries_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journal_lines: {
+        Row: {
+          account_id: string
+          created_at: string
+          credit: number
+          debit: number
+          description: string | null
+          entry_id: string
+          id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          entry_id: string
+          id?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          credit?: number
+          debit?: number
+          description?: string | null
+          entry_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_lines_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journal_lines_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_accounts: {
+        Row: {
+          account_type: string
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          normal_side: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          account_type: string
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          normal_side: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          normal_side?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           address: string | null
@@ -1461,6 +1623,124 @@ export type Database = {
           },
         ]
       }
+      payment_intents: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          cash_session_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          description: string | null
+          external_reference: string
+          id: string
+          init_point: string | null
+          location_id: string
+          organization_id: string
+          payer_email: string | null
+          point_of_sale_id: string
+          preference_id: string | null
+          provider: string
+          provider_payment_id: string | null
+          qr_code: string | null
+          raw: Json
+          sale_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string | null
+          external_reference: string
+          id?: string
+          init_point?: string | null
+          location_id: string
+          organization_id: string
+          payer_email?: string | null
+          point_of_sale_id: string
+          preference_id?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          raw?: Json
+          sale_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          description?: string | null
+          external_reference?: string
+          id?: string
+          init_point?: string | null
+          location_id?: string
+          organization_id?: string
+          payer_email?: string | null
+          point_of_sale_id?: string
+          preference_id?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          qr_code?: string | null
+          raw?: Json
+          sale_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_intents_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "payment_intents_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_methods: {
         Row: {
           code: string
@@ -1730,6 +2010,137 @@ export type Database = {
             columns: ["venue_id"]
             isOneToOne: false
             referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_tickets: {
+        Row: {
+          amount: number
+          cash_session_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string
+          document_number: string | null
+          id: string
+          image_path: string
+          issued_on: string | null
+          journal_entry_id: string | null
+          kind: string
+          location_id: string
+          notes: string | null
+          ocr_amount: number | null
+          ocr_confidence: number | null
+          ocr_raw: Json
+          organization_id: string
+          point_of_sale_id: string
+          sale_id: string | null
+          status: string
+          supplier_name: string | null
+          tax_amount: number
+          tax_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          document_number?: string | null
+          id?: string
+          image_path: string
+          issued_on?: string | null
+          journal_entry_id?: string | null
+          kind?: string
+          location_id: string
+          notes?: string | null
+          ocr_amount?: number | null
+          ocr_confidence?: number | null
+          ocr_raw?: Json
+          organization_id: string
+          point_of_sale_id: string
+          sale_id?: string | null
+          status?: string
+          supplier_name?: string | null
+          tax_amount?: number
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string
+          document_number?: string | null
+          id?: string
+          image_path?: string
+          issued_on?: string | null
+          journal_entry_id?: string | null
+          kind?: string
+          location_id?: string
+          notes?: string | null
+          ocr_amount?: number | null
+          ocr_confidence?: number | null
+          ocr_raw?: Json
+          organization_id?: string
+          point_of_sale_id?: string
+          sale_id?: string | null
+          status?: string
+          supplier_name?: string | null
+          tax_amount?: number
+          tax_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_tickets_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_tickets_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "pos_tickets_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_tickets_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_tickets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_tickets_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_tickets_sale_id_fkey"
+            columns: ["sale_id"]
+            isOneToOne: false
+            referencedRelation: "sales"
             referencedColumns: ["id"]
           },
         ]
@@ -2674,6 +3085,22 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      post_journal_entry: {
+        Args: {
+          _created_by: string
+          _currency: string
+          _date: string
+          _description: string
+          _lines: Json
+          _loc: string
+          _org: string
+          _pos: string
+          _session: string
+          _source_id: string
+          _source_type: string
+        }
+        Returns: string
+      }
       user_can_access_location: { Args: { _loc: string }; Returns: boolean }
       user_can_access_org: { Args: { _org: string }; Returns: boolean }
     }
