@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { formatMoney } from "@/lib/ftg/format";
 import { paidTotal } from "@/lib/ftg/pos";
+import { MercadoPagoPanel, type MercadoPagoContext } from "@/components/ftg/pos/MercadoPagoPanel";
 
 export type PaymentMethodRow = {
   id: string;
@@ -35,6 +36,8 @@ export type PaymentDraft = {
   methodId: string;
   amount: number;
   reference: string;
+  /** Cobro ya acreditado por Mercado Pago: no se puede editar ni eliminar. */
+  locked?: boolean;
 };
 
 export type CheckoutCustomer = { name: string; taxId: string; email: string; phone: string };
@@ -48,6 +51,8 @@ export function CheckoutDialog({
   methods,
   submitting,
   onConfirm,
+  mercadoPago,
+  mercadoPagoMethodId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -57,9 +62,12 @@ export function CheckoutDialog({
   methods: PaymentMethodRow[];
   submitting: boolean;
   onConfirm: (payments: PaymentDraft[], customer: CheckoutCustomer) => void;
+  mercadoPago?: MercadoPagoContext | null;
+  mercadoPagoMethodId?: string | null;
 }) {
   const [payments, setPayments] = useState<PaymentDraft[]>([]);
   const [customer, setCustomer] = useState<CheckoutCustomer>({ name: "", taxId: "", email: "", phone: "" });
+  const [mpApproved, setMpApproved] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -68,6 +76,7 @@ export function CheckoutDialog({
       first ? [{ key: crypto.randomUUID(), methodId: first.id, amount: total, reference: "" }] : [],
     );
     setCustomer({ name: "", taxId: "", email: "", phone: "" });
+    setMpApproved(false);
   }, [open, methods, total]);
 
   const paid = paidTotal(payments);
@@ -87,6 +96,23 @@ export function CheckoutDialog({
   const update = (key: string, patch: Partial<PaymentDraft>) =>
     setPayments((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
 
+  /** Al acreditarse el cobro digital, se fija como medio de pago de la venta. */
+  const applyMercadoPago = (info: { reference: string; providerPaymentId: string | null }) => {
+    if (!mercadoPagoMethodId) return;
+    const amount = Math.max(pending, 0) || total;
+    setMpApproved(true);
+    setPayments((prev) => [
+      ...prev.filter((p) => p.locked),
+      {
+        key: crypto.randomUUID(),
+        methodId: mercadoPagoMethodId,
+        amount,
+        reference: info.providerPaymentId ?? info.reference,
+        locked: true,
+      },
+    ]);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
@@ -105,7 +131,11 @@ export function CheckoutDialog({
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <Label className="text-xs text-muted-foreground">Medio de pago</Label>
-                    <Select value={p.methodId} onValueChange={(value) => update(p.key, { methodId: value })}>
+                    <Select
+                      value={p.methodId}
+                      disabled={p.locked}
+                      onValueChange={(value) => update(p.key, { methodId: value })}
+                    >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
@@ -125,11 +155,12 @@ export function CheckoutDialog({
                       min={0}
                       step="0.01"
                       className="mt-1"
+                      disabled={p.locked}
                       value={p.amount}
                       onChange={(e) => update(p.key, { amount: Number(e.target.value) || 0 })}
                     />
                   </div>
-                  {payments.length > 1 && (
+                  {payments.length > 1 && !p.locked && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -140,7 +171,7 @@ export function CheckoutDialog({
                     </Button>
                   )}
                 </div>
-                {method?.requires_reference && (
+                {method?.requires_reference && !p.locked && (
                   <div className="mt-2">
                     <Label className="text-xs text-muted-foreground">Referencia / autorización</Label>
                     <Input
@@ -150,6 +181,9 @@ export function CheckoutDialog({
                       placeholder="Número de operación"
                     />
                   </div>
+                )}
+                {p.locked && (
+                  <p className="mt-2 text-xs text-success">Acreditado · referencia {p.reference}</p>
                 )}
               </div>
             );
@@ -173,6 +207,18 @@ export function CheckoutDialog({
           >
             <Plus className="h-3.5 w-3.5" /> Agregar medio de pago
           </Button>
+
+          {mercadoPago && mercadoPagoMethodId && (
+            <MercadoPagoPanel
+              context={mercadoPago}
+              amount={mpApproved ? total : Math.max(pending, 0) || total}
+              currency={currency}
+              locale={locale}
+              payerEmail={customer.email}
+              approved={mpApproved}
+              onApproved={applyMercadoPago}
+            />
+          )}
 
           <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-3">
             <div className="sm:col-span-2">
