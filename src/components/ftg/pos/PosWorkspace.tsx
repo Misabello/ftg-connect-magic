@@ -64,6 +64,7 @@ export function PosWorkspace({
   title = "Punto de venta",
   description = "Catálogo, carrito, pagos combinados y arqueo de caja por puesto.",
   headerActions,
+  autoCheckout = false,
 }: PosWorkspaceProps) {
   const scope = useScope();
   const { online, locations } = scope;
