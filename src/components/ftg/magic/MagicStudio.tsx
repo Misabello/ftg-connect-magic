@@ -196,19 +196,31 @@ export function MagicStudio({
     if (!open || !initialPhotoUrl) return;
     let cancelled = false;
     (async () => {
+      setPreloading(true);
       try {
-        const res = await fetch(initialPhotoUrl);
-        const blob = await res.blob();
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(new Error("read"));
-          reader.readAsDataURL(blob);
-        });
+        let dataUrl: string;
+        try {
+          // Intento directo desde el navegador.
+          const res = await fetch(initialPhotoUrl);
+          if (!res.ok) throw new Error(String(res.status));
+          const blob = await res.blob();
+          dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(new Error("read"));
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          // Fallback por servidor cuando el origen bloquea CORS.
+          const remote = await loadImage({ data: { url: initialPhotoUrl } });
+          dataUrl = remote.dataUrl;
+        }
         if (!cancelled) setPhoto({ dataUrl, peopleCount: 1 });
       } catch {
         if (!cancelled)
           toast.warning("No pudimos precargar la fotografía", { description: "Podés subirla manualmente." });
+      } finally {
+        if (!cancelled) setPreloading(false);
       }
     })();
     return () => {
