@@ -98,7 +98,13 @@ export function TicketDialog({
       if (result.supplierName) setSupplierName(result.supplierName);
       if (result.taxId) setTaxId(result.taxId);
       setConfidence(result.confidence);
-      toast.success("Ticket leído", { description: "Revisá los datos antes de confirmar." });
+      if (result.documentNumber) {
+        toast.success("Ticket leído", { description: "Revisá los datos antes de confirmar." });
+      } else {
+        toast.warning("No detectamos el número de comprobante", {
+          description: "Cargalo a mano antes de confirmar; el resto de los datos ya se completó.",
+        });
+      }
     } catch (error) {
       toast.error("No se pudo leer el ticket", { description: (error as Error).message });
     } finally {
