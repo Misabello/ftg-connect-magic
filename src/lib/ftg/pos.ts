@@ -23,6 +23,10 @@ export type CartLine = {
   includesTax: boolean;
   requiresPhoto: boolean;
   photoCode: string | null;
+  /** Archivo entregable (foto o video) asociado a la línea. */
+  mediaUrl?: string | null;
+  mediaPath?: string | null;
+  mediaBucket?: string | null;
 };
 
 export type CartTotals = {
