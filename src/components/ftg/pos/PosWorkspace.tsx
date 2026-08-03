@@ -294,11 +294,13 @@ export function PosWorkspace({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckout, autoLoaded, activePos, session]);
 
+  const [autoOpened, setAutoOpened] = useState(false);
   useEffect(() => {
-    if (!autoCheckout || !autoLoaded || !session || lines.length === 0) return;
+    if (!autoCheckout || autoOpened || !autoLoaded || !session || lines.length === 0) return;
+    setAutoOpened(true);
     setCheckoutOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoCheckout, autoLoaded, session, lines.length]);
+  }, [autoCheckout, autoOpened, autoLoaded, session, lines.length]);
 
   const openSession = useMutation({
     mutationFn: async (amount: number) => {
