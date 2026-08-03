@@ -527,7 +527,7 @@ export function PosWorkspace({
           {magicItems.length > 0 && (
                 <section className="surface-card p-5">
                   <h2 className="flex items-center gap-2 text-base font-semibold">
-                    <Sparkles className="h-4 w-4 text-primary" /> Recuerdos IA listos para cobrar
+                    <Sparkles className="h-4 w-4 text-primary" /> Ítems listos para cobrar
                   </h2>
                   <ul className="mt-4 grid gap-2 md:grid-cols-2">
                     {magicItems.map((item) => (
