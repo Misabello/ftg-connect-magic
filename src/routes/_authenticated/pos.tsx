@@ -3,6 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PosWorkspace } from "@/components/ftg/pos/PosWorkspace";
 
 export const Route = createFileRoute("/_authenticated/pos")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    cobrar: search.cobrar === "1" || search.cobrar === 1 || search.cobrar === true ? true : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Punto de venta — FTG ONE" },
@@ -11,5 +14,10 @@ export const Route = createFileRoute("/_authenticated/pos")({
       { property: "og:description", content: "Catálogo, carrito, medios de pago combinados y arqueo de caja." },
     ],
   }),
-  component: () => <PosWorkspace />,
+  component: PosRoute,
 });
+
+function PosRoute() {
+  const { cobrar } = Route.useSearch();
+  return <PosWorkspace autoCheckout={!!cobrar} />;
+}
