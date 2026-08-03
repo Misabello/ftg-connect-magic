@@ -26,7 +26,17 @@ Devolvés SOLO un JSON válido, sin markdown ni explicaciones, con esta forma ex
 {"amount": number|null, "taxAmount": number|null, "issuedOn": "YYYY-MM-DD"|null, "documentNumber": string|null, "supplierName": string|null, "taxId": string|null, "confidence": number, "rawText": string}
 Reglas:
 - "amount" es el TOTAL final pagado, en número, sin símbolos ni separadores de miles.
+  Si el ticket usa coma decimal (1.234,56) convertilo a 1234.56.
 - "taxAmount" es el IVA/impuesto discriminado; null si no aparece.
+- "documentNumber" es el número del comprobante. Buscalo con MUCHA atención en el
+  encabezado del ticket, cerca de textos como: "Comprobante N°", "Factura A/B/C",
+  "Ticket N°", "Nro", "N°", "#", "Cod. Aut.", "P.V." / "Punto de Venta",
+  "COO", "Ticket Fiscal", "NFC-e", "Nota Fiscal", "Série", "Cupom".
+  Devolvé el número completo tal como aparece, incluyendo prefijo de punto de venta
+  y ceros a la izquierda (por ejemplo "0001-00012345", "B 0003-00000127", "COO 004512").
+  Si hay varios números, priorizá el de la factura/ticket sobre CUIT, CAE o teléfono.
+  Solo devolvé null si realmente no hay ningún número de comprobante visible.
+- "taxId" es CUIT/CNPJ del emisor (no lo pongas en documentNumber).
 - "confidence" es de 0 a 100 según la nitidez del ticket.
 - "rawText" es el texto que pudiste leer, resumido en menos de 600 caracteres.`;
 
