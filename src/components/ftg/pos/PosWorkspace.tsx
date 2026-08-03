@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CloudUpload, Receipt, RefreshCw, Send, Sparkles, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, ScanText, Send, Sparkles, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -14,6 +14,8 @@ import {
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
 import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
+import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
+import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,6 +80,7 @@ export function PosWorkspace({
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [magicItems, setMagicItems] = useState<MagicPendingItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
+  const [ticketOpen, setTicketOpen] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
   const [lastContact, setLastContact] = useState({ email: "", phone: "" });
 
@@ -458,6 +461,8 @@ export function PosWorkspace({
   });
 
   const missingPhotoCode = lines.some((l) => l.requiresPhoto && !l.photoCode?.trim());
+  const mercadoPagoMethodId =
+    methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
   const checkoutHint = !session
     ? "Abrí la caja para poder cobrar."
     : missingPhotoCode
