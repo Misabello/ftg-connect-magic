@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/ftg/PageHeader";
 import { StatCard } from "@/components/ftg/StatCard";
 import { PhotoFormDialog, type PhotoDraft } from "@/components/ftg/photos/PhotoFormDialog";
 import { PhotoGrid, type PhotoRow } from "@/components/ftg/photos/PhotoGrid";
-import { SouvenirStudio, type TemplateRow } from "@/components/ftg/photos/SouvenirStudio";
+import { type TemplateRow } from "@/components/ftg/photos/SouvenirStudio";
 import { MagicStudio } from "@/components/ftg/magic/MagicStudio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ import {
   type PhotoStatus,
   type SouvenirStatus,
 } from "@/lib/ftg/photos";
-import { generateSouvenir } from "@/lib/ftg/souvenirs.functions";
+import { addMagicItem } from "@/lib/ftg/magic-cart";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/fotografias")({
@@ -74,13 +74,13 @@ function Fotografias() {
   const { t } = useI18n();
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const runGenerate = useServerFn(generateSouvenir);
 
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<PhotoStatus | "todas">("todas");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [studioPhoto, setStudioPhoto] = useState<PhotoRow | null>(null);
   const [magicOpen, setMagicOpen] = useState(false);
+  /** Fotografía de la galería usada como base del recuerdo mágico. */
+  const [magicPhoto, setMagicPhoto] = useState<PhotoRow | null>(null);
 
   const locationId = activeLocation?.id ?? null;
 
@@ -155,6 +155,36 @@ function Fotografias() {
     },
   });
 
+  /** Producto de catálogo usado al vender la fotografía sin IA. */
+  const digitalPhotoQuery = useQuery({
+    queryKey: ["photo-product", activeLocation?.currency_code],
+    enabled: !!activeLocation,
+    queryFn: async () => {
+      const { data: lists } = await supabase
+        .from("price_lists")
+        .select("id")
+        .eq("currency_code", activeLocation!.currency_code)
+        .eq("is_active", true)
+        .limit(1);
+      const listId = lists?.[0]?.id ?? null;
+      const { data: product } = await supabase
+        .from("products")
+        .select("id, name, sku")
+        .eq("sku", "FOT-DIGITAL")
+        .maybeSingle();
+      if (!product) return null;
+      const { data: price } = listId
+        ? await supabase
+            .from("product_prices")
+            .select("price")
+            .eq("price_list_id", listId)
+            .eq("product_id", product.id)
+            .maybeSingle()
+        : { data: null };
+      return { ...product, price: Number(price?.price ?? 0) };
+    },
+  });
+
   const photos = photosQuery.data ?? [];
 
   const filtered = useMemo(() => {
@@ -201,37 +231,28 @@ function Fotografias() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const saveSouvenir = useMutation({
-    mutationFn: async (args: {
-      photo: PhotoRow;
-      template: TemplateRow;
-      prompt: string;
-      resultUrl: string;
-      watermarked: boolean;
-    }) => {
-      const { error } = await supabase.from("ai_souvenirs").insert({
-        photo_id: args.photo.id,
-        template_id: args.template.id,
-        location_id: locationId,
-        status: "listo",
-        prompt_used: args.prompt,
-        result_url: args.resultUrl,
-        watermarked: args.watermarked,
-        estimated_cost: 0.02,
-        requested_by: user?.id ?? null,
-        started_at: new Date().toISOString(),
-        completed_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      await supabase.from("photos").update({ status: "publicada" }).eq("id", args.photo.id);
-    },
-    onSuccess: () => {
-      toast.success("Recuerdo guardado en la cola");
-      queryClient.invalidateQueries({ queryKey: ["souvenirs", locationId] });
-      queryClient.invalidateQueries({ queryKey: ["photos", locationId] });
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  /** Agrega la fotografía original (sin IA) al carrito de venta. */
+  function addPhotoToCart(photo: PhotoRow) {
+    const product = digitalPhotoQuery.data;
+    if (!product) {
+      toast.error("No encontramos el producto de fotografía digital en el catálogo.");
+      return;
+    }
+    addMagicItem({
+      jobId: photo.id,
+      outputType: "imagen",
+      label: `${product.name} · ${photo.visitor_code}`,
+      price: product.price,
+      locationId,
+      mediaUrl: photo.image_url,
+      customerEmail: null,
+      customerPhone: null,
+      productId: product.id,
+      sku: product.sku,
+      photoCode: photo.visitor_code,
+    });
+    toast.success("Agregada al carrito", { description: "Podés cobrarla desde el carrito de la barra superior." });
+  }
 
   const readySouvenirs = (souvenirsQuery.data ?? []).filter((s) => s.status === "listo" || s.status === "entregado");
   const withConsent = photos.filter((p) => p.has_consent).length;
@@ -297,8 +318,12 @@ function Fotografias() {
             onSelect={(p) => setSelectedId(p.id)}
             onCreateSouvenir={(p) => {
               setSelectedId(p.id);
-              setStudioPhoto(p);
+              setMagicPhoto(p);
+              setMagicOpen(true);
             }}
+            onAddToCart={addPhotoToCart}
+            photoPrice={digitalPhotoQuery.data?.price ?? null}
+            currency={activeLocation?.currency_code ?? "ARS"}
           />
         </TabsContent>
 
@@ -350,21 +375,13 @@ function Fotografias() {
         </TabsContent>
       </Tabs>
 
-      <SouvenirStudio
-        photo={studioPhoto}
-        templates={templatesQuery.data ?? []}
-        open={!!studioPhoto}
-        onOpenChange={(open) => !open && setStudioPhoto(null)}
-        onGenerate={async ({ photo, prompt }) => {
-          const result = await runGenerate({ data: { imageUrl: photo.image_url, prompt } });
-          return result.imageUrl;
-        }}
-        onSave={(args) => saveSouvenir.mutateAsync(args)}
-      />
-
       <MagicStudio
         open={magicOpen}
-        onOpenChange={setMagicOpen}
+        onOpenChange={(o) => {
+          setMagicOpen(o);
+          if (!o) setMagicPhoto(null);
+        }}
+        initialPhotoUrl={magicPhoto?.image_url ?? null}
         locationId={locationId}
         organizationId={profile?.organization_id ?? null}
         locations={locations.map((l) => ({ id: l.id, name: l.name }))}

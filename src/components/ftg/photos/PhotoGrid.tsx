@@ -1,8 +1,8 @@
-import { Camera, ShieldCheck, ShieldAlert, Sparkles } from "lucide-react";
+import { Camera, ShieldCheck, ShieldAlert, ShoppingCart, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { relativeTime } from "@/lib/ftg/format";
+import { formatMoney, relativeTime } from "@/lib/ftg/format";
 import { PHOTO_STATUS_LABEL, PHOTO_STATUS_TONE, type PhotoStatus } from "@/lib/ftg/photos";
 
 export type PhotoRow = {
@@ -22,11 +22,17 @@ export function PhotoGrid({
   selectedId,
   onSelect,
   onCreateSouvenir,
+  onAddToCart,
+  photoPrice,
+  currency,
 }: {
   photos: PhotoRow[];
   selectedId: string | null;
   onSelect: (photo: PhotoRow) => void;
   onCreateSouvenir: (photo: PhotoRow) => void;
+  onAddToCart?: (photo: PhotoRow) => void;
+  photoPrice?: number | null;
+  currency?: string;
 }) {
   if (photos.length === 0) {
     return (
@@ -86,18 +92,32 @@ export function PhotoGrid({
               {photo.photographer_name ?? "Sin fotógrafo"} · {relativeTime(photo.captured_at)}
               {photo.retention_until ? ` · conserva hasta ${photo.retention_until}` : ""}
             </p>
-            <Button
-              size="sm"
-              className="w-full"
-              disabled={!photo.has_consent}
-              onClick={(event) => {
-                event.stopPropagation();
-                onCreateSouvenir(photo);
-              }}
-            >
-              <Sparkles className="mr-1.5 h-4 w-4" />
-              {photo.has_consent ? "Crear recuerdo mágico" : "Requiere consentimiento"}
-            </Button>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button
+                size="sm"
+                disabled={!photo.has_consent}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onCreateSouvenir(photo);
+                }}
+              >
+                <Sparkles className="mr-1.5 h-4 w-4" />
+                {photo.has_consent ? "Crear recuerdo mágico" : "Requiere consentimiento"}
+              </Button>
+              {onAddToCart && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onAddToCart(photo);
+                  }}
+                >
+                  <ShoppingCart className="mr-1.5 h-4 w-4" />
+                  {photoPrice ? formatMoney(photoPrice, currency ?? "ARS") : "Al carrito"}
+                </Button>
+              )}
+            </div>
           </div>
         </article>
       ))}
