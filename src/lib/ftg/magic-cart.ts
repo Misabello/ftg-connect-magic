@@ -23,6 +23,7 @@ export type MagicPendingItem = {
 
 const KEY = "ftg.pos.magic-items";
 const EVENT = "ftg:magic-items";
+const OPEN_EVENT = "ftg:open-cart";
 
 function read(): MagicPendingItem[] {
   if (typeof window === "undefined") return [];
@@ -62,4 +63,16 @@ export function subscribeMagicItems(listener: () => void) {
     window.removeEventListener(EVENT, listener);
     window.removeEventListener("storage", listener);
   };
+}
+
+/** Abre el panel de carrito de la barra superior desde cualquier módulo. */
+export function openCartDock() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(OPEN_EVENT));
+}
+
+export function subscribeCartDockOpen(listener: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(OPEN_EVENT, listener);
+  return () => window.removeEventListener(OPEN_EVENT, listener);
 }

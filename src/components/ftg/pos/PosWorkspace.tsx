@@ -56,6 +56,8 @@ type PosWorkspaceProps = {
   title?: string;
   description?: string;
   headerActions?: ReactNode;
+  /** Llega desde el carrito global: pasa los ítems pendientes al cobro. */
+  autoCheckout?: boolean;
 };
 
 export function PosWorkspace({
@@ -64,6 +66,7 @@ export function PosWorkspace({
   title = "Punto de venta",
   description = "Catálogo, carrito, pagos combinados y arqueo de caja por puesto.",
   headerActions,
+  autoCheckout = false,
 }: PosWorkspaceProps) {
   const scope = useScope();
   const { online, locations } = scope;
@@ -272,6 +275,32 @@ export function PosWorkspace({
     removeMagicItem(item.id);
     toast.success(`${item.label} agregado al carrito`);
   };
+
+  /**
+   * Entrada directa desde el carrito global ("Ir a cobrar"): pasa los ítems
+   * pendientes al carrito del punto de venta y abre el cobro.
+   */
+  const [autoLoaded, setAutoLoaded] = useState(false);
+  useEffect(() => {
+    if (!autoCheckout || autoLoaded || !activePos) return;
+    const pending = listMagicItems();
+    pending.forEach((item) => addMagicItemToCart(item));
+    setAutoLoaded(true);
+    if (!session) {
+      toast.info("Abrí la caja para poder cobrar", {
+        description: "Los ítems del carrito ya están cargados en este punto de venta.",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout, autoLoaded, activePos, session]);
+
+  const [autoOpened, setAutoOpened] = useState(false);
+  useEffect(() => {
+    if (!autoCheckout || autoOpened || !autoLoaded || !session || lines.length === 0) return;
+    setAutoOpened(true);
+    setCheckoutOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout, autoOpened, autoLoaded, session, lines.length]);
 
   const openSession = useMutation({
     mutationFn: async (amount: number) => {

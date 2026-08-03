@@ -33,7 +33,7 @@ import {
   type PhotoStatus,
   type SouvenirStatus,
 } from "@/lib/ftg/photos";
-import { addMagicItem } from "@/lib/ftg/magic-cart";
+import { addMagicItem, openCartDock } from "@/lib/ftg/magic-cart";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/fotografias")({
@@ -250,7 +250,10 @@ function Fotografias() {
       sku: product.sku,
       photoCode: photo.visitor_code,
     });
-    toast.success("Agregada al carrito", { description: "Podés cobrarla desde el carrito de la barra superior." });
+    toast.success("Agregada al carrito", {
+      description: "Podés cobrarla desde el carrito de la barra superior.",
+      action: { label: "Ir al carrito", onClick: () => openCartDock() },
+    });
   }
 
   const readySouvenirs = (souvenirsQuery.data ?? []).filter((s) => s.status === "listo" || s.status === "entregado");

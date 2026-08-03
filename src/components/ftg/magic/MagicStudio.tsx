@@ -67,7 +67,7 @@ import { CharacterLibrary, characterImage, type CharacterRow } from "./Character
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
 import { VideoPromptPanel } from "./VideoPromptPanel";
-import { addMagicItem } from "@/lib/ftg/magic-cart";
+import { addMagicItem, openCartDock } from "@/lib/ftg/magic-cart";
 import { buildSouvenirMessage, mailtoLink, whatsappLink } from "@/lib/ftg/share";
 
 type SceneRow = {
@@ -1077,6 +1077,10 @@ export function MagicStudio({
                         label: pricing.product,
                       });
                       onOpenChange(false);
+                      toast.success("Agregado al carrito", {
+                        description: "Revisá el detalle y cobrá desde el carrito.",
+                        action: { label: "Ir al carrito", onClick: () => openCartDock() },
+                      });
                     }}
                   >
                     <ShoppingCart className="mr-1.5 h-4 w-4" /> Enviar al carrito del punto de venta
