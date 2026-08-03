@@ -99,6 +99,8 @@ export function MagicStudio({
   pointOfSaleId?: string | null;
   locations: { id: string; name: string }[];
   onAddToCart?: (item: { outputType: OutputType; jobId: string; price: number; label: string }) => void;
+  /** Fotografía ya cargada en la galería que se usa como base del recuerdo. */
+  initialPhotoUrl?: string | null;
 }) {
   const { user, profile } = useAuth();
   const { language } = useI18n();
@@ -187,6 +189,32 @@ export function MagicStudio({
     resetAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  /** Precarga la fotografía de la galería cuando el estudio se abre desde una foto. */
+  useEffect(() => {
+    if (!open || !initialPhotoUrl) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(initialPhotoUrl);
+        const blob = await res.blob();
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error("read"));
+          reader.readAsDataURL(blob);
+        });
+        if (!cancelled) setPhoto({ dataUrl, peopleCount: 1 });
+      } catch {
+        if (!cancelled)
+          toast.warning("No pudimos precargar la fotografía", { description: "Podés subirla manualmente." });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialPhotoUrl]);
 
   useEffect(() => {
     setSceneId(sceneOptions[0]?.id ?? null);
