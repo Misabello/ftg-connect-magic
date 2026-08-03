@@ -13,7 +13,12 @@ import {
 } from "@/components/ui/sheet";
 import { useScope } from "@/hooks/useScope";
 import { formatMoney } from "@/lib/ftg/format";
-import { listMagicItems, removeMagicItem, subscribeMagicItems } from "@/lib/ftg/magic-cart";
+import {
+  listMagicItems,
+  removeMagicItem,
+  subscribeCartDockOpen,
+  subscribeMagicItems,
+} from "@/lib/ftg/magic-cart";
 
 /** Carrito accesible desde cualquier módulo: muestra lo pendiente y lleva a cobrar. */
 export function CartDock() {
@@ -23,6 +28,9 @@ export function CartDock() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
+
+  // Permite abrir el carrito desde los avisos de otros módulos.
+  useEffect(() => subscribeCartDockOpen(() => setOpen(true)), []);
 
   const items = useSyncExternalStore(
     subscribeMagicItems,
@@ -101,13 +109,13 @@ export function CartDock() {
             disabled={parsed.length === 0}
             onClick={() => {
               setOpen(false);
-              void navigate({ to: "/pos" });
+              void navigate({ to: "/pos", search: { cobrar: true } });
             }}
           >
             Ir a cobrar
           </Button>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            El cobro se registra en el punto de venta activo.
+            Los ítems pasan al punto de venta activo y se abre la pantalla de cobro.
           </p>
         </div>
       </SheetContent>
