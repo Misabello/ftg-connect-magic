@@ -23,6 +23,7 @@ import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useScope } from "@/hooks/useScope";
 import { relativeTime } from "@/lib/ftg/format";
 import { LANGUAGES } from "@/lib/ftg/i18n";
+import { CartDock } from "./CartDock";
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { profile, roles, user, signOut } = useAuth();
@@ -53,6 +54,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
       </Select>
 
       <div className="ml-auto flex items-center gap-2">
+        <CartDock />
         <span
           className={
             online
