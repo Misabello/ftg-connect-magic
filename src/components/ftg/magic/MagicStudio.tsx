@@ -37,6 +37,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { cn } from "@/lib/utils";
 import {
   buildVideoComposition,
+  loadRemoteImage,
   runImageGeneration,
   runVideoGeneration,
 } from "@/lib/ftg/magic.functions";
@@ -148,10 +149,13 @@ export function MagicStudio({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  /** Precarga en curso de la fotografía de la galería. */
+  const [preloading, setPreloading] = useState(false);
 
   const generateImage = useServerFn(runImageGeneration);
   const generateComposition = useServerFn(buildVideoComposition);
   const generateVideo = useServerFn(runVideoGeneration);
+  const loadImage = useServerFn(loadRemoteImage);
 
   const { data: characters = [] } = useQuery({
     queryKey: ["ai-characters"],
