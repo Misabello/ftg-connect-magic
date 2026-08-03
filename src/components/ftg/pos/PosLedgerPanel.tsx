@@ -83,7 +83,7 @@ export function PosLedgerPanel({
   }
 
   const accounts = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; kind: string; debit: number; credit: number }>();
+    const map = new Map<string, { code: string; name: string; account_type: string; debit: number; credit: number }>();
     for (const entry of entries) {
       for (const line of entry.journal_lines ?? []) {
         const account = line.ledger_accounts;
