@@ -32,7 +32,7 @@ function mapStatus(status: string | undefined) {
     case "approved":
       return "aprobado" as const;
     case "rejected":
-ژ      return "rechazado" as const;
+      return "rechazado" as const;
     case "cancelled":
       return "cancelado" as const;
     case "refunded":
