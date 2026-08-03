@@ -597,9 +597,20 @@ export function PosWorkspace({
           </div>
 
           <section className="surface-card p-6">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-base font-semibold">
+                <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setTicketOpen(true)}
+                disabled={!session}
+              >
+                <ScanText className="h-3.5 w-3.5" /> Ingresar ticket (OCR)
+              </Button>
+            </div>
             {pending.length > 0 && (
               <ul className="mt-4 space-y-2">
                 {pending.map((p) => (
@@ -640,6 +651,8 @@ export function PosWorkspace({
               ))}
             </ul>
           </section>
+
+          <PosLedgerPanel pointOfSaleId={activePos.id} currency={currency} locale={locale} />
         </>
       )}
 
@@ -652,7 +665,32 @@ export function PosWorkspace({
         methods={methods}
         submitting={registerSale.isPending}
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
+        mercadoPagoMethodId={mercadoPagoMethodId}
+        mercadoPago={
+          online && activePos && activeLocationId && session
+            ? {
+                organizationId: activePos.organization_id,
+                locationId: activeLocationId,
+                pointOfSaleId: activePos.id,
+                cashSessionId: session.id,
+                description: `Venta ${activePos.name}`,
+              }
+            : null
+        }
       />
+
+      {activePos && activeLocationId && (
+        <TicketDialog
+          open={ticketOpen}
+          onOpenChange={setTicketOpen}
+          organizationId={activePos.organization_id}
+          locationId={activeLocationId}
+          pointOfSaleId={activePos.id}
+          cashSessionId={session?.id ?? null}
+          currency={currency}
+          userId={user?.id ?? null}
+        />
+      )}
 
       <ReceiptShareDialog
         open={shareOpen}
