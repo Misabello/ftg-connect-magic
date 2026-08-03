@@ -1,22 +1,35 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Receipt } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 
 type LedgerLine = {
   debit: number;
   credit: number;
-  ledger_accounts: { code: string; name: string; kind: string } | null;
+  ledger_accounts: { code: string; name: string; account_type: string } | null;
 };
 
 type LedgerEntry = {
   id: string;
   entry_date: string;
-  memo: string | null;
-  source: string;
+  description: string | null;
+  source_type: string;
   journal_lines: LedgerLine[];
+};
+
+type TicketRow = {
+  id: string;
+  kind: string;
+  amount: number;
+  tax_amount: number;
+  document_number: string | null;
+  supplier_name: string | null;
+  issued_on: string | null;
+  image_path: string;
+  created_at: string;
 };
 
 /** Libro contable del punto de venta: saldos por cuenta y últimos asientos. */
@@ -29,24 +42,48 @@ export function PosLedgerPanel({
   currency: string;
   locale: string;
 }) {
+  const [openingId, setOpeningId] = useState<string | null>(null);
+
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["pos-ledger", pointOfSaleId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("journal_entries")
         .select(
-          "id, entry_date, memo, source, journal_lines(debit, credit, ledger_accounts(code, name, kind))",
+          "id, entry_date, description, source_type, journal_lines(debit, credit, ledger_accounts(code, name, account_type))",
         )
         .eq("point_of_sale_id", pointOfSaleId)
-        .order("entry_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(120);
       if (error) throw error;
       return (data ?? []) as unknown as LedgerEntry[];
     },
   });
 
+  /** Comprobantes cargados con OCR en este puesto. */
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["pos-tickets", pointOfSaleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pos_tickets")
+        .select("id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at")
+        .eq("point_of_sale_id", pointOfSaleId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return (data ?? []) as TicketRow[];
+    },
+  });
+
+  async function openTicket(ticket: TicketRow) {
+    setOpeningId(ticket.id);
+    const { data } = await supabase.storage.from("pos-tickets").createSignedUrl(ticket.image_path, 60 * 10);
+    setOpeningId(null);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+  }
+
   const accounts = useMemo(() => {
-    const map = new Map<string, { code: string; name: string; kind: string; debit: number; credit: number }>();
+    const map = new Map<string, { code: string; name: string; account_type: string; debit: number; credit: number }>();
     for (const entry of entries) {
       for (const line of entry.journal_lines ?? []) {
         const account = line.ledger_accounts;
@@ -128,9 +165,9 @@ export function PosLedgerPanel({
                 return (
                   <li key={entry.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface p-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm">{entry.memo ?? entry.source}</p>
+                      <p className="truncate text-sm">{entry.description ?? entry.source_type}</p>
                       <p className="text-xs text-muted-foreground">
-                        {entry.entry_date} · {entry.source}
+                        {entry.entry_date} · {entry.source_type}
                       </p>
                     </div>
                     <span className="text-sm font-medium">{formatMoney(amount, currency, locale)}</span>
@@ -141,6 +178,42 @@ export function PosLedgerPanel({
           </div>
         </div>
       )}
+
+      <div className="mt-6 border-t border-border pt-4">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
+          <Receipt className="h-4 w-4 text-primary" /> Comprobantes cargados
+        </h3>
+        {tickets.length === 0 ? (
+          <p className="mt-2 rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+            Todavía no cargaste tickets en este puesto.
+          </p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {tickets.map((ticket) => (
+              <li key={ticket.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {ticket.document_number ? `N° ${ticket.document_number}` : "Sin número de comprobante"}
+                    {ticket.supplier_name ? ` · ${ticket.supplier_name}` : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {ticket.kind === "gasto" ? "Gasto / compra" : "Ingreso extra"} · {ticket.issued_on ?? "sin fecha"}
+                    {Number(ticket.tax_amount) > 0
+                      ? ` · imp. ${formatMoney(Number(ticket.tax_amount), currency, locale)}`
+                      : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-sm font-medium">{formatMoney(Number(ticket.amount), currency, locale)}</span>
+                  <Button size="sm" variant="ghost" onClick={() => void openTicket(ticket)} disabled={openingId === ticket.id}>
+                    Ver
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
