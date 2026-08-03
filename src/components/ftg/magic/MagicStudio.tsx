@@ -91,6 +91,7 @@ export function MagicStudio({
   pointOfSaleId,
   locations,
   onAddToCart,
+  initialPhotoUrl,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
