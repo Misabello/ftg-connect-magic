@@ -133,7 +133,7 @@ export function CheckoutDialog({
                     <Label className="text-xs text-muted-foreground">Medio de pago</Label>
                     <Select
                       value={p.methodId}
-                      disabled={p.locked}
+                      disabled={p.locked === true}
                       onValueChange={(value) => update(p.key, { methodId: value })}
                     >
                       <SelectTrigger className="mt-1">
