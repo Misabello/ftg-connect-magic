@@ -9,7 +9,7 @@ import { formatMoney } from "@/lib/ftg/format";
 type LedgerLine = {
   debit: number;
   credit: number;
-  ledger_accounts: { code: string; name: string; kind: string } | null;
+  ledger_accounts: { code: string; name: string; account_type: string } | null;
 };
 
 type LedgerEntry = {
@@ -165,9 +165,9 @@ export function PosLedgerPanel({
                 return (
                   <li key={entry.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface p-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm">{entry.memo ?? entry.source}</p>
+                      <p className="truncate text-sm">{entry.description ?? entry.source_type}</p>
                       <p className="text-xs text-muted-foreground">
-                        {entry.entry_date} · {entry.source}
+                        {entry.entry_date} · {entry.source_type}
                       </p>
                     </div>
                     <span className="text-sm font-medium">{formatMoney(amount, currency, locale)}</span>
