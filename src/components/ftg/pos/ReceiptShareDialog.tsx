@@ -34,6 +34,7 @@ export function ReceiptShareDialog({
 
   if (!receipt) return null;
   const message = buildReceiptMessage(receipt);
+  const attachments = receipt.items.filter((i) => i.link);
 
   return (
     <Dialog
@@ -49,7 +50,9 @@ export function ReceiptShareDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Enviar comprobante {receipt.saleNumber}</DialogTitle>
-          <DialogDescription>Mandale la factura al cliente por email o WhatsApp.</DialogDescription>
+          <DialogDescription>
+            Mandale al cliente la factura y todas las fotos y videos de esta compra por email o WhatsApp.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -62,6 +65,26 @@ export function ReceiptShareDialog({
             <Input className="mt-1" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="5492235550000" />
           </div>
           <pre className="max-h-40 overflow-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap">{message}</pre>
+          {attachments.length > 0 ? (
+            <div className="rounded-lg border border-border p-3">
+              <p className="text-xs font-medium">Archivos incluidos ({attachments.length})</p>
+              <ul className="mt-2 space-y-1">
+                {attachments.map((item) => (
+                  <li key={item.name} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate">{item.name}</span>
+                    <a
+                      className="shrink-0 text-primary underline"
+                      href={item.link!}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Abrir
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
 
         <DialogFooter className="gap-2 sm:justify-between">
