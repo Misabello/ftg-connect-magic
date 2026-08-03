@@ -178,6 +178,42 @@ export function PosLedgerPanel({
           </div>
         </div>
       )}
+
+      <div className="mt-6 border-t border-border pt-4">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
+          <Receipt className="h-4 w-4 text-primary" /> Comprobantes cargados
+        </h3>
+        {tickets.length === 0 ? (
+          <p className="mt-2 rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+            Todavía no cargaste tickets en este puesto.
+          </p>
+        ) : (
+          <ul className="mt-2 space-y-2">
+            {tickets.map((ticket) => (
+              <li key={ticket.id} className="flex items-center justify-between gap-3 rounded-xl bg-surface p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">
+                    {ticket.document_number ? `N° ${ticket.document_number}` : "Sin número de comprobante"}
+                    {ticket.supplier_name ? ` · ${ticket.supplier_name}` : ""}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {ticket.kind === "gasto" ? "Gasto / compra" : "Ingreso extra"} · {ticket.issued_on ?? "sin fecha"}
+                    {Number(ticket.tax_amount) > 0
+                      ? ` · imp. ${formatMoney(Number(ticket.tax_amount), currency, locale)}`
+                      : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-sm font-medium">{formatMoney(Number(ticket.amount), currency, locale)}</span>
+                  <Button size="sm" variant="ghost" onClick={() => void openTicket(ticket)} disabled={openingId === ticket.id}>
+                    Ver
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
