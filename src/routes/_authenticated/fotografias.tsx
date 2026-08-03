@@ -250,7 +250,10 @@ function Fotografias() {
       sku: product.sku,
       photoCode: photo.visitor_code,
     });
-    toast.success("Agregada al carrito", { description: "Podés cobrarla desde el carrito de la barra superior." });
+    toast.success("Agregada al carrito", {
+      description: "Podés cobrarla desde el carrito de la barra superior.",
+      action: { label: "Ir al carrito", onClick: () => openCartDock() },
+    });
   }
 
   const readySouvenirs = (souvenirsQuery.data ?? []).filter((s) => s.status === "listo" || s.status === "entregado");
