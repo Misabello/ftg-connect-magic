@@ -232,7 +232,10 @@ export function CustomerPhotoStep({
                 <RotateCw className="mr-1.5 h-4 w-4" /> Girar
               </Button>
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
-                <Upload className="mr-1.5 h-4 w-4" /> Reemplazar
+                <Upload className="mr-1.5 h-4 w-4" /> Subir otra foto
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => void startCamera()}>
+                <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
               </Button>
               <Button
                 size="sm"
