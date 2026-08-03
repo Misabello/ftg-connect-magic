@@ -406,6 +406,7 @@ function SellerContactCard() {
   const queryClient = useQueryClient();
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
+  const [senderEmail, setSenderEmail] = useState(profile?.sender_email ?? profile?.email ?? "");
   const [saving, setSaving] = useState(false);
 
   return (
@@ -431,13 +432,30 @@ function SellerContactCard() {
           />
         </div>
       </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">Email emisor (desde el que enviás al cliente)</Label>
+        <Input
+          className="mt-1"
+          type="email"
+          value={senderEmail}
+          onChange={(e) => setSenderEmail(e.target.value)}
+          placeholder="ventas@fotografica.com"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Se usa como remitente sugerido y como contacto de respuesta en los comprobantes y recuerdos.
+        </p>
+      </div>
       <Button
         disabled={saving || !user}
         onClick={async () => {
           setSaving(true);
           const { error } = await supabase
             .from("profiles")
-            .update({ full_name: fullName.trim(), phone: phone.trim() || null })
+            .update({
+              full_name: fullName.trim(),
+              phone: phone.trim() || null,
+              sender_email: senderEmail.trim() || null,
+            })
             .eq("id", user!.id);
           setSaving(false);
           if (error) {

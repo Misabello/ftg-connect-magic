@@ -2382,6 +2382,7 @@ export type Database = {
           language: string
           organization_id: string | null
           phone: string | null
+          sender_email: string | null
           updated_at: string
         }
         Insert: {
@@ -2395,6 +2396,7 @@ export type Database = {
           language?: string
           organization_id?: string | null
           phone?: string | null
+          sender_email?: string | null
           updated_at?: string
         }
         Update: {
@@ -2408,6 +2410,7 @@ export type Database = {
           language?: string
           organization_id?: string | null
           phone?: string | null
+          sender_email?: string | null
           updated_at?: string
         }
         Relationships: [

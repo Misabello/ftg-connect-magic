@@ -8,6 +8,9 @@ export type MagicPendingItem = {
   price: number;
   locationId: string | null;
   mediaUrl: string | null;
+  /** Ruta en storage para regenerar un link de descarga largo al cobrar. */
+  mediaPath?: string | null;
+  mediaBucket?: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
   createdAt: string;
