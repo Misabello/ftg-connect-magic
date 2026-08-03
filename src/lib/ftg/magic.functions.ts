@@ -10,7 +10,7 @@ import {
   PROMPT_TEMPLATE_VERSION,
   MAX_USER_PROMPT,
 } from "./magic.prompts";
-import { getVideoProvider, imageProvider, improvePromptWithAI } from "./magic.server";
+import { fetchImageAsDataUrl, getVideoProvider, imageProvider, improvePromptWithAI } from "./magic.server";
 
 const ImageInput = z.object({
   prompt: z.string().min(1).max(4000),
