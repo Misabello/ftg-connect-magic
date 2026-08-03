@@ -276,6 +276,30 @@ export function PosWorkspace({
     toast.success(`${item.label} agregado al carrito`);
   };
 
+  /**
+   * Entrada directa desde el carrito global ("Ir a cobrar"): pasa los ítems
+   * pendientes al carrito del punto de venta y abre el cobro.
+   */
+  const [autoLoaded, setAutoLoaded] = useState(false);
+  useEffect(() => {
+    if (!autoCheckout || autoLoaded || !activePos) return;
+    const pending = listMagicItems();
+    pending.forEach((item) => addMagicItemToCart(item));
+    setAutoLoaded(true);
+    if (!session) {
+      toast.info("Abrí la caja para poder cobrar", {
+        description: "Los ítems del carrito ya están cargados en este punto de venta.",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout, autoLoaded, activePos, session]);
+
+  useEffect(() => {
+    if (!autoCheckout || !autoLoaded || !session || lines.length === 0) return;
+    setCheckoutOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoCheckout, autoLoaded, session, lines.length]);
+
   const openSession = useMutation({
     mutationFn: async (amount: number) => {
       if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
