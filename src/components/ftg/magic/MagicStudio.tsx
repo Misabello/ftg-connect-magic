@@ -37,6 +37,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { cn } from "@/lib/utils";
 import {
   buildVideoComposition,
+  loadRemoteImage,
   runImageGeneration,
   runVideoGeneration,
 } from "@/lib/ftg/magic.functions";
@@ -148,10 +149,13 @@ export function MagicStudio({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  /** Precarga en curso de la fotografía de la galería. */
+  const [preloading, setPreloading] = useState(false);
 
   const generateImage = useServerFn(runImageGeneration);
   const generateComposition = useServerFn(buildVideoComposition);
   const generateVideo = useServerFn(runVideoGeneration);
+  const loadImage = useServerFn(loadRemoteImage);
 
   const { data: characters = [] } = useQuery({
     queryKey: ["ai-characters"],
@@ -196,19 +200,31 @@ export function MagicStudio({
     if (!open || !initialPhotoUrl) return;
     let cancelled = false;
     (async () => {
+      setPreloading(true);
       try {
-        const res = await fetch(initialPhotoUrl);
-        const blob = await res.blob();
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(new Error("read"));
-          reader.readAsDataURL(blob);
-        });
+        let dataUrl: string;
+        try {
+          // Intento directo desde el navegador.
+          const res = await fetch(initialPhotoUrl);
+          if (!res.ok) throw new Error(String(res.status));
+          const blob = await res.blob();
+          dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(new Error("read"));
+            reader.readAsDataURL(blob);
+          });
+        } catch {
+          // Fallback por servidor cuando el origen bloquea CORS.
+          const remote = await loadImage({ data: { url: initialPhotoUrl } });
+          dataUrl = remote.dataUrl;
+        }
         if (!cancelled) setPhoto({ dataUrl, peopleCount: 1 });
       } catch {
         if (!cancelled)
           toast.warning("No pudimos precargar la fotografía", { description: "Podés subirla manualmente." });
+      } finally {
+        if (!cancelled) setPreloading(false);
       }
     })();
     return () => {
@@ -714,6 +730,12 @@ export function MagicStudio({
               2 · Foto del cliente
             </h3>
             <CustomerPhotoStep value={photo} aspectRatio={aspectRatio} onChange={setPhoto} />
+            {preloading && (
+              <p className="text-xs text-muted-foreground">Trayendo la fotografía seleccionada de la galería…</p>
+            )}
+            {!preloading && !!initialPhotoUrl && !!photo && (
+              <p className="text-xs text-primary">Foto del cliente tomada de la galería.</p>
+            )}
           </section>
 
           <section className="space-y-4">

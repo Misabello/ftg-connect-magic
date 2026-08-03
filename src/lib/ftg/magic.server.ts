@@ -335,3 +335,14 @@ export async function improvePromptWithAI(userPrompt: string, language: "es" | "
   if (!text) throw new Error("El servicio no devolvió una sugerencia");
   return text;
 }
+
+/** Descarga una imagen remota y la devuelve como data URL (evita bloqueos CORS en el navegador). */
+export async function fetchImageAsDataUrl(url: string) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`No se pudo descargar la imagen (${res.status})`);
+  const mime = res.headers.get("content-type") ?? "image/jpeg";
+  if (!mime.startsWith("image/")) throw new Error("La URL no corresponde a una imagen");
+  const buffer = await res.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  return { dataUrl: `data:${mime};base64,${base64}` };
+}

@@ -10,7 +10,7 @@ import {
   PROMPT_TEMPLATE_VERSION,
   MAX_USER_PROMPT,
 } from "./magic.prompts";
-import { getVideoProvider, imageProvider, improvePromptWithAI } from "./magic.server";
+import { fetchImageAsDataUrl, getVideoProvider, imageProvider, improvePromptWithAI } from "./magic.server";
 
 const ImageInput = z.object({
   prompt: z.string().min(1).max(4000),
@@ -142,3 +142,11 @@ export const improveVideoPrompt = createServerFn({ method: "POST" })
   .handler(async ({ data }) => ({
     prompt: sanitizeUserPrompt(await improvePromptWithAI(data.userPrompt, data.language)),
   }));
+
+const RemoteImageInput = z.object({ url: z.string().url() });
+
+/** Precarga una fotografía de la galería como data URL para usarla en el estudio. */
+export const loadRemoteImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => RemoteImageInput.parse(data))
+  .handler(async ({ data }) => fetchImageAsDataUrl(data.url));
