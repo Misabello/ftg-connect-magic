@@ -262,6 +262,9 @@ export function PosWorkspace({
           includesTax: true,
           requiresPhoto: false,
           photoCode: item.photoCode ?? item.jobId,
+          mediaUrl: item.mediaUrl ?? null,
+          mediaPath: item.mediaPath ?? null,
+          mediaBucket: item.mediaBucket ?? null,
         },
       ];
     });
@@ -439,15 +442,42 @@ export function PosWorkspace({
           description: formatMoney(totals.total, currency, locale),
         });
       }
+      const soldLines = lines;
       setLastReceipt({
         saleNumber: sale.sale_number,
         totalLabel: formatMoney(totals.total, currency, locale),
-        items: lines.map((l) => ({ name: l.name, quantity: l.quantity })),
+        items: soldLines.map((l) => ({ name: l.name, quantity: l.quantity, link: l.mediaUrl ?? null })),
         customerName: variables.customer.name || null,
         sellerName: profile?.full_name ?? null,
         sellerPhone: profile?.phone ?? null,
+        sellerEmail: profile?.sender_email ?? profile?.email ?? null,
         posName: activePos?.name ?? null,
       });
+      // Enlaces de descarga de 7 días para cada foto/video vendido en este carrito.
+      void (async () => {
+        const withMedia = soldLines.filter((l) => l.mediaPath && l.mediaBucket);
+        if (withMedia.length === 0) return;
+        const links = await Promise.all(
+          withMedia.map(async (l) => {
+            const { data } = await supabase.storage
+              .from(l.mediaBucket!)
+              .createSignedUrl(l.mediaPath!, 60 * 60 * 24 * 7);
+            return { productId: l.productId, link: data?.signedUrl ?? l.mediaUrl ?? null };
+          }),
+        );
+        setLastReceipt((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.map((item, index) => {
+                  const line = soldLines[index];
+                  const found = line ? links.find((x) => x.productId === line.productId) : undefined;
+                  return found?.link ? { ...item, link: found.link } : item;
+                }),
+              }
+            : prev,
+        );
+      })();
       setLastContact({
         email: variables.customer.email || lastContact.email,
         phone: variables.customer.phone || lastContact.phone,
