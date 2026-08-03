@@ -263,7 +263,12 @@ function Fotografias() {
         description={`${t("page.fotografias.desc")}${activeLocation ? ` · ${activeLocation.name}` : ""}`}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setMagicOpen(true)}>
+            <Button
+              onClick={() => {
+                setMagicPhoto(null);
+                setMagicOpen(true);
+              }}
+            >
               <Sparkles className="h-4 w-4" /> Crear recuerdo mágico
             </Button>
             <PhotoFormDialog onSubmit={(d) => createPhoto.mutateAsync(d)} pending={createPhoto.isPending} />
