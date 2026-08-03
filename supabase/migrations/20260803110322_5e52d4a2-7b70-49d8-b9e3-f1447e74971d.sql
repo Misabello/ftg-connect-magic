@@ -1,0 +1,3 @@
+CREATE POLICY "pos_tickets_objects_read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'pos-tickets');
+CREATE POLICY "pos_tickets_objects_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'pos-tickets');
+CREATE POLICY "pos_tickets_objects_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'pos-tickets') WITH CHECK (bucket_id = 'pos-tickets');
