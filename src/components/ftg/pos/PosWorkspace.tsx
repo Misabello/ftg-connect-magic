@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CloudUpload, Receipt, RefreshCw, Send, Sparkles, WifiOff } from "lucide-react";
+import { CloudUpload, Receipt, RefreshCw, ScanText, Send, Sparkles, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
@@ -14,6 +14,8 @@ import {
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
 import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
+import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
+import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,6 +80,7 @@ export function PosWorkspace({
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [magicItems, setMagicItems] = useState<MagicPendingItem[]>([]);
   const [shareOpen, setShareOpen] = useState(false);
+  const [ticketOpen, setTicketOpen] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
   const [lastContact, setLastContact] = useState({ email: "", phone: "" });
 
@@ -458,6 +461,8 @@ export function PosWorkspace({
   });
 
   const missingPhotoCode = lines.some((l) => l.requiresPhoto && !l.photoCode?.trim());
+  const mercadoPagoMethodId =
+    methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
   const checkoutHint = !session
     ? "Abrí la caja para poder cobrar."
     : missingPhotoCode
@@ -592,9 +597,20 @@ export function PosWorkspace({
           </div>
 
           <section className="surface-card p-6">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-base font-semibold">
+                <Receipt className="h-4 w-4 text-primary" /> Ventas del turno
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setTicketOpen(true)}
+                disabled={!session}
+              >
+                <ScanText className="h-3.5 w-3.5" /> Ingresar ticket (OCR)
+              </Button>
+            </div>
             {pending.length > 0 && (
               <ul className="mt-4 space-y-2">
                 {pending.map((p) => (
@@ -635,6 +651,8 @@ export function PosWorkspace({
               ))}
             </ul>
           </section>
+
+          <PosLedgerPanel pointOfSaleId={activePos.id} currency={currency} locale={locale} />
         </>
       )}
 
@@ -647,7 +665,32 @@ export function PosWorkspace({
         methods={methods}
         submitting={registerSale.isPending}
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
+        mercadoPagoMethodId={mercadoPagoMethodId}
+        mercadoPago={
+          online && activePos && activeLocationId && session
+            ? {
+                organizationId: activePos.organization_id,
+                locationId: activeLocationId,
+                pointOfSaleId: activePos.id,
+                cashSessionId: session.id,
+                description: `Venta ${activePos.name}`,
+              }
+            : null
+        }
       />
+
+      {activePos && activeLocationId && (
+        <TicketDialog
+          open={ticketOpen}
+          onOpenChange={setTicketOpen}
+          organizationId={activePos.organization_id}
+          locationId={activeLocationId}
+          pointOfSaleId={activePos.id}
+          cashSessionId={session?.id ?? null}
+          currency={currency}
+          userId={user?.id ?? null}
+        />
+      )}
 
       <ReceiptShareDialog
         open={shareOpen}

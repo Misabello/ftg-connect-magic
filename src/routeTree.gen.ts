@@ -23,6 +23,7 @@ import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/po
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
+import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
 import { Route as AuthenticatedSedesLocationIdPosPosIdRouteImport } from './routes/_authenticated/sedes.$locationId.pos.$posId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -99,6 +100,12 @@ const AuthenticatedSedesLocationIdIndexRoute =
     path: '/sedes/$locationId/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicWebhooksMercadopagoRoute =
+  ApiPublicWebhooksMercadopagoRouteImport.update({
+    id: '/api/public/webhooks/mercadopago',
+    path: '/api/public/webhooks/mercadopago',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedSedesLocationIdPosPosIdRoute =
   AuthenticatedSedesLocationIdPosPosIdRouteImport.update({
     id: '/sedes/$locationId/pos/$posId',
@@ -119,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
   '/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
@@ -135,6 +143,7 @@ export interface FileRoutesByTo {
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/sedes/$locationId': typeof AuthenticatedSedesLocationIdIndexRoute
   '/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
@@ -153,6 +162,7 @@ export interface FileRoutesById {
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/_authenticated/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
   '/_authenticated/sedes/$locationId/pos/$posId': typeof AuthenticatedSedesLocationIdPosPosIdRoute
 }
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/reportes'
     | '/sedes/'
+    | '/api/public/webhooks/mercadopago'
     | '/sedes/$locationId/'
     | '/sedes/$locationId/pos/$posId'
   fileRoutesByTo: FileRoutesByTo
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/reportes'
     | '/sedes'
+    | '/api/public/webhooks/mercadopago'
     | '/sedes/$locationId'
     | '/sedes/$locationId/pos/$posId'
   id:
@@ -204,6 +216,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
     | '/_authenticated/sedes/'
+    | '/api/public/webhooks/mercadopago'
     | '/_authenticated/sedes/$locationId/'
     | '/_authenticated/sedes/$locationId/pos/$posId'
   fileRoutesById: FileRoutesById
@@ -212,6 +225,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -314,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSedesLocationIdIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/mercadopago': {
+      id: '/api/public/webhooks/mercadopago'
+      path: '/api/public/webhooks/mercadopago'
+      fullPath: '/api/public/webhooks/mercadopago'
+      preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/sedes/$locationId/pos/$posId': {
       id: '/_authenticated/sedes/$locationId/pos/$posId'
       path: '/sedes/$locationId/pos/$posId'
@@ -363,17 +384,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
