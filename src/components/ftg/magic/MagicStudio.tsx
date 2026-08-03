@@ -730,6 +730,12 @@ export function MagicStudio({
               2 · Foto del cliente
             </h3>
             <CustomerPhotoStep value={photo} aspectRatio={aspectRatio} onChange={setPhoto} />
+            {preloading && (
+              <p className="text-xs text-muted-foreground">Trayendo la fotografía seleccionada de la galería…</p>
+            )}
+            {!preloading && !!initialPhotoUrl && !!photo && (
+              <p className="text-xs text-primary">Foto del cliente tomada de la galería.</p>
+            )}
           </section>
 
           <section className="space-y-4">
