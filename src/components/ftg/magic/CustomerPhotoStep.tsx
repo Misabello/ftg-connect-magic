@@ -51,6 +51,23 @@ export function CustomerPhotoStep({
 
   useEffect(() => stopCamera, []);
 
+  /**
+   * Si el estudio se abrió desde una fotografía de la galería, el valor llega
+   * ya cargado: adoptamos esa imagen como fuente para mostrarla en el recuadro.
+   */
+  useEffect(() => {
+    if (!value || source) return;
+    setSource(value.dataUrl);
+    setRotation(0);
+    setZoom(1);
+    void (async () => {
+      const result = await analyzeImage(value.dataUrl);
+      setCheck(result);
+      setFaces(await detectFaces(value.dataUrl));
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, source]);
+
   async function loadFile(file: File) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
       toast.error("Formato no permitido", { description: "Usá JPG, PNG o WEBP." });
@@ -215,7 +232,10 @@ export function CustomerPhotoStep({
                 <RotateCw className="mr-1.5 h-4 w-4" /> Girar
               </Button>
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
-                <Upload className="mr-1.5 h-4 w-4" /> Reemplazar
+                <Upload className="mr-1.5 h-4 w-4" /> Subir otra foto
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => void startCamera()}>
+                <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
               </Button>
               <Button
                 size="sm"
