@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Receipt } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 
@@ -14,9 +15,21 @@ type LedgerLine = {
 type LedgerEntry = {
   id: string;
   entry_date: string;
-  memo: string | null;
-  source: string;
+  description: string | null;
+  source_type: string;
   journal_lines: LedgerLine[];
+};
+
+type TicketRow = {
+  id: string;
+  kind: string;
+  amount: number;
+  tax_amount: number;
+  document_number: string | null;
+  supplier_name: string | null;
+  issued_on: string | null;
+  image_path: string;
+  created_at: string;
 };
 
 /** Libro contable del punto de venta: saldos por cuenta y últimos asientos. */
@@ -29,21 +42,45 @@ export function PosLedgerPanel({
   currency: string;
   locale: string;
 }) {
+  const [openingId, setOpeningId] = useState<string | null>(null);
+
   const { data: entries = [], isLoading } = useQuery({
     queryKey: ["pos-ledger", pointOfSaleId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("journal_entries")
         .select(
-          "id, entry_date, memo, source, journal_lines(debit, credit, ledger_accounts(code, name, kind))",
+          "id, entry_date, description, source_type, journal_lines(debit, credit, ledger_accounts(code, name, account_type))",
         )
         .eq("point_of_sale_id", pointOfSaleId)
-        .order("entry_date", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(120);
       if (error) throw error;
       return (data ?? []) as unknown as LedgerEntry[];
     },
   });
+
+  /** Comprobantes cargados con OCR en este puesto. */
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["pos-tickets", pointOfSaleId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("pos_tickets")
+        .select("id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at")
+        .eq("point_of_sale_id", pointOfSaleId)
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return (data ?? []) as TicketRow[];
+    },
+  });
+
+  async function openTicket(ticket: TicketRow) {
+    setOpeningId(ticket.id);
+    const { data } = await supabase.storage.from("pos-tickets").createSignedUrl(ticket.image_path, 60 * 10);
+    setOpeningId(null);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+  }
 
   const accounts = useMemo(() => {
     const map = new Map<string, { code: string; name: string; kind: string; debit: number; credit: number }>();
