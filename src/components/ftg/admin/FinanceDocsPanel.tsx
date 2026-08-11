@@ -223,14 +223,6 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
     toast.success(`Factura preparada para enviar a ${invoice.email}`);
   }
 
-  function clearReceiptLegacy() {
-    setReceipt(null);
-    setReceiptPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return null;
-    });
-  }
-
   function pickReceipt(file: File | null) {
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) {
