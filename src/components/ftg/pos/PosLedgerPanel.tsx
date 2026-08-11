@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Receipt, RefreshCw } from "lucide-react";
+import { BookOpen, Download, ExternalLink, Eye, Receipt, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 
@@ -44,6 +45,7 @@ export function PosLedgerPanel({
   locale: string;
 }) {
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ ticket: TicketRow; url: string } | null>(null);
   const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading } = useQuery({
@@ -87,7 +89,7 @@ export function PosLedgerPanel({
     setOpeningId(ticket.id);
     const { data } = await supabase.storage.from("pos-tickets").createSignedUrl(ticket.image_path, 60 * 10);
     setOpeningId(null);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+    if (data?.signedUrl) setPreview({ ticket, url: data.signedUrl });
   }
 
   const accounts = useMemo(() => {
