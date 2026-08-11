@@ -139,7 +139,12 @@ export const createUserAccount = createServerFn({ method: "POST" })
         status,
         is_active: true,
       });
-    if (profileError) throw new Error(profileError.message);
+    if (profileError)
+      throw new Error(
+        profileError.message.includes("profiles_username_key")
+          ? "Ese nombre de usuario ya está en uso."
+          : profileError.message,
+      );
 
     // Rol principal + alcance por punto de venta
     const roleRows =
