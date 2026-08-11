@@ -41,6 +41,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
   const [payDoc, setPayDoc] = useState<{ id: string; balance: number; currency: string; amount: number; paid: number } | null>(null);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const [payAmount, setPayAmount] = useState("");
   const [draft, setDraft] = useState({
     concept: "",
@@ -453,6 +454,13 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
                     <Camera className="h-4 w-4 text-muted-foreground" />
                     Sacar foto
                   </button>
+                  <CameraCaptureDialog
+                    open={cameraOpen}
+                    onOpenChange={setCameraOpen}
+                    title="Sacar foto del comprobante"
+                    description="Encuadrá el comprobante completo y capturá."
+                    onCapture={(file) => pickReceipt(file)}
+                  />
                 </div>
               )}
             </div>
