@@ -1,10 +1,34 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Check, ImageUp, RotateCcw, RotateCw, Trash2, TriangleAlert, Upload, ZoomIn } from "lucide-react";
+import {
+  Camera,
+  Check,
+  Cloud,
+  ImageUp,
+  Loader2,
+  RotateCcw,
+  RotateCw,
+  Smartphone,
+  Trash2,
+  TriangleAlert,
+  Upload,
+  ZoomIn,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { loadRemoteImage } from "@/lib/ftg/magic.functions";
 import {
   ACCEPTED_TYPES,
   MAX_UPLOAD_MB,
@@ -38,10 +62,42 @@ export function CustomerPhotoStep({
   const [dragging, setDragging] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [working, setWorking] = useState(false);
+  const [cloudOpen, setCloudOpen] = useState(false);
+  const [cloudUrl, setCloudUrl] = useState("");
+  const [cloudLoading, setCloudLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const fetchRemote = useServerFn(loadRemoteImage);
+
+  const isTouchDevice =
+    typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  /** En móvil abrimos la cámara nativa; en escritorio usamos la webcam. */
+  function takePhoto() {
+    if (isTouchDevice) mobileInputRef.current?.click();
+    else void startCamera();
+  }
+
+  async function loadFromCloud() {
+    const url = cloudUrl.trim();
+    if (!url) return;
+    setCloudLoading(true);
+    try {
+      const remote = await fetchRemote({ data: { url } });
+      setCloudOpen(false);
+      setCloudUrl("");
+      await loadDataUrl(remote.dataUrl);
+    } catch {
+      toast.error("No pudimos traer la imagen", {
+        description: "Verificá que el enlace sea público y apunte a una imagen.",
+      });
+    } finally {
+      setCloudLoading(false);
+    }
+  }
 
   const stopCamera = () => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -158,6 +214,19 @@ export function CustomerPhotoStep({
         }}
       />
 
+      <input
+        ref={mobileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void loadFile(file);
+          e.target.value = "";
+        }}
+      />
+
       {!source && !cameraOn && (
         <div
           onDragOver={(e) => {
@@ -181,10 +250,13 @@ export function CustomerPhotoStep({
           <p className="text-xs text-muted-foreground">JPG, PNG o WEBP · hasta {MAX_UPLOAD_MB} MB</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button size="sm" onClick={() => inputRef.current?.click()} disabled={working}>
-              <Upload className="mr-1.5 h-4 w-4" /> Subir archivo
+              <Smartphone className="mr-1.5 h-4 w-4" /> Desde el dispositivo
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => void startCamera()} disabled={working}>
+            <Button size="sm" variant="secondary" onClick={takePhoto} disabled={working}>
               <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setCloudOpen(true)} disabled={working}>
+              <Cloud className="mr-1.5 h-4 w-4" /> Desde la nube
             </Button>
           </div>
         </div>
@@ -232,10 +304,13 @@ export function CustomerPhotoStep({
                 <RotateCw className="mr-1.5 h-4 w-4" /> Girar
               </Button>
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
-                <Upload className="mr-1.5 h-4 w-4" /> Subir otra foto
+                <Upload className="mr-1.5 h-4 w-4" /> Otra del dispositivo
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => void startCamera()}>
+              <Button size="sm" variant="ghost" onClick={takePhoto}>
                 <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setCloudOpen(true)}>
+                <Cloud className="mr-1.5 h-4 w-4" /> Desde la nube
               </Button>
               <Button
                 size="sm"
@@ -267,6 +342,35 @@ export function CustomerPhotoStep({
           </div>
         </div>
       )}
+
+      <Dialog open={cloudOpen} onOpenChange={setCloudOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Traer imagen desde la nube</DialogTitle>
+            <DialogDescription>
+              Pegá el enlace público de la imagen (Google Drive, Dropbox, OneDrive o cualquier URL directa).
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            placeholder="https://…/foto.jpg"
+            value={cloudUrl}
+            onChange={(e) => setCloudUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void loadFromCloud();
+            }}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCloudOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void loadFromCloud()} disabled={cloudLoading || !cloudUrl.trim()}>
+              {cloudLoading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Cloud className="mr-1.5 h-4 w-4" />}
+              Traer imagen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
