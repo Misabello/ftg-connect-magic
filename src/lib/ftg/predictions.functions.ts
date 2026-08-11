@@ -238,6 +238,14 @@ export const requestPrediction = createServerFn({ method: "POST" })
   });
 
 /** Detalle de un trabajo: predicciones, recomendaciones, métricas e informe. */
+export const rerunPrediction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ job_id: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    const { runPredictionJobPipeline } = await import("@/lib/ftg/predictions.run.server");
+    return runPredictionJobPipeline(context.supabase, data.job_id, context.userId);
+  });
+
 export const getPredictionJob = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ job_id: z.string().uuid() }).parse(data))
