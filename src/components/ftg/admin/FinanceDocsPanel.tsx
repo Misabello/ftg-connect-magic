@@ -37,6 +37,17 @@ import {
 } from "@/lib/ftg/finance";
 
 export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
+  /** Normaliza razones sociales para comparar: sin acentos, sufijos ni puntuación. */
+  const normalizeParty = (value: string) =>
+    value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\b(s\.?a\.?s?|s\.?r\.?l\.?|ltda?|inc|srl|sa)\b/g, "")
+      .replace(/[^a-z0-9 ]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
   const { activeLocation, activeLocationId } = useScope();
   const queryClient = useQueryClient();
   const tab = kind;
