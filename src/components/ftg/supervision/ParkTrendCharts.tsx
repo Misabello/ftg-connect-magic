@@ -1,18 +1,4 @@
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
+import { RankedBars, ShareRibbon, StorySeriesChart } from "@/components/ftg/charts/FlourishCharts";
 import { EmptyState, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { useParkTrends } from "@/hooks/useParkTrends";
 import { formatMoney } from "@/lib/ftg/format";
@@ -42,12 +28,6 @@ export function ParkTrendCharts({ locationId, currency }: { locationId: string |
   const money = (v: number) => formatMoney(v, currency);
   const hasSales = data.totals.ventas > 0;
   const margen = data.totals.ventas - data.totals.costos;
-  const tooltipStyle = {
-    background: "hsl(var(--popover))",
-    border: "1px solid hsl(var(--border))",
-    borderRadius: 8,
-    fontSize: 12,
-  } as const;
 
   return (
     <div className="space-y-4">
@@ -58,27 +38,15 @@ export function ParkTrendCharts({ locationId, currency }: { locationId: string |
         {!hasSales ? (
           <EmptyState message="No hay ventas registradas en los últimos 30 días." />
         ) : (
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="ventasFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="day" tickFormatter={shortDay} minTickGap={24} tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={compact} tick={{ fontSize: 11 }} width={64} />
-                <Tooltip
-                  contentStyle={tooltipStyle}
-                  labelFormatter={(l) => shortDay(String(l))}
-                  formatter={(v: number, n) => [n === "tickets" ? String(v) : money(Number(v)), n === "tickets" ? "Tickets" : "Ventas"]}
-                />
-                <Area type="monotone" dataKey="ventas" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#ventasFill)" name="ventas" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <StorySeriesChart
+            data={data.series}
+            xKey="day"
+            height={256}
+            series={[{ key: "ventas", name: "Ventas", color: "var(--primary)" }]}
+            valueFormatter={money}
+            axisFormatter={(v) => compact(Number(v))}
+            labelFormatter={(l) => shortDay(String(l))}
+          />
         )}
       </Panel>
 
@@ -87,19 +55,18 @@ export function ParkTrendCharts({ locationId, currency }: { locationId: string |
           {data.products.length === 0 ? (
             <EmptyState message="Sin productos vendidos en el período." />
           ) : (
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.products} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
-                  <XAxis type="number" tickFormatter={compact} tick={{ fontSize: 11 }} />
-                  <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    formatter={(v: number, n) => [n === "unidades" ? String(v) : money(Number(v)), n === "unidades" ? "Unidades" : "Facturado"]}
-                  />
-                  <Bar dataKey="monto" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} name="monto" />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              <RankedBars
+                items={data.products.map((p: any) => ({ key: String(p.name), value: Number(p.monto ?? 0) }))}
+                valueFormatter={money}
+                topN={8}
+              />
+              <ShareRibbon
+                segments={data.products
+                  .slice(0, 5)
+                  .map((p: any) => ({ key: String(p.name), value: Number(p.monto ?? 0) }))}
+                valueFormatter={money}
+              />
             </div>
           )}
         </Panel>
@@ -111,19 +78,18 @@ export function ParkTrendCharts({ locationId, currency }: { locationId: string |
           {data.totals.costos === 0 && !hasSales ? (
             <EmptyState message="Sin movimientos de costos ni ventas en el período." />
           ) : (
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data.series} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="day" tickFormatter={shortDay} minTickGap={24} tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={compact} tick={{ fontSize: 11 }} width={64} />
-                  <Tooltip contentStyle={tooltipStyle} labelFormatter={(l) => shortDay(String(l))} formatter={(v: number) => money(Number(v))} />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line type="monotone" dataKey="ventas" name="Ventas" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="costos" name="Costos" stroke="hsl(var(--destructive))" strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <StorySeriesChart
+              data={data.series}
+              xKey="day"
+              height={288}
+              series={[
+                { key: "ventas", name: "Ventas", color: "var(--primary)", type: "line" },
+                { key: "costos", name: "Costos", color: "var(--destructive)", type: "line" },
+              ]}
+              valueFormatter={money}
+              axisFormatter={(v) => compact(Number(v))}
+              labelFormatter={(l) => shortDay(String(l))}
+            />
           )}
         </Panel>
       </div>
