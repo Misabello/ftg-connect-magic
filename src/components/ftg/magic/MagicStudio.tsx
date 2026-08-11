@@ -13,6 +13,7 @@ import {
   Share2,
   ShoppingCart,
   Sparkles,
+  Smile,
   Video,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -66,6 +67,7 @@ import {
 import { CharacterLibrary, characterImage, type CharacterRow } from "./CharacterLibrary";
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
+import { CaricaturePanel } from "./CaricaturePanel";
 import { VideoPromptPanel } from "./VideoPromptPanel";
 import { addMagicItem, openCartDock } from "@/lib/ftg/magic-cart";
 import { buildSouvenirMessage, mailtoLink, whatsappLink } from "@/lib/ftg/share";
@@ -108,6 +110,8 @@ export function MagicStudio({
   const { language } = useI18n();
 
   const [outputType, setOutputType] = useState<OutputType>("imagen");
+  /** "recuerdo" es el flujo con personaje y escena; "caricatura" convierte a todas las personas. */
+  const [mode, setMode] = useState<"recuerdo" | "caricatura">("recuerdo");
   const [photo, setPhoto] = useState<CustomerPhoto | null>(null);
   const [character, setCharacter] = useState<CharacterRow | null>(null);
   const [sceneId, setSceneId] = useState<string | null>(null);
