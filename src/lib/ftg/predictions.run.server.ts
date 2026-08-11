@@ -18,7 +18,32 @@ import {
 
 type AnyClient = SupabaseClient<any, any, any>;
 
-const MODEL_ID = "ftg-local-tsf-v1";
+const MODEL_KEY = "ftg_local_tsf";
+const MODEL_VERSION = "v1";
+
+/** Resuelve (o registra) el modelo local en el catálogo y devuelve su UUID. */
+async function resolveModelId(writer: AnyClient): Promise<string | null> {
+  const { data } = await writer
+    .from("ml_models")
+    .select("id")
+    .eq("key", MODEL_KEY)
+    .eq("version", MODEL_VERSION)
+    .maybeSingle();
+  if (data?.id) return data.id as string;
+  const { data: created } = await writer
+    .from("ml_models")
+    .insert({
+      key: MODEL_KEY,
+      version: MODEL_VERSION,
+      kind: "series_temporales",
+      provider: "interno",
+      reference: "ftg-local-tsf-v1",
+      display_name: "Motor local de series temporales FTG",
+    } as never)
+    .select("id")
+    .maybeSingle();
+  return (created?.id as string) ?? null;
+}
 
 type Job = {
   id: string;
@@ -194,7 +219,7 @@ async function buildRecommendations(supabase: AnyClient, job: Job, horizonDays: 
         point_of_sale_id: job.point_of_sale_id,
         product_id: productId,
         product_name: info.name,
-        action: gap > 0 ? "reponer" : overstockRisk > 0.5 ? "reducir_compra" : "mantener",
+        action: gap > 0 ? "aumentar_stock" : overstockRisk > 0.5 ? "reducir" : "mantener",
         recommended_quantity: gap > 0 ? Math.ceil(gap) : 0,
         forecast_demand: Number(demand.toFixed(2)),
         historical_sales: info.qty,
@@ -259,6 +284,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
     .eq("key", job.target_key)
     .maybeSingle();
   const family = (target as any)?.family ?? "ventas";
+  const modelId = await resolveModelId(writer);
 
   const setStatus = (status: string, message: string) =>
     writer.from("ml_prediction_jobs").update({ status, status_message: message }).eq("id", jobId);
@@ -293,7 +319,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       is_history: true,
       actual_value: Number(b.value.toFixed(2)),
       currency_code: job.currency_code,
-      model_id: MODEL_ID,
+      model_id: modelId,
       confidence_level: 0.8,
     }));
     const forecastRows = future.map((b, i) => ({
@@ -308,19 +334,20 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       lower_bound: Number(forecast[i]!.lower.toFixed(2)),
       upper_bound: Number(forecast[i]!.upper.toFixed(2)),
       currency_code: job.currency_code,
-      model_id: MODEL_ID,
+      model_id: modelId,
       confidence_level: 0.8,
     }));
-    await writer.from("ml_predictions").insert([...historyRows, ...forecastRows]);
+    const insertPredictions = await writer.from("ml_predictions").insert([...historyRows, ...forecastRows]);
+    if (insertPredictions.error) throw new Error(`No se pudieron guardar las series: ${insertPredictions.error.message}`);
 
     await writer.from("ml_model_evaluations").delete().eq("job_id", jobId);
-    if (metrics) {
-      await writer.from("ml_model_evaluations").insert({
+    if (metrics && modelId) {
+      const insertEval = await writer.from("ml_model_evaluations").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         location_id: job.location_id,
         target_key: job.target_key,
-        model_id: MODEL_ID,
+        model_id: modelId,
         is_selected: true,
         mae: Number(metrics.mae.toFixed(4)),
         rmse: Number(metrics.rmse.toFixed(4)),
@@ -334,6 +361,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         backtest_to: buckets[buckets.length - 1]?.end ?? job.history_to,
         details: { engine: "local", granularity: job.granularity, buckets: buckets.length },
       });
+      if (insertEval.error) throw new Error(`No se pudieron guardar las métricas: ${insertEval.error.message}`);
     }
 
     const horizonDays = Math.max(
@@ -347,7 +375,12 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         Math.round((new Date(job.history_to).getTime() - new Date(job.history_from).getTime()) / 86_400_000),
       );
       const recs = await buildRecommendations(supabase, job, horizonDays, historyDays);
-      if (recs.length > 0) await writer.from("ml_recommendations").insert(recs as never);
+      if (recs.length > 0) {
+        const insertRecs = await writer.from("ml_recommendations").insert(recs as never);
+        if (insertRecs.error) {
+          throw new Error(`No se pudieron guardar las recomendaciones: ${insertRecs.error.message}`);
+        }
+      }
     }
 
     await setStatus("generando_informe", "Redactando el informe del período.");
@@ -374,7 +407,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
 
     await writer.from("ml_generated_reports").delete().eq("job_id", jobId);
     if (report) {
-      await writer.from("ml_generated_reports").insert({
+      const insertReport = await writer.from("ml_generated_reports").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         created_by: userId ?? null,
@@ -384,6 +417,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         disclaimer: FORECAST_DISCLAIMER,
         content: { total_estimado: Number(totalForecast.toFixed(2)), metricas: metrics },
       } as never);
+      if (insertReport.error) throw new Error(`No se pudo guardar el informe: ${insertReport.error.message}`);
     }
 
     await writer

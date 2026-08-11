@@ -1,0 +1,1 @@
+DELETE FROM public.ml_predictions WHERE id = 'c5ba42c4-edff-4652-b38a-fea2792df735';
