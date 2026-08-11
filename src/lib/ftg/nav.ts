@@ -1,0 +1,65 @@
+export type SubNavItem = {
+  to: string;
+  label: string;
+  exact?: boolean;
+  search?: Record<string, string>;
+  group?: string;
+};
+
+export const ADMIN_SUBNAV: SubNavItem[] = [
+  { to: "/administracion", label: "Resumen", exact: true, group: "General" },
+  { to: "/administracion/cobrar", label: "Ctas a Cobrar", group: "General" },
+  { to: "/administracion/pagar", label: "Ctas a Pagar", group: "General" },
+  { to: "/administracion/reportes", label: "Sedes y puntos de venta", exact: true, group: "Reportes" },
+  { to: "/administracion/reportes/facturas", label: "Facturas automatizadas", group: "Reportes" },
+  { to: "/administracion/reportes/cajas", label: "Arqueos y cajas", group: "Reportes" },
+  { to: "/administracion/eecc", label: "Sumas y saldos", exact: true, group: "EECC" },
+  { to: "/administracion/eecc/resultados", label: "Estado de resultados", group: "EECC" },
+  { to: "/administracion/eecc/situacion", label: "Situación patrimonial", group: "EECC" },
+  { to: "/administracion/eecc/diario", label: "Libro diario", group: "EECC" },
+  { to: "/administracion/eecc/mayor", label: "Libro mayor", group: "EECC" },
+];
+
+export const SUPERVISOR_SUBNAV: SubNavItem[] = [
+  { to: "/supervisores", label: "Resumen del parque", exact: true, group: "General" },
+  { to: "/supervisores/operativo", label: "Control operativo", group: "Controles" },
+  { to: "/supervisores/puntos-venta", label: "Control de puntos de venta", group: "Controles" },
+  { to: "/supervisores/cajas", label: "Control de cajas", group: "Controles" },
+  { to: "/supervisores/ventas", label: "Control de ventas", group: "Controles" },
+  { to: "/supervisores/inventario", label: "Control de inventario", group: "Controles" },
+  { to: "/supervisores/alertas", label: "Alertas e incidentes", group: "Seguimiento" },
+  { to: "/supervisores/cierre", label: "Cierre diario", group: "Seguimiento" },
+  { to: "/supervisores/predicciones", label: "Predicciones con IA", group: "Análisis" },
+  { to: "/supervisores/reportes", label: "Reportes", group: "Análisis" },
+];
+
+export const CONFIG_SUBNAV: SubNavItem[] = [
+  { to: "/configuracion/usuarios", label: "Usuarios" },
+  { to: "/configuracion/roles", label: "Roles y permisos" },
+  { to: "/configuracion/empleados", label: "Empleados" },
+  { to: "/configuracion/vacaciones", label: "Vacaciones y licencias" },
+  { to: "/configuracion", label: "Empresas y países", search: { tab: "paises" }, exact: true },
+  { to: "/configuracion", label: "Sedes y puntos de venta", search: { tab: "sedes" }, exact: true },
+  { to: "/configuracion/parametros", label: "Parámetros administrativos" },
+  { to: "/configuracion/auditoria", label: "Auditoría" },
+];
+
+export const SECTION_SUBNAV: Record<string, SubNavItem[]> = {
+  administracion: ADMIN_SUBNAV,
+  supervisores: SUPERVISOR_SUBNAV,
+  configuracion: CONFIG_SUBNAV,
+};
+
+export function findSubNavItem(items: SubNavItem[], pathname: string, search?: Record<string, unknown>) {
+  const matches = items.filter((item) => {
+    if (item.exact) {
+      if (pathname !== item.to) return false;
+      if (item.search) {
+        return Object.entries(item.search).every(([k, v]) => (search?.[k] as string | undefined) === v);
+      }
+      return true;
+    }
+    return pathname.startsWith(item.to);
+  });
+  return matches.sort((a, b) => b.to.length - a.to.length).at(0);
+}
