@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, Wallet, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, ScanText, Upload, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
@@ -23,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/ftg/format";
 import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
+import { readTicket } from "@/lib/ftg/ocr.functions";
 import {
   AGING_ORDER,
   FINANCE_STATUS_LABEL,
@@ -39,6 +41,13 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
   const queryClient = useQueryClient();
   const tab = kind;
   const [open, setOpen] = useState(false);
+  const ocr = useServerFn(readTicket);
+  const docFileInput = useRef<HTMLInputElement>(null);
+  const [docCameraOpen, setDocCameraOpen] = useState(false);
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docPreview, setDocPreview] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [ocrConfidence, setOcrConfidence] = useState<number | null>(null);
   const [payDoc, setPayDoc] = useState<{ id: string; balance: number; currency: string; amount: number; paid: number } | null>(null);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
