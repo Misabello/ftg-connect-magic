@@ -127,6 +127,17 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       if (!organizationId) throw new Error("No se encontró la organización");
       const amount = Number(draft.amount);
       if (!Number.isFinite(amount) || amount <= 0) throw new Error("Importe inválido");
+      let receiptPath: string | null = null;
+      if (docFile) {
+        const ext = (docFile.name.split(".").pop() ?? "jpg").toLowerCase();
+        const path = `documentos/${organizationId}/${crypto.randomUUID()}.${ext}`;
+        const upload = await supabase.storage.from("finance-receipts").upload(path, docFile, {
+          contentType: docFile.type || "application/octet-stream",
+          upsert: false,
+        });
+        if (upload.error) throw new Error(`No pudimos subir el comprobante: ${upload.error.message}`);
+        receiptPath = path;
+      }
       const { error } = await supabase.from("finance_documents").insert({
         organization_id: organizationId,
         location_id: activeLocationId,
@@ -140,6 +151,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         currency_code: currency,
         amount,
         due_on: draft.due_on || null,
+        receipt_path: receiptPath,
       });
       if (error) throw error;
       return { party, amount };
@@ -160,6 +172,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       }
       setOpen(false);
       setDraft({ concept: "", counterparty: "", document_number: "", amount: "", due_on: "", cost_center: "" });
+      clearDocFile();
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
     },
     onError: (error: Error) => toast.error(error.message),
