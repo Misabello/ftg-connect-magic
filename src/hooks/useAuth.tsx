@@ -14,6 +14,12 @@ type Profile = {
   language: string;
   default_location_id: string | null;
   organization_id: string | null;
+  status: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  country_code: string | null;
+  start_date: string | null;
+  end_date: string | null;
 };
 
 type AuthContextValue = {
@@ -58,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const [{ data: profile }, { data: roles }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("id, full_name, email, sender_email, phone, language, default_location_id, organization_id")
+          .select("id, full_name, email, sender_email, phone, language, default_location_id, organization_id, status, first_name, last_name, country_code, start_date, end_date")
           .eq("id", userId!)
           .maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId!),
