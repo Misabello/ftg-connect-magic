@@ -244,7 +244,9 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
 
     setScanning(true);
     try {
-      const result = await ocr({ data: { imageUrl: dataUrl } });
+      const result = await ocr({
+        data: { imageUrl: dataUrl, mimeType: selected.type || undefined, fileName: selected.name },
+      });
       setDraft((prev) => ({
         ...prev,
         amount: result.amount !== null ? String(result.amount) : prev.amount,
@@ -261,11 +263,32 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       setOcrConfidence(result.confidence);
 
       const partyList = tab === "cobrar" ? data?.customers ?? [] : data?.suppliers ?? [];
-      const needle = (result.supplierName ?? "").toLowerCase().trim();
-      const match = needle
-        ? partyList.find((p) => p.name.toLowerCase().includes(needle) || needle.includes(p.name.toLowerCase()))
+      const detected = (result.supplierName ?? "").trim();
+      const needle = normalizeParty(detected);
+      let match = needle
+        ? partyList.find((p) => {
+            const name = normalizeParty(p.name);
+            return name === needle || name.includes(needle) || needle.includes(name);
+          })
         : undefined;
-      if (match) setDraft((prev) => ({ ...prev, counterparty: match.id }));
+
+      // Si el emisor no existe todavía, lo damos de alta para poder seleccionarlo.
+      if (!match && detected) {
+        const organizationId = partyList[0]?.organization_id ?? docs[0]?.organization_id;
+        if (organizationId) {
+          const table = tab === "cobrar" ? "customers" : "suppliers";
+          const { data: created, error } = await supabase
+            .from(table)
+            .insert({ organization_id: organizationId, name: detected, tax_id: result.taxId ?? null })
+            .select("id, name, organization_id")
+            .single();
+          if (!error && created) {
+            match = created as typeof partyList[number];
+            await queryClient.invalidateQueries({ queryKey: ["administracion"] });
+          }
+        }
+      }
+      if (match) setDraft((prev) => ({ ...prev, counterparty: match!.id }));
 
       toast.success("Comprobante leído", {
         description: match
