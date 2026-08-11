@@ -39,6 +39,7 @@ export type ModuleKey =
   | "sedes"
   | "fotografias"
   | "operaciones"
+  | "supervisores"
   | "inventario"
   | "administracion"
   | "clientes"
@@ -51,6 +52,7 @@ export const ALL_MODULES: ModuleKey[] = [
   "sedes",
   "fotografias",
   "operaciones",
+  "supervisores",
   "inventario",
   "administracion",
   "clientes",
@@ -68,13 +70,13 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
   superadmin: "*",
   direccion: "*",
   administracion: ["inicio", "sedes", "administracion", "clientes", "reportes", "inventario", "configuracion"],
-  operaciones: ["inicio", "sedes", "operaciones", "inventario", "reportes", "fotografias"],
-  encargado_sede: ["inicio", "pos", "sedes", "fotografias", "operaciones", "inventario", "reportes"],
-  supervisor: ["inicio", "pos", "sedes", "fotografias", "operaciones", "reportes"],
+  operaciones: ["inicio", "sedes", "operaciones", "supervisores", "inventario", "reportes", "fotografias"],
+  encargado_sede: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "inventario", "reportes"],
+  supervisor: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "reportes"],
   cajero: ["inicio", "pos", "sedes", "fotografias"],
   fotografo: ["inicio", "fotografias"],
   deposito: ["inicio", "inventario"],
-  auditor: ["inicio", "reportes", "administracion", "operaciones"],
+  auditor: ["inicio", "reportes", "administracion", "operaciones", "supervisores"],
 };
 
 export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
