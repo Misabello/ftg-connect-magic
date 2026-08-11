@@ -4,19 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, ExternalLink, Sparkles, Table2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Area,
-  CartesianGrid,
-  ComposedChart,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
+import { BarChartRace, ShareRibbon, StoryForecastChart } from "@/components/ftg/charts/FlourishCharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -326,6 +317,37 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
     return rows;
   })();
 
+  const splitLabel: string | null = history.length > 0 ? String(history[history.length - 1]?.period_start ?? "") : null;
+
+  // Bar chart race: acumulado por mes a medida que avanza el pronóstico.
+  const bucketOf = (iso: string) => {
+    const d = new Date(`${iso}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+  };
+  const raceFrames = (() => {
+    const ordered = [...forecast].sort((a: any, b: any) =>
+      String(a.period_start).localeCompare(String(b.period_start)),
+    );
+    const acc = new Map<string, number>();
+    return ordered.map((p: any) => {
+      const bucket = bucketOf(String(p.period_start));
+      acc.set(bucket, (acc.get(bucket) ?? 0) + Number(p.predicted_value ?? 0));
+      return {
+        label: String(p.period_start),
+        items: Array.from(acc.entries()).map(([key, value]) => ({ key, value })),
+      };
+    });
+  })();
+  const shareSegments = (() => {
+    const acc = new Map<string, number>();
+    forecast.forEach((p: any) => {
+      const bucket = bucketOf(String(p.period_start));
+      acc.set(bucket, (acc.get(bucket) ?? 0) + Number(p.predicted_value ?? 0));
+    });
+    return Array.from(acc.entries()).map(([key, value]) => ({ key, value }));
+  })();
+
   if (forecast.length === 0)
     return (
       <p className="mt-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
@@ -398,77 +420,30 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
       )}
 
       <div className="rounded-lg border border-border bg-background p-3 shadow-sm">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Gráfico de estimaciones
-        </p>
-        <div className="h-72 w-full animate-fade-in">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
-              <defs>
-                <linearGradient id="ftg-forecast-band" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.04} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" minTickGap={16} />
-              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={64} />
-              <Tooltip
-                cursor={{ stroke: "hsl(var(--primary))", strokeOpacity: 0.3 }}
-                contentStyle={{
-                  background: "hsl(var(--background))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
-                  fontSize: 12,
-                }}
-                formatter={(value: any, name: string) =>
-                  Array.isArray(value)
-                    ? [`${formatNumber(Number(value[0]))} – ${formatNumber(Number(value[1]))}`, "Rango estimado"]
-                    : [formatNumber(Number(value ?? 0)), name]
-                }
-              />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area
-                type="monotone"
-                dataKey="rango"
-                name="Rango estimado"
-                stroke="none"
-                fill="url(#ftg-forecast-band)"
-                connectNulls
-                isAnimationActive
-                animationDuration={1200}
-                animationEasing="ease-out"
-              />
-              <Line
-                type="monotone"
-                dataKey="historico"
-                name="Histórico"
-                stroke="hsl(var(--muted-foreground))"
-                strokeWidth={2}
-                dot={false}
-                connectNulls
-                isAnimationActive
-                animationDuration={1100}
-                animationEasing="ease-out"
-              />
-              <Line
-                type="monotone"
-                dataKey="estimado"
-                name="Estimado"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2.5}
-                strokeDasharray="5 4"
-                dot={false}
-                activeDot={{ r: 5 }}
-                connectNulls
-                isAnimationActive
-                animationBegin={250}
-                animationDuration={1400}
-                animationEasing="ease-out"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+        <Tabs defaultValue="linea">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Gráfico de estimaciones
+            </p>
+            <TabsList>
+              <TabsTrigger value="linea">Línea del tiempo</TabsTrigger>
+              <TabsTrigger value="carrera">Carrera de barras</TabsTrigger>
+              <TabsTrigger value="reparto">Reparto</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="linea" className="animate-fade-in">
+            <StoryForecastChart data={chartData} splitLabel={splitLabel} />
+          </TabsContent>
+          <TabsContent value="carrera" className="animate-fade-in">
+            <BarChartRace
+              frames={raceFrames}
+              caption="Acumulado proyectado por período a medida que avanza el pronóstico."
+            />
+          </TabsContent>
+          <TabsContent value="reparto" className="animate-fade-in">
+            <ShareRibbon segments={shareSegments} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <div className="max-h-64 overflow-auto rounded-lg border border-border bg-background">
