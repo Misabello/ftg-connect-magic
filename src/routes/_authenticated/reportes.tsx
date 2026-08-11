@@ -6,7 +6,7 @@ import { BarChart3, Camera, Percent, Receipt } from "lucide-react";
 import { PageHeader } from "@/components/ftg/PageHeader";
 import { StatCard } from "@/components/ftg/StatCard";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { RankedBars, ShareRibbon, StorySeriesChart } from "@/components/ftg/charts/FlourishCharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useI18n } from "@/hooks/useI18n";
@@ -157,42 +157,43 @@ function Reportes() {
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="surface-card p-5">
           <h2 className="text-base font-semibold">Ventas por día</h2>
-          <ul className="mt-4 space-y-3">
-            {byDay.length === 0 && (
-              <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          <div className="mt-4">
+            {byDay.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                 No hay ventas en el período seleccionado.
-              </li>
+              </p>
+            ) : (
+              <StorySeriesChart
+                data={byDay.map(([day, value]) => ({ day, ventas: value }))}
+                xKey="day"
+                height={260}
+                series={[{ key: "ventas", name: "Ventas", color: "var(--primary)" }]}
+                valueFormatter={(v) => formatMoney(v, currency)}
+              />
             )}
-            {byDay.map(([day, value]) => (
-              <li key={day} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{day}</span>
-                  <span className="font-medium">{formatMoney(value, currency)}</span>
-                </div>
-                <Progress value={(value / maxDay) * 100} />
-              </li>
-            ))}
-          </ul>
+          </div>
         </section>
 
         <section className="surface-card p-5">
           <h2 className="text-base font-semibold">Fotografía vs. merchandising</h2>
-          <ul className="mt-4 space-y-3">
-            {byCategory.length === 0 && (
-              <li className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          <div className="mt-4 space-y-4">
+            {byCategory.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
                 Sin líneas de venta en el período.
-              </li>
+              </p>
+            ) : (
+              <>
+                <ShareRibbon
+                  segments={byCategory.map(([kind, value]) => ({ key: kind, value }))}
+                  valueFormatter={(v) => formatMoney(v, currency)}
+                />
+                <RankedBars
+                  items={byCategory.map(([kind, value]) => ({ key: kind, value }))}
+                  valueFormatter={(v) => formatMoney(v, currency)}
+                />
+              </>
             )}
-            {byCategory.map(([kind, value]) => (
-              <li key={kind} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="capitalize text-muted-foreground">{kind}</span>
-                  <span className="font-medium">{formatMoney(value, currency)}</span>
-                </div>
-                <Progress value={(value / totalCategory) * 100} />
-              </li>
-            ))}
-          </ul>
+          </div>
           <p className="mt-4 text-xs text-muted-foreground">
             Costo estimado de recuerdos IA en el período: {formatMoney(aiCost, "USD")}
           </p>
