@@ -21,6 +21,13 @@ import { Route as AuthenticatedInventarioRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenticated/operaciones'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
+import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
+import { Route as AuthenticatedConfiguracionAuditoriaRouteImport } from './routes/_authenticated/configuracion.auditoria'
+import { Route as AuthenticatedConfiguracionEmpleadosRouteImport } from './routes/_authenticated/configuracion.empleados'
+import { Route as AuthenticatedConfiguracionParametrosRouteImport } from './routes/_authenticated/configuracion.parametros'
+import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_authenticated/configuracion.roles'
+import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
+import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
@@ -90,6 +97,48 @@ const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracionIndexRoute =
+  AuthenticatedConfiguracionIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionAuditoriaRoute =
+  AuthenticatedConfiguracionAuditoriaRouteImport.update({
+    id: '/auditoria',
+    path: '/auditoria',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionEmpleadosRoute =
+  AuthenticatedConfiguracionEmpleadosRouteImport.update({
+    id: '/empleados',
+    path: '/empleados',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionParametrosRoute =
+  AuthenticatedConfiguracionParametrosRouteImport.update({
+    id: '/parametros',
+    path: '/parametros',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionRolesRoute =
+  AuthenticatedConfiguracionRolesRouteImport.update({
+    id: '/roles',
+    path: '/roles',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionUsuariosRoute =
+  AuthenticatedConfiguracionUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionVacacionesRoute =
+  AuthenticatedConfiguracionVacacionesRouteImport.update({
+    id: '/vacaciones',
+    path: '/vacaciones',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
   path: '/sedes/',
@@ -124,13 +173,20 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/administracion': typeof AuthenticatedAdministracionRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/configuracion': typeof AuthenticatedConfiguracionRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRouteWithChildren
   '/fotografias': typeof AuthenticatedFotografiasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
+  '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
+  '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
+  '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
+  '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -142,13 +198,19 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/administracion': typeof AuthenticatedAdministracionRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/fotografias': typeof AuthenticatedFotografiasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
+  '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
+  '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
+  '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
+  '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -162,13 +224,20 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/administracion': typeof AuthenticatedAdministracionRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
-  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
+  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRouteWithChildren
   '/_authenticated/fotografias': typeof AuthenticatedFotografiasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
+  '/_authenticated/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
+  '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/_authenticated/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
+  '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
+  '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
+  '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -189,6 +258,13 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/auditoria'
+    | '/configuracion/empleados'
+    | '/configuracion/parametros'
+    | '/configuracion/roles'
+    | '/configuracion/usuarios'
+    | '/configuracion/vacaciones'
+    | '/configuracion/'
     | '/sedes/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -200,13 +276,19 @@ export interface FileRouteTypes {
     | '/auth'
     | '/administracion'
     | '/clientes'
-    | '/configuracion'
     | '/fotografias'
     | '/inicio'
     | '/inventario'
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/auditoria'
+    | '/configuracion/empleados'
+    | '/configuracion/parametros'
+    | '/configuracion/roles'
+    | '/configuracion/usuarios'
+    | '/configuracion/vacaciones'
+    | '/configuracion'
     | '/sedes'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -226,6 +308,13 @@ export interface FileRouteTypes {
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
+    | '/_authenticated/configuracion/auditoria'
+    | '/_authenticated/configuracion/empleados'
+    | '/_authenticated/configuracion/parametros'
+    | '/_authenticated/configuracion/roles'
+    | '/_authenticated/configuracion/usuarios'
+    | '/_authenticated/configuracion/vacaciones'
+    | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -327,6 +416,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracion/': {
+      id: '/_authenticated/configuracion/'
+      path: '/'
+      fullPath: '/configuracion/'
+      preLoaderRoute: typeof AuthenticatedConfiguracionIndexRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/auditoria': {
+      id: '/_authenticated/configuracion/auditoria'
+      path: '/auditoria'
+      fullPath: '/configuracion/auditoria'
+      preLoaderRoute: typeof AuthenticatedConfiguracionAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/empleados': {
+      id: '/_authenticated/configuracion/empleados'
+      path: '/empleados'
+      fullPath: '/configuracion/empleados'
+      preLoaderRoute: typeof AuthenticatedConfiguracionEmpleadosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/parametros': {
+      id: '/_authenticated/configuracion/parametros'
+      path: '/parametros'
+      fullPath: '/configuracion/parametros'
+      preLoaderRoute: typeof AuthenticatedConfiguracionParametrosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/roles': {
+      id: '/_authenticated/configuracion/roles'
+      path: '/roles'
+      fullPath: '/configuracion/roles'
+      preLoaderRoute: typeof AuthenticatedConfiguracionRolesRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/usuarios': {
+      id: '/_authenticated/configuracion/usuarios'
+      path: '/usuarios'
+      fullPath: '/configuracion/usuarios'
+      preLoaderRoute: typeof AuthenticatedConfiguracionUsuariosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/vacaciones': {
+      id: '/_authenticated/configuracion/vacaciones'
+      path: '/vacaciones'
+      fullPath: '/configuracion/vacaciones'
+      preLoaderRoute: typeof AuthenticatedConfiguracionVacacionesRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
     '/_authenticated/sedes/': {
       id: '/_authenticated/sedes/'
       path: '/sedes'
@@ -365,10 +503,41 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedConfiguracionRouteChildren {
+  AuthenticatedConfiguracionAuditoriaRoute: typeof AuthenticatedConfiguracionAuditoriaRoute
+  AuthenticatedConfiguracionEmpleadosRoute: typeof AuthenticatedConfiguracionEmpleadosRoute
+  AuthenticatedConfiguracionParametrosRoute: typeof AuthenticatedConfiguracionParametrosRoute
+  AuthenticatedConfiguracionRolesRoute: typeof AuthenticatedConfiguracionRolesRoute
+  AuthenticatedConfiguracionUsuariosRoute: typeof AuthenticatedConfiguracionUsuariosRoute
+  AuthenticatedConfiguracionVacacionesRoute: typeof AuthenticatedConfiguracionVacacionesRoute
+  AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
+}
+
+const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteChildren =
+  {
+    AuthenticatedConfiguracionAuditoriaRoute:
+      AuthenticatedConfiguracionAuditoriaRoute,
+    AuthenticatedConfiguracionEmpleadosRoute:
+      AuthenticatedConfiguracionEmpleadosRoute,
+    AuthenticatedConfiguracionParametrosRoute:
+      AuthenticatedConfiguracionParametrosRoute,
+    AuthenticatedConfiguracionRolesRoute: AuthenticatedConfiguracionRolesRoute,
+    AuthenticatedConfiguracionUsuariosRoute:
+      AuthenticatedConfiguracionUsuariosRoute,
+    AuthenticatedConfiguracionVacacionesRoute:
+      AuthenticatedConfiguracionVacacionesRoute,
+    AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
+  }
+
+const AuthenticatedConfiguracionRouteWithChildren =
+  AuthenticatedConfiguracionRoute._addFileChildren(
+    AuthenticatedConfiguracionRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdministracionRoute: typeof AuthenticatedAdministracionRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
-  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
+  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRouteWithChildren
   AuthenticatedFotografiasRoute: typeof AuthenticatedFotografiasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
@@ -383,7 +552,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdministracionRoute: AuthenticatedAdministracionRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
-  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
+  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRouteWithChildren,
   AuthenticatedFotografiasRoute: AuthenticatedFotografiasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
@@ -410,13 +579,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

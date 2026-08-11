@@ -1063,6 +1063,233 @@ export type Database = {
           },
         ]
       }
+      employee_venue_assignments: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          location_id: string | null
+          point_of_sale_id: string | null
+          updated_at: string
+          valid_from: string
+          valid_to: string | null
+          venue_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          location_id?: string | null
+          point_of_sale_id?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          venue_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          location_id?: string | null
+          point_of_sale_id?: string | null
+          updated_at?: string
+          valid_from?: string
+          valid_to?: string | null
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_venue_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_venue_assignments_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_venue_assignments_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_venue_assignments_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          address: string | null
+          birth_date: string | null
+          city: string | null
+          contract_type: string | null
+          cost_center: string | null
+          country_code: string | null
+          created_at: string
+          created_by: string | null
+          department: string | null
+          document_number: string | null
+          document_type: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employee_number: string | null
+          employment_status: Database["public"]["Enums"]["employment_status"]
+          first_name: string
+          gender: string | null
+          hire_date: string | null
+          id: string
+          last_name: string
+          marital_status: string | null
+          nationality: string | null
+          notes: string | null
+          organization_id: string
+          personal_email: string | null
+          phone: string | null
+          position: string | null
+          primary_location_id: string | null
+          primary_point_of_sale_id: string | null
+          reference_currency: string | null
+          region: string | null
+          supervisor_employee_id: string | null
+          tax_id: string | null
+          termination_date: string | null
+          termination_reason: string | null
+          updated_at: string
+          user_id: string | null
+          work_schedule: string | null
+          work_shift: string | null
+        }
+        Insert: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          contract_type?: string | null
+          cost_center?: string | null
+          country_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          document_number?: string | null
+          document_type?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_number?: string | null
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          first_name: string
+          gender?: string | null
+          hire_date?: string | null
+          id?: string
+          last_name: string
+          marital_status?: string | null
+          nationality?: string | null
+          notes?: string | null
+          organization_id: string
+          personal_email?: string | null
+          phone?: string | null
+          position?: string | null
+          primary_location_id?: string | null
+          primary_point_of_sale_id?: string | null
+          reference_currency?: string | null
+          region?: string | null
+          supervisor_employee_id?: string | null
+          tax_id?: string | null
+          termination_date?: string | null
+          termination_reason?: string | null
+          updated_at?: string
+          user_id?: string | null
+          work_schedule?: string | null
+          work_shift?: string | null
+        }
+        Update: {
+          address?: string | null
+          birth_date?: string | null
+          city?: string | null
+          contract_type?: string | null
+          cost_center?: string | null
+          country_code?: string | null
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          document_number?: string | null
+          document_type?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employee_number?: string | null
+          employment_status?: Database["public"]["Enums"]["employment_status"]
+          first_name?: string
+          gender?: string | null
+          hire_date?: string | null
+          id?: string
+          last_name?: string
+          marital_status?: string | null
+          nationality?: string | null
+          notes?: string | null
+          organization_id?: string
+          personal_email?: string | null
+          phone?: string | null
+          position?: string | null
+          primary_location_id?: string | null
+          primary_point_of_sale_id?: string | null
+          reference_currency?: string | null
+          region?: string | null
+          supervisor_employee_id?: string | null
+          tax_id?: string | null
+          termination_date?: string | null
+          termination_reason?: string | null
+          updated_at?: string
+          user_id?: string | null
+          work_schedule?: string | null
+          work_shift?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "employees_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_primary_location_id_fkey"
+            columns: ["primary_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_primary_point_of_sale_id_fkey"
+            columns: ["primary_point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_supervisor_employee_id_fkey"
+            columns: ["supervisor_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -2427,6 +2654,33 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          action: Database["public"]["Enums"]["permission_action"]
+          created_at: string
+          description: string | null
+          id: string
+          module: string
+          submodule: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["permission_action"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          module: string
+          submodule?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["permission_action"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          module?: string
+          submodule?: string | null
+        }
+        Relationships: []
+      }
       photo_consents: {
         Row: {
           accepts_image_use: boolean
@@ -3002,47 +3256,78 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country_code: string | null
           created_at: string
+          deactivated_at: string | null
           default_location_id: string | null
           email: string | null
+          end_date: string | null
+          first_name: string | null
           full_name: string
           id: string
           is_active: boolean
           language: string
+          last_name: string | null
+          last_sign_in_at: string | null
           organization_id: string | null
           phone: string | null
           sender_email: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["user_account_status"]
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
+          country_code?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_location_id?: string | null
           email?: string | null
+          end_date?: string | null
+          first_name?: string | null
           full_name?: string
           id: string
           is_active?: boolean
           language?: string
+          last_name?: string | null
+          last_sign_in_at?: string | null
           organization_id?: string | null
           phone?: string | null
           sender_email?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["user_account_status"]
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
+          country_code?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_location_id?: string | null
           email?: string | null
+          end_date?: string | null
+          first_name?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
           language?: string
+          last_name?: string | null
+          last_sign_in_at?: string | null
           organization_id?: string | null
           phone?: string | null
           sender_email?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["user_account_status"]
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "profiles_default_location_id_fkey"
             columns: ["default_location_id"]
@@ -3058,6 +3343,127 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_permissions: {
+        Row: {
+          allowed: boolean
+          country_code: string | null
+          created_at: string
+          id: string
+          location_id: string | null
+          organization_id: string | null
+          permission_id: string
+          point_of_sale_id: string | null
+          role_id: string
+          updated_at: string
+        }
+        Insert: {
+          allowed?: boolean
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          organization_id?: string | null
+          permission_id: string
+          point_of_sale_id?: string | null
+          role_id: string
+          updated_at?: string
+        }
+        Update: {
+          allowed?: boolean
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          location_id?: string | null
+          organization_id?: string | null
+          permission_id?: string
+          point_of_sale_id?: string | null
+          role_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "role_permissions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean
+          legacy_role: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          legacy_role?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          legacy_role?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       sale_items: {
         Row: {
@@ -3590,6 +3996,7 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          assigned_by: string | null
           country_code: string | null
           created_at: string
           id: string
@@ -3597,9 +4004,13 @@ export type Database = {
           organization_id: string | null
           point_of_sale_id: string | null
           role: Database["public"]["Enums"]["app_role"]
+          role_id: string | null
           user_id: string
+          valid_from: string
+          valid_to: string | null
         }
         Insert: {
+          assigned_by?: string | null
           country_code?: string | null
           created_at?: string
           id?: string
@@ -3607,9 +4018,13 @@ export type Database = {
           organization_id?: string | null
           point_of_sale_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
+          role_id?: string | null
           user_id: string
+          valid_from?: string
+          valid_to?: string | null
         }
         Update: {
+          assigned_by?: string | null
           country_code?: string | null
           created_at?: string
           id?: string
@@ -3617,7 +4032,10 @@ export type Database = {
           organization_id?: string | null
           point_of_sale_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          role_id?: string | null
           user_id?: string
+          valid_from?: string
+          valid_to?: string | null
         }
         Relationships: [
           {
@@ -3646,6 +4064,13 @@ export type Database = {
             columns: ["point_of_sale_id"]
             isOneToOne: false
             referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
             referencedColumns: ["id"]
           },
         ]
@@ -3709,6 +4134,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_users: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3760,6 +4186,10 @@ export type Database = {
         | "fotografo"
         | "deposito"
         | "auditor"
+        | "admin"
+        | "management"
+        | "executive"
+        | "seller"
       cash_session_status: "abierta" | "cerrada" | "arqueada"
       checklist_phase: "apertura" | "cierre"
       customer_kind: "corporativo" | "consumidor_final"
@@ -3770,6 +4200,13 @@ export type Database = {
         | "requiere_revision"
         | "duplicado"
         | "error"
+      employment_status:
+        | "activo"
+        | "licencia"
+        | "vacaciones"
+        | "suspendido"
+        | "baja_programada"
+        | "desvinculado"
       finance_doc_kind: "cobrar" | "pagar"
       finance_doc_status:
         | "pendiente"
@@ -3824,6 +4261,15 @@ export type Database = {
         | "transferencia"
         | "voucher"
         | "otro"
+      permission_action:
+        | "ver"
+        | "crear"
+        | "editar"
+        | "aprobar"
+        | "anular"
+        | "exportar"
+        | "administrar"
+        | "sensible"
       photo_status: "capturada" | "publicada" | "vendida" | "archivada"
       pos_type: "tienda" | "kiosco" | "movil" | "puesto_fotografico"
       product_kind: "fotografia" | "merchandising" | "servicio" | "combo"
@@ -3842,6 +4288,12 @@ export type Database = {
         | "venta"
         | "merma"
         | "devolucion"
+      user_account_status:
+        | "invitado"
+        | "activo"
+        | "suspendido"
+        | "baja_programada"
+        | "inactivo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3993,6 +4445,10 @@ export const Constants = {
         "fotografo",
         "deposito",
         "auditor",
+        "admin",
+        "management",
+        "executive",
+        "seller",
       ],
       cash_session_status: ["abierta", "cerrada", "arqueada"],
       checklist_phase: ["apertura", "cierre"],
@@ -4004,6 +4460,14 @@ export const Constants = {
         "requiere_revision",
         "duplicado",
         "error",
+      ],
+      employment_status: [
+        "activo",
+        "licencia",
+        "vacaciones",
+        "suspendido",
+        "baja_programada",
+        "desvinculado",
       ],
       finance_doc_kind: ["cobrar", "pagar"],
       finance_doc_status: [
@@ -4065,6 +4529,16 @@ export const Constants = {
         "voucher",
         "otro",
       ],
+      permission_action: [
+        "ver",
+        "crear",
+        "editar",
+        "aprobar",
+        "anular",
+        "exportar",
+        "administrar",
+        "sensible",
+      ],
       photo_status: ["capturada", "publicada", "vendida", "archivada"],
       pos_type: ["tienda", "kiosco", "movil", "puesto_fotografico"],
       product_kind: ["fotografia", "merchandising", "servicio", "combo"],
@@ -4078,6 +4552,13 @@ export const Constants = {
         "venta",
         "merma",
         "devolucion",
+      ],
+      user_account_status: [
+        "invitado",
+        "activo",
+        "suspendido",
+        "baja_programada",
+        "inactivo",
       ],
     },
   },

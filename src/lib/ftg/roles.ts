@@ -1,4 +1,8 @@
 export type AppRole =
+  | "admin"
+  | "management"
+  | "executive"
+  | "seller"
   | "superadmin"
   | "direccion"
   | "administracion"
@@ -11,6 +15,10 @@ export type AppRole =
   | "auditor";
 
 export const ROLE_LABELS: Record<AppRole, string> = {
+  admin: "Administrador",
+  management: "Gerencia",
+  executive: "Ejecutivo",
+  seller: "Vendedor",
   superadmin: "Superadministrador",
   direccion: "Dirección",
   administracion: "Administración",
@@ -52,6 +60,11 @@ export const ALL_MODULES: ModuleKey[] = [
 
 /** Permisos por módulo (Etapa 1). */
 export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
+  // Etapa 1: los cinco roles nuevos acceden a todos los módulos operativos.
+  admin: "*",
+  management: "*",
+  executive: "*",
+  seller: "*",
   superadmin: "*",
   direccion: "*",
   administracion: ["inicio", "sedes", "administracion", "clientes", "reportes", "inventario", "configuracion"],
@@ -72,4 +85,13 @@ export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
     mods.forEach((m) => result.add(m));
   }
   return result;
+}
+/** Roles principales de la plataforma (Etapa 1). */
+export const CORE_ROLES: AppRole[] = ["admin", "management", "supervisor", "executive", "seller"];
+
+/** Solo estos roles pueden crear usuarios, asignar roles y dar de baja. */
+export const USER_ADMIN_ROLES: AppRole[] = ["admin", "superadmin"];
+
+export function canManageUsers(roles: AppRole[]): boolean {
+  return roles.some((r) => USER_ADMIN_ROLES.includes(r));
 }
