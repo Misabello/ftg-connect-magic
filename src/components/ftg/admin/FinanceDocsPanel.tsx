@@ -450,13 +450,67 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         </Table>
       </section>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) clearDocFile();
+        }}
+      >
+        <DialogContent className="max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{tab === "cobrar" ? "Nuevo documento por cobrar" : "Nuevo documento por pagar"}</DialogTitle>
-            <DialogDescription>Se registra en la sede activa y en {currency}.</DialogDescription>
+            <DialogDescription>
+              Subí la factura o sacale una foto: la IA lee los datos y completa el formulario. Se registra en la sede
+              activa y en {currency}.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="rounded-xl border border-dashed p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setDocCameraOpen(true)}>
+                  <Camera className="h-3.5 w-3.5" /> Sacar foto
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => docFileInput.current?.click()}>
+                  <Upload className="h-3.5 w-3.5" /> Subir factura
+                </Button>
+                {scanning && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Leyendo con IA…
+                  </span>
+                )}
+                {!scanning && ocrConfidence !== null && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <ScanText className="h-3.5 w-3.5" /> Confianza {ocrConfidence}%
+                  </span>
+                )}
+                {docFile && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Paperclip className="h-3.5 w-3.5" /> {docFile.name}
+                    <button type="button" onClick={clearDocFile} aria-label="Quitar comprobante">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                )}
+              </div>
+              {docPreview && (
+                <img src={docPreview} alt="Vista previa de la factura" className="mt-3 max-h-48 w-full rounded-lg object-contain" />
+              )}
+              <input
+                ref={docFileInput}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={(e) => void scanDocument(e.target.files?.[0] ?? null)}
+              />
+              <CameraCaptureDialog
+                open={docCameraOpen}
+                onOpenChange={setDocCameraOpen}
+                title="Sacar foto de la factura"
+                description="Encuadrá el comprobante completo y capturá."
+                onCapture={(file) => void scanDocument(file)}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label>{tab === "cobrar" ? "Cliente" : "Proveedor"}</Label>
               <Select value={draft.counterparty} onValueChange={(v) => setDraft((p) => ({ ...p, counterparty: v }))}>
