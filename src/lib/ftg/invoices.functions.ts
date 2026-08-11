@@ -106,7 +106,7 @@ export const extractInvoiceDocument = createServerFn({ method: "POST" })
       .from("invoice_documents")
       .update({
         document_direction: parsed.direction,
-        document_type: parsed.documentType,
+        document_type: parsed.documentType as "no_reconocido",
         country_code: parsed.countryCode ?? doc.country_code,
         issuer_name: parsed.issuerName,
         issuer_tax_id: parsed.issuerTaxId,
