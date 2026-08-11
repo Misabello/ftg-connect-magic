@@ -18,7 +18,32 @@ import {
 
 type AnyClient = SupabaseClient<any, any, any>;
 
-const MODEL_ID = "ftg-local-tsf-v1";
+const MODEL_KEY = "ftg_local_tsf";
+const MODEL_VERSION = "v1";
+
+/** Resuelve (o registra) el modelo local en el catálogo y devuelve su UUID. */
+async function resolveModelId(writer: AnyClient): Promise<string | null> {
+  const { data } = await writer
+    .from("ml_models")
+    .select("id")
+    .eq("key", MODEL_KEY)
+    .eq("version", MODEL_VERSION)
+    .maybeSingle();
+  if (data?.id) return data.id as string;
+  const { data: created } = await writer
+    .from("ml_models")
+    .insert({
+      key: MODEL_KEY,
+      version: MODEL_VERSION,
+      kind: "series_temporales",
+      provider: "interno",
+      reference: "ftg-local-tsf-v1",
+      display_name: "Motor local de series temporales FTG",
+    } as never)
+    .select("id")
+    .maybeSingle();
+  return (created?.id as string) ?? null;
+}
 
 type Job = {
   id: string;
