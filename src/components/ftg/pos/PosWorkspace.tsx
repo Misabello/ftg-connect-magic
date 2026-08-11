@@ -282,14 +282,29 @@ export function PosWorkspace({
    */
   const [autoLoaded, setAutoLoaded] = useState(false);
   useEffect(() => {
-    if (!autoCheckout || autoLoaded || !activePos) return;
+    // Siempre bajamos los ítems del carrito global al puesto activo, así el
+    // botón "Cobrar" nunca queda gris teniendo cosas en el carrito.
+    if (autoLoaded || !activePos) return;
     const pending = listMagicItems();
+    if (pending.length === 0) {
+      if (autoCheckout) setAutoLoaded(true);
+      return;
+    }
     pending.forEach((item) => addMagicItemToCart(item));
     setAutoLoaded(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckout, autoLoaded, activePos, session]);
 
   const [autoOpened, setAutoOpened] = useState(false);
+  // Ítems agregados al carrito global mientras el usuario ya está en el puesto.
+  useEffect(() => {
+    if (!activePos) return;
+    return subscribeMagicItems(() => {
+      listMagicItems().forEach((item) => addMagicItemToCart(item));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePos]);
+
   useEffect(() => {
     if (!autoCheckout || autoOpened || !autoLoaded || lines.length === 0) return;
     setAutoOpened(true);
@@ -544,7 +559,9 @@ export function PosWorkspace({
   const missingPhotoCode = lines.some((l) => l.requiresPhoto && !l.photoCode?.trim());
   const mercadoPagoMethodId =
     methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
-  const checkoutHint = !session
+  const checkoutHint = !activePos
+    ? "Elegí el punto de venta donde querés asentar la venta."
+    : !session
     ? online
       ? `Al cobrar se abrirá la caja de ${activePos?.name ?? "este puesto"} y la venta quedará asentada ahí.`
       : "Sin conexión: abrí la caja mientras tengas señal para poder cobrar."
@@ -674,8 +691,9 @@ export function PosWorkspace({
               }
               onClear={() => setLines([])}
               onCheckout={() => setCheckoutOpen(true)}
-              canCheckout={lines.length > 0 && !missingPhotoCode && (!!session || online)}
+              canCheckout={lines.length > 0 && !missingPhotoCode && !!activePos}
               checkoutHint={checkoutHint}
+              posName={activePos?.name ?? null}
             />
           </div>
 

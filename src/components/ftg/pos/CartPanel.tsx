@@ -18,6 +18,7 @@ export function CartPanel({
   onCheckout,
   canCheckout,
   checkoutHint,
+  posName,
 }: {
   lines: CartLine[];
   currency: string;
@@ -30,6 +31,8 @@ export function CartPanel({
   onCheckout: () => void;
   canCheckout: boolean;
   checkoutHint: string | null;
+  /** Punto de venta donde quedará asentada la venta. */
+  posName?: string | null;
 }) {
   const totals = computeTotals(lines);
 
@@ -144,8 +147,11 @@ export function CartPanel({
         </div>
       </dl>
 
-      <Button className="mt-4 h-11 w-full" disabled={!canCheckout} onClick={onCheckout}>
-        Cobrar
+      <Button className="mt-4 h-auto w-full flex-col gap-0.5 py-2.5" disabled={!canCheckout} onClick={onCheckout}>
+        <span className="text-sm font-semibold">Cobrar</span>
+        <span className="text-[11px] font-normal opacity-80">
+          Asignar a Pto Vta{posName ? `: ${posName}` : ""}
+        </span>
       </Button>
       {checkoutHint && <p className="mt-2 text-center text-xs text-muted-foreground">{checkoutHint}</p>}
     </aside>
