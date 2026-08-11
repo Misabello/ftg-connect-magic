@@ -219,7 +219,7 @@ async function buildRecommendations(supabase: AnyClient, job: Job, horizonDays: 
         point_of_sale_id: job.point_of_sale_id,
         product_id: productId,
         product_name: info.name,
-        action: gap > 0 ? "reponer" : overstockRisk > 0.5 ? "reducir_compra" : "mantener",
+        action: gap > 0 ? "aumentar_stock" : overstockRisk > 0.5 ? "reducir" : "mantener",
         recommended_quantity: gap > 0 ? Math.ceil(gap) : 0,
         forecast_demand: Number(demand.toFixed(2)),
         historical_sales: info.qty,
@@ -375,7 +375,12 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         Math.round((new Date(job.history_to).getTime() - new Date(job.history_from).getTime()) / 86_400_000),
       );
       const recs = await buildRecommendations(supabase, job, horizonDays, historyDays);
-      if (recs.length > 0) await writer.from("ml_recommendations").insert(recs as never);
+      if (recs.length > 0) {
+        const insertRecs = await writer.from("ml_recommendations").insert(recs as never);
+        if (insertRecs.error) {
+          throw new Error(`No se pudieron guardar las recomendaciones: ${insertRecs.error.message}`);
+        }
+      }
     }
 
     await setStatus("generando_informe", "Redactando el informe del período.");
@@ -402,7 +407,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
 
     await writer.from("ml_generated_reports").delete().eq("job_id", jobId);
     if (report) {
-      await writer.from("ml_generated_reports").insert({
+      const insertReport = await writer.from("ml_generated_reports").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         created_by: userId ?? null,
@@ -412,6 +417,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         disclaimer: FORECAST_DISCLAIMER,
         content: { total_estimado: Number(totalForecast.toFixed(2)), metricas: metrics },
       } as never);
+      if (insertReport.error) throw new Error(`No se pudo guardar el informe: ${insertReport.error.message}`);
     }
 
     await writer
