@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -326,42 +326,36 @@ function Configuracion() {
         <TabsContent value="usuarios" className="space-y-4 pt-5">
           {!isSuperadmin && (
             <p className="text-sm text-muted-foreground">
-              Solo un superadministrador puede modificar roles. Se muestran los datos visibles para tu perfil.
+              Solo un superadministrador puede dar de alta usuarios o cambiar roles.
             </p>
           )}
-          <section className="surface-card divide-y divide-border">
-            {(data?.profiles ?? []).map((p) => {
-              const userRoleList = (data?.userRoles ?? []).filter((r) => r.user_id === p.id);
-              return (
-                <div key={p.id} className="space-y-3 p-5">
-                  <div>
-                    <p className="text-sm font-medium">{p.full_name || "Sin nombre"}</p>
-                    <p className="text-xs text-muted-foreground">{p.email}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {ALL_ROLES.map((role) => {
-                      const has = userRoleList.some((r) => r.role === role);
-                      return (
-                        <button
-                          key={role}
-                          type="button"
-                          disabled={!isSuperadmin || toggleRole.isPending}
-                          onClick={() => toggleRole.mutate({ userId: p.id, role, has })}
-                          className={
-                            has
-                              ? "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-70"
-                              : "rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary disabled:opacity-60"
-                          }
-                        >
-                          {tRole(role)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </section>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Link to="/configuracion/usuarios" className="surface-card block space-y-1.5 p-5 hover:border-primary/50">
+              <h2 className="text-sm font-semibold">Usuarios (ABM completo)</h2>
+              <p className="text-xs text-muted-foreground">
+                Alta, edición y baja de usuarios: nombre y apellido, usuario sugerido, CUIL, correo, teléfono, fecha de
+                alta, rol y estado. Incluye historial de cambios y reseteo de acceso.
+              </p>
+              <span className="inline-block pt-1 text-xs font-medium text-primary">Abrir ABM de usuarios →</span>
+            </Link>
+            <Link to="/configuracion/roles" className="surface-card block space-y-1.5 p-5 hover:border-primary/50">
+              <h2 className="text-sm font-semibold">Roles y permisos</h2>
+              <p className="text-xs text-muted-foreground">
+                Catálogo de roles técnicos y los permisos asignados a cada uno.
+              </p>
+              <span className="inline-block pt-1 text-xs font-medium text-primary">Ver roles y permisos →</span>
+            </Link>
+            <Link to="/configuracion/empleados" className="surface-card block space-y-1.5 p-5 hover:border-primary/50">
+              <h2 className="text-sm font-semibold">Empleados y RR. HH.</h2>
+              <p className="text-xs text-muted-foreground">Legajos, datos laborales, altas y bajas del personal.</p>
+              <span className="inline-block pt-1 text-xs font-medium text-primary">Abrir empleados →</span>
+            </Link>
+            <Link to="/configuracion/auditoria" className="surface-card block space-y-1.5 p-5 hover:border-primary/50">
+              <h2 className="text-sm font-semibold">Auditoría</h2>
+              <p className="text-xs text-muted-foreground">Registro de acciones sensibles sobre usuarios y permisos.</p>
+              <span className="inline-block pt-1 text-xs font-medium text-primary">Ver auditoría →</span>
+            </Link>
+          </div>
         </TabsContent>
 
         <TabsContent value="cuenta" className="space-y-6 pt-5">
