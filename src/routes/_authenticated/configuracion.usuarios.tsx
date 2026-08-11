@@ -68,6 +68,7 @@ function UsuariosPage() {
 
   const fetchUsers = useServerFn(listUsers);
   const createFn = useServerFn(createUserAccount);
+  const updateFn = useServerFn(updateUserAccount);
   const statusFn = useServerFn(setUserStatus);
   const roleFn = useServerFn(setUserRole);
   const resetFn = useServerFn(resetUserAccess);
@@ -91,6 +92,7 @@ function UsuariosPage() {
   const [statusFilter, setStatusFilter] = useState("todos");
   const [roleFilter, setRoleFilter] = useState("todos");
   const [openCreate, setOpenCreate] = useState(false);
+  const [editUser, setEditUser] = useState<any | null>(null);
   const [historyFor, setHistoryFor] = useState<{ id: string; name: string } | null>(null);
   const [rolesFor, setRolesFor] = useState<{ id: string; name: string } | null>(null);
 
@@ -111,7 +113,7 @@ function UsuariosPage() {
       if (statusFilter !== "todos" && (p.status ?? "activo") !== statusFilter) return false;
       if (roleFilter !== "todos" && !userRoles.includes(roleFilter as AppRole)) return false;
       if (!term) return true;
-      return `${p.full_name ?? ""} ${p.email ?? ""}`.toLowerCase().includes(term);
+      return `${p.full_name ?? ""} ${p.email ?? ""} ${p.username ?? ""} ${p.tax_id ?? ""}`.toLowerCase().includes(term);
     });
   }, [data, rolesByUser, search, statusFilter, roleFilter]);
 
@@ -160,11 +162,15 @@ function UsuariosPage() {
   });
 
   const exportCsv = () => {
-    const header = ["Nombre", "Email", "Roles", "Estado", "Alta", "Baja", "Último acceso"];
+    const header = ["Nombre", "Usuario", "Email", "Teléfono", "CUIL", "Puesto", "Roles", "Estado", "Alta", "Baja", "Último acceso"];
     const lines = rows.map((p) =>
       [
         p.full_name ?? "",
+        p.username ?? "",
         p.email ?? "",
+        p.phone ?? "",
+        p.tax_id ?? "",
+        p.job_title ?? "",
         (rolesByUser.get(p.id) ?? []).join(" / "),
         USER_STATUS_LABELS[p.status ?? "activo"] ?? p.status,
         p.start_date ?? "",
