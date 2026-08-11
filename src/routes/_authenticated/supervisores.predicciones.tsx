@@ -4,19 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Download, ExternalLink, Sparkles, Table2 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  Area,
-  CartesianGrid,
-  ComposedChart,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
+import { BarChartRace, ShareRibbon, StoryForecastChart } from "@/components/ftg/charts/FlourishCharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
