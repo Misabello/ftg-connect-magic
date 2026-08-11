@@ -13,6 +13,7 @@ import {
   Share2,
   ShoppingCart,
   Sparkles,
+  Smile,
   Video,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -66,6 +67,7 @@ import {
 import { CharacterLibrary, characterImage, type CharacterRow } from "./CharacterLibrary";
 import { CompositionStep, type GapLevel } from "./CompositionStep";
 import { CustomerPhotoStep, type CustomerPhoto } from "./CustomerPhotoStep";
+import { CaricaturePanel } from "./CaricaturePanel";
 import { VideoPromptPanel } from "./VideoPromptPanel";
 import { addMagicItem, openCartDock } from "@/lib/ftg/magic-cart";
 import { buildSouvenirMessage, mailtoLink, whatsappLink } from "@/lib/ftg/share";
@@ -108,6 +110,8 @@ export function MagicStudio({
   const { language } = useI18n();
 
   const [outputType, setOutputType] = useState<OutputType>("imagen");
+  /** "recuerdo" es el flujo con personaje y escena; "caricatura" convierte a todas las personas. */
+  const [mode, setMode] = useState<"recuerdo" | "caricatura">("recuerdo");
   const [photo, setPhoto] = useState<CustomerPhoto | null>(null);
   const [character, setCharacter] = useState<CharacterRow | null>(null);
   const [sceneId, setSceneId] = useState<string | null>(null);
@@ -693,20 +697,21 @@ export function MagicStudio({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           {(["imagen", "video"] as OutputType[]).map((type) => (
             <button
               key={type}
               type="button"
               disabled={busy}
               onClick={() => {
+                setMode("recuerdo");
                 setOutputType(type);
                 resetComposition();
                 resetJob();
               }}
               className={cn(
                 "flex items-center gap-3 rounded-xl border border-border p-4 text-left transition-all hover:border-primary disabled:opacity-60",
-                outputType === type && "border-primary bg-primary/5 ring-2 ring-primary/20",
+                mode === "recuerdo" && outputType === type && "border-primary bg-primary/5 ring-2 ring-primary/20",
               )}
             >
               {type === "imagen" ? (
@@ -722,8 +727,51 @@ export function MagicStudio({
               </span>
             </button>
           ))}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setMode("caricatura");
+              setOutputType("imagen");
+              resetComposition();
+              resetJob();
+            }}
+            className={cn(
+              "flex items-center gap-3 rounded-xl border border-border p-4 text-left transition-all hover:border-primary disabled:opacity-60",
+              mode === "caricatura" && "border-primary bg-primary/5 ring-2 ring-primary/20",
+            )}
+          >
+            <Smile className="h-6 w-6 text-primary" />
+            <span>
+              <span className="block font-medium">Caricaturizar todas las caras</span>
+              <span className="block text-xs text-muted-foreground">
+                Crea una nueva imagen convirtiendo en caricatura a todas las personas detectadas, incluido el cliente.
+              </span>
+            </span>
+          </button>
         </div>
 
+        {mode === "caricatura" ? (
+          <div className="space-y-4">
+            <section className="space-y-3">
+              <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                2 · Foto del cliente
+              </h3>
+              <CustomerPhotoStep value={photo} aspectRatio={aspectRatio} onChange={setPhoto} />
+              {preloading && (
+                <p className="text-xs text-muted-foreground">Trayendo la fotografía seleccionada de la galería…</p>
+              )}
+            </section>
+            <Separator />
+            <CaricaturePanel
+              photo={photo}
+              locationId={locationId}
+              organizationId={organizationId}
+              pointOfSaleId={pointOfSaleId ?? null}
+              onAddToCart={onAddToCart}
+            />
+          </div>
+        ) : (
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr_360px]">
           <section className="space-y-3">
             <h3 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
@@ -1095,6 +1143,7 @@ export function MagicStudio({
             </p>
           </section>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
