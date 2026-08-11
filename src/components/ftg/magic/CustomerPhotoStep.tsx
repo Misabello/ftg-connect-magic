@@ -304,10 +304,13 @@ export function CustomerPhotoStep({
                 <RotateCw className="mr-1.5 h-4 w-4" /> Girar
               </Button>
               <Button size="sm" variant="ghost" onClick={() => inputRef.current?.click()}>
-                <Upload className="mr-1.5 h-4 w-4" /> Subir otra foto
+                <Upload className="mr-1.5 h-4 w-4" /> Otra del dispositivo
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => void startCamera()}>
+              <Button size="sm" variant="ghost" onClick={takePhoto}>
                 <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setCloudOpen(true)}>
+                <Cloud className="mr-1.5 h-4 w-4" /> Desde la nube
               </Button>
               <Button
                 size="sm"
@@ -339,6 +342,35 @@ export function CustomerPhotoStep({
           </div>
         </div>
       )}
+
+      <Dialog open={cloudOpen} onOpenChange={setCloudOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Traer imagen desde la nube</DialogTitle>
+            <DialogDescription>
+              Pegá el enlace público de la imagen (Google Drive, Dropbox, OneDrive o cualquier URL directa).
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            autoFocus
+            placeholder="https://…/foto.jpg"
+            value={cloudUrl}
+            onChange={(e) => setCloudUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void loadFromCloud();
+            }}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setCloudOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => void loadFromCloud()} disabled={cloudLoading || !cloudUrl.trim()}>
+              {cloudLoading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Cloud className="mr-1.5 h-4 w-4" />}
+              Traer imagen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
