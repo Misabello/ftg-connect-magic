@@ -296,6 +296,15 @@ export function PosWorkspace({
   }, [autoCheckout, autoLoaded, activePos, session]);
 
   const [autoOpened, setAutoOpened] = useState(false);
+  // Ítems agregados al carrito global mientras el usuario ya está en el puesto.
+  useEffect(() => {
+    if (!activePos) return;
+    return subscribeMagicItems(() => {
+      listMagicItems().forEach((item) => addMagicItemToCart(item));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePos]);
+
   useEffect(() => {
     if (!autoCheckout || autoOpened || !autoLoaded || lines.length === 0) return;
     setAutoOpened(true);
