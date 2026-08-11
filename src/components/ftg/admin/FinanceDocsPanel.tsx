@@ -4,6 +4,7 @@ import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Paperclip, Plus, Wallet, 
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
+import { CameraCaptureDialog } from "@/components/ftg/CameraCaptureDialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -444,17 +445,14 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
                       onChange={(e) => pickReceipt(e.target.files?.[0] ?? null)}
                     />
                   </label>
-                  <label className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-border p-3 text-xs hover:border-primary/50">
+                  <button
+                    type="button"
+                    onClick={() => setCameraOpen(true)}
+                    className="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-border p-3 text-xs hover:border-primary/50"
+                  >
                     <Camera className="h-4 w-4 text-muted-foreground" />
                     Sacar foto
-                    <input
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={(e) => pickReceipt(e.target.files?.[0] ?? null)}
-                    />
-                  </label>
+                  </button>
                 </div>
               )}
             </div>
