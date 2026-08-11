@@ -1,9 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +54,15 @@ export const Route = createFileRoute("/_authenticated/supervisores/predicciones"
 });
 
 function Predicciones() {
-  const { activeLocationId, activeLocation } = useScope();
+  const { activeLocationId, activeLocation, locations } = useScope();
   const queryClient = useQueryClient();
+  const [scopeLocationId, setScopeLocationId] = useState<string>("all");
+
+  useEffect(() => {
+    if (activeLocationId) setScopeLocationId(activeLocationId);
+  }, [activeLocationId]);
+
+  const scopeLocation = locations.find((l) => l.id === scopeLocationId) ?? null;
 
   const fetchTargets = useServerFn(listPredictionTargets);
   const fetchJobs = useServerFn(listPredictionJobs);
@@ -89,11 +107,11 @@ function Predicciones() {
         data: {
           target_key: targetKey,
           organization_id: null,
-          location_id: activeLocationId,
+          location_id: scopeLocationId === "all" ? null : scopeLocationId,
           granularity,
           horizon_from: range.from,
           horizon_to: range.to,
-          currency_code: activeLocation?.currency_code ?? "ARS",
+          currency_code: scopeLocation?.currency_code ?? activeLocation?.currency_code ?? "ARS",
           filters: {},
         },
       } as never);
@@ -168,8 +186,21 @@ function Predicciones() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Alcance</Label>
-            <Input value={activeLocation?.name ?? ""} readOnly />
+            <Label>Sede</Label>
+            <Select value={scopeLocationId} onValueChange={setScopeLocationId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Elegí una sede" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las sedes</SelectItem>
+                {locations.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.name}
+                    {l.city ? ` · ${l.city}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {horizon === "custom" && (
@@ -253,6 +284,29 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
   const report = (detail.reports ?? [])[0];
   const total = forecast.reduce((acc: number, p: any) => acc + Number(p.predicted_value ?? 0), 0);
 
+  const chartData = (() => {
+    const rows = [
+      ...history.map((p: any) => ({
+        label: p.period_start,
+        historico: Number(p.actual_value ?? 0),
+        estimado: null as number | null,
+        rango: null as [number, number] | null,
+      })),
+      ...forecast.map((p: any) => ({
+        label: p.period_start,
+        historico: null as number | null,
+        estimado: Number(p.predicted_value ?? 0),
+        rango: [Number(p.lower_bound ?? 0), Number(p.upper_bound ?? 0)] as [number, number],
+      })),
+    ].sort((a, b) => String(a.label).localeCompare(String(b.label)));
+    // Une la última barra histórica con la primera estimación para que la línea sea continua.
+    const lastHistoryIdx = rows.map((r) => r.historico !== null).lastIndexOf(true);
+    if (lastHistoryIdx >= 0 && rows[lastHistoryIdx]) {
+      rows[lastHistoryIdx]!.estimado = rows[lastHistoryIdx]!.historico;
+    }
+    return rows;
+  })();
+
   if (forecast.length === 0)
     return (
       <p className="mt-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
@@ -283,6 +337,63 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
           <p className="whitespace-pre-line text-sm">{report.summary}</p>
         </div>
       )}
+
+      <div className="rounded-lg border border-border bg-background p-3">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Gráfico de estimaciones
+        </p>
+        <div className="h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" minTickGap={16} />
+              <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={64} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--background))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+                formatter={(value: any, name: string) =>
+                  Array.isArray(value)
+                    ? [`${formatNumber(Number(value[0]))} – ${formatNumber(Number(value[1]))}`, "Rango estimado"]
+                    : [formatNumber(Number(value ?? 0)), name]
+                }
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Area
+                type="monotone"
+                dataKey="rango"
+                name="Rango estimado"
+                stroke="none"
+                fill="hsl(var(--primary))"
+                fillOpacity={0.15}
+                connectNulls
+              />
+              <Line
+                type="monotone"
+                dataKey="historico"
+                name="Histórico"
+                stroke="hsl(var(--muted-foreground))"
+                strokeWidth={2}
+                dot={false}
+                connectNulls
+              />
+              <Line
+                type="monotone"
+                dataKey="estimado"
+                name="Estimado"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                strokeDasharray="5 4"
+                dot={false}
+                connectNulls
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
       <div className="max-h-64 overflow-auto rounded-lg border border-border bg-background">
         <table className="w-full text-xs">
