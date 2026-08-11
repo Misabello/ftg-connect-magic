@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, Wallet, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, ScanText, Upload, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
@@ -23,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/ftg/format";
 import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
+import { readTicket } from "@/lib/ftg/ocr.functions";
 import {
   AGING_ORDER,
   FINANCE_STATUS_LABEL,
@@ -39,6 +41,13 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
   const queryClient = useQueryClient();
   const tab = kind;
   const [open, setOpen] = useState(false);
+  const ocr = useServerFn(readTicket);
+  const docFileInput = useRef<HTMLInputElement>(null);
+  const [docCameraOpen, setDocCameraOpen] = useState(false);
+  const [docFile, setDocFile] = useState<File | null>(null);
+  const [docPreview, setDocPreview] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [ocrConfidence, setOcrConfidence] = useState<number | null>(null);
   const [payDoc, setPayDoc] = useState<{ id: string; balance: number; currency: string; amount: number; paid: number } | null>(null);
   const [receipt, setReceipt] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
@@ -118,6 +127,17 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       if (!organizationId) throw new Error("No se encontró la organización");
       const amount = Number(draft.amount);
       if (!Number.isFinite(amount) || amount <= 0) throw new Error("Importe inválido");
+      let receiptPath: string | null = null;
+      if (docFile) {
+        const ext = (docFile.name.split(".").pop() ?? "jpg").toLowerCase();
+        const path = `documentos/${organizationId}/${crypto.randomUUID()}.${ext}`;
+        const upload = await supabase.storage.from("finance-receipts").upload(path, docFile, {
+          contentType: docFile.type || "application/octet-stream",
+          upsert: false,
+        });
+        if (upload.error) throw new Error(`No pudimos subir el comprobante: ${upload.error.message}`);
+        receiptPath = path;
+      }
       const { error } = await supabase.from("finance_documents").insert({
         organization_id: organizationId,
         location_id: activeLocationId,
@@ -131,6 +151,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         currency_code: currency,
         amount,
         due_on: draft.due_on || null,
+        receipt_path: receiptPath,
       });
       if (error) throw error;
       return { party, amount };
@@ -151,6 +172,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       }
       setOpen(false);
       setDraft({ concept: "", counterparty: "", document_number: "", amount: "", due_on: "", cost_center: "" });
+      clearDocFile();
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -197,6 +219,66 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
     });
   }
 
+  function clearDocFile() {
+    setDocFile(null);
+    setDocPreview(null);
+    setOcrConfidence(null);
+  }
+
+  /** Sube/saca foto del comprobante y completa el formulario con OCR + IA. */
+  async function scanDocument(selected: File | null) {
+    if (!selected) return;
+    if (selected.size > 15 * 1024 * 1024) {
+      toast.error("El comprobante no puede superar 15 MB");
+      return;
+    }
+    setDocFile(selected);
+    setOcrConfidence(null);
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+      reader.readAsDataURL(selected);
+    });
+    setDocPreview(selected.type.startsWith("image/") ? dataUrl : null);
+
+    setScanning(true);
+    try {
+      const result = await ocr({ data: { imageUrl: dataUrl } });
+      setDraft((prev) => ({
+        ...prev,
+        amount: result.amount !== null ? String(result.amount) : prev.amount,
+        document_number: result.documentNumber ?? prev.document_number,
+        due_on: prev.due_on || result.issuedOn || "",
+        concept:
+          prev.concept ||
+          (result.supplierName
+            ? `Comprobante ${result.supplierName}`
+            : result.documentNumber
+              ? `Comprobante ${result.documentNumber}`
+              : ""),
+      }));
+      setOcrConfidence(result.confidence);
+
+      const partyList = tab === "cobrar" ? data?.customers ?? [] : data?.suppliers ?? [];
+      const needle = (result.supplierName ?? "").toLowerCase().trim();
+      const match = needle
+        ? partyList.find((p) => p.name.toLowerCase().includes(needle) || needle.includes(p.name.toLowerCase()))
+        : undefined;
+      if (match) setDraft((prev) => ({ ...prev, counterparty: match.id }));
+
+      toast.success("Comprobante leído", {
+        description: match
+          ? `Datos completados y contraparte detectada: ${match.name}. Revisalos antes de guardar.`
+          : "Revisá los datos y elegí la contraparte antes de guardar.",
+      });
+    } catch (error) {
+      toast.error("No pudimos leer el comprobante", { description: (error as Error).message });
+    } finally {
+      setScanning(false);
+    }
+  }
+
   /** Abre el correo al cliente con el detalle de la factura por cobrar. */
   function sendInvoiceEmail(invoice: {
     email: string | null;
@@ -219,7 +301,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       customerName: invoice.customerName,
     });
     const subject = `Factura FTG${invoice.documentNumber ? ` ${invoice.documentNumber}` : ""}`;
-    window.open(mailtoLink(invoice.email, subject, body), "_blank");
+    window.location.href = mailtoLink(invoice.email, subject, body);
     toast.success(`Factura preparada para enviar a ${invoice.email}`);
   }
 
@@ -368,13 +450,67 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         </Table>
       </section>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) clearDocFile();
+        }}
+      >
+        <DialogContent className="max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{tab === "cobrar" ? "Nuevo documento por cobrar" : "Nuevo documento por pagar"}</DialogTitle>
-            <DialogDescription>Se registra en la sede activa y en {currency}.</DialogDescription>
+            <DialogDescription>
+              Subí la factura o sacale una foto: la IA lee los datos y completa el formulario. Se registra en la sede
+              activa y en {currency}.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="rounded-xl border border-dashed p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setDocCameraOpen(true)}>
+                  <Camera className="h-3.5 w-3.5" /> Sacar foto
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => docFileInput.current?.click()}>
+                  <Upload className="h-3.5 w-3.5" /> Subir factura
+                </Button>
+                {scanning && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Leyendo con IA…
+                  </span>
+                )}
+                {!scanning && ocrConfidence !== null && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <ScanText className="h-3.5 w-3.5" /> Confianza {ocrConfidence}%
+                  </span>
+                )}
+                {docFile && (
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Paperclip className="h-3.5 w-3.5" /> {docFile.name}
+                    <button type="button" onClick={clearDocFile} aria-label="Quitar comprobante">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                )}
+              </div>
+              {docPreview && (
+                <img src={docPreview} alt="Vista previa de la factura" className="mt-3 max-h-48 w-full rounded-lg object-contain" />
+              )}
+              <input
+                ref={docFileInput}
+                type="file"
+                accept="image/*,application/pdf"
+                className="hidden"
+                onChange={(e) => void scanDocument(e.target.files?.[0] ?? null)}
+              />
+              <CameraCaptureDialog
+                open={docCameraOpen}
+                onOpenChange={setDocCameraOpen}
+                title="Sacar foto de la factura"
+                description="Encuadrá el comprobante completo y capturá."
+                onCapture={(file) => void scanDocument(file)}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label>{tab === "cobrar" ? "Cliente" : "Proveedor"}</Label>
               <Select value={draft.counterparty} onValueChange={(v) => setDraft((p) => ({ ...p, counterparty: v }))}>
