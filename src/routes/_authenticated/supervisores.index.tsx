@@ -72,6 +72,8 @@ function ResumenParque() {
         />
       </div>
 
+      <ParkTrendCharts locationId={activeLocationId} currency={currency} />
+
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Incidentes activos" hint="Reportados desde Operaciones">
           {openIncidents.length === 0 ? (
