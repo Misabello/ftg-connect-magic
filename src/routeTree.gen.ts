@@ -21,6 +21,7 @@ import { Route as AuthenticatedInventarioRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenticated/operaciones'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
+import { Route as AuthenticatedSupervisoresRouteImport } from './routes/_authenticated/supervisores'
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
 import { Route as AuthenticatedConfiguracionAuditoriaRouteImport } from './routes/_authenticated/configuracion.auditoria'
 import { Route as AuthenticatedConfiguracionEmpleadosRouteImport } from './routes/_authenticated/configuracion.empleados'
@@ -29,6 +30,16 @@ import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_a
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
+import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
+import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
+import { Route as AuthenticatedSupervisoresCajasRouteImport } from './routes/_authenticated/supervisores.cajas'
+import { Route as AuthenticatedSupervisoresCierreRouteImport } from './routes/_authenticated/supervisores.cierre'
+import { Route as AuthenticatedSupervisoresInventarioRouteImport } from './routes/_authenticated/supervisores.inventario'
+import { Route as AuthenticatedSupervisoresOperativoRouteImport } from './routes/_authenticated/supervisores.operativo'
+import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './routes/_authenticated/supervisores.predicciones'
+import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
+import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
+import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
@@ -97,6 +108,12 @@ const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSupervisoresRoute =
+  AuthenticatedSupervisoresRouteImport.update({
+    id: '/supervisores',
+    path: '/supervisores',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConfiguracionIndexRoute =
   AuthenticatedConfiguracionIndexRouteImport.update({
     id: '/',
@@ -144,6 +161,66 @@ const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   path: '/sedes/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSupervisoresIndexRoute =
+  AuthenticatedSupervisoresIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresAlertasRoute =
+  AuthenticatedSupervisoresAlertasRouteImport.update({
+    id: '/alertas',
+    path: '/alertas',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresCajasRoute =
+  AuthenticatedSupervisoresCajasRouteImport.update({
+    id: '/cajas',
+    path: '/cajas',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresCierreRoute =
+  AuthenticatedSupervisoresCierreRouteImport.update({
+    id: '/cierre',
+    path: '/cierre',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresInventarioRoute =
+  AuthenticatedSupervisoresInventarioRouteImport.update({
+    id: '/inventario',
+    path: '/inventario',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresOperativoRoute =
+  AuthenticatedSupervisoresOperativoRouteImport.update({
+    id: '/operativo',
+    path: '/operativo',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresPrediccionesRoute =
+  AuthenticatedSupervisoresPrediccionesRouteImport.update({
+    id: '/predicciones',
+    path: '/predicciones',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresPuntosVentaRoute =
+  AuthenticatedSupervisoresPuntosVentaRouteImport.update({
+    id: '/puntos-venta',
+    path: '/puntos-venta',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresReportesRoute =
+  AuthenticatedSupervisoresReportesRouteImport.update({
+    id: '/reportes',
+    path: '/reportes',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresVentasRoute =
+  AuthenticatedSupervisoresVentasRouteImport.update({
+    id: '/ventas',
+    path: '/ventas',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
 const AuthenticatedSedesLocationIdIndexRoute =
   AuthenticatedSedesLocationIdIndexRouteImport.update({
     id: '/sedes/$locationId/',
@@ -180,14 +257,25 @@ export interface FileRoutesByFullPath {
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/supervisores': typeof AuthenticatedSupervisoresRouteWithChildren
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
+  '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
+  '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
+  '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
+  '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
+  '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -210,8 +298,18 @@ export interface FileRoutesByTo {
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
+  '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
+  '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
+  '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
+  '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
+  '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
+  '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/sedes/$locationId': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -231,14 +329,25 @@ export interface FileRoutesById {
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
+  '/_authenticated/supervisores': typeof AuthenticatedSupervisoresRouteWithChildren
   '/_authenticated/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/_authenticated/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/_authenticated/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
+  '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/_authenticated/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
+  '/_authenticated/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
+  '/_authenticated/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/_authenticated/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
+  '/_authenticated/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/_authenticated/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
+  '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
+  '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/_authenticated/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -258,14 +367,25 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/supervisores'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
     | '/configuracion/parametros'
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/supervisores/alertas'
+    | '/supervisores/cajas'
+    | '/supervisores/cierre'
+    | '/supervisores/inventario'
+    | '/supervisores/operativo'
+    | '/supervisores/predicciones'
+    | '/supervisores/puntos-venta'
+    | '/supervisores/reportes'
+    | '/supervisores/ventas'
     | '/configuracion/'
     | '/sedes/'
+    | '/supervisores/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/sedes/$locationId/'
@@ -288,8 +408,18 @@ export interface FileRouteTypes {
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/supervisores/alertas'
+    | '/supervisores/cajas'
+    | '/supervisores/cierre'
+    | '/supervisores/inventario'
+    | '/supervisores/operativo'
+    | '/supervisores/predicciones'
+    | '/supervisores/puntos-venta'
+    | '/supervisores/reportes'
+    | '/supervisores/ventas'
     | '/configuracion'
     | '/sedes'
+    | '/supervisores'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/sedes/$locationId'
@@ -308,14 +438,25 @@ export interface FileRouteTypes {
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
+    | '/_authenticated/supervisores'
     | '/_authenticated/configuracion/auditoria'
     | '/_authenticated/configuracion/empleados'
     | '/_authenticated/configuracion/parametros'
     | '/_authenticated/configuracion/roles'
     | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/vacaciones'
+    | '/_authenticated/supervisores/alertas'
+    | '/_authenticated/supervisores/cajas'
+    | '/_authenticated/supervisores/cierre'
+    | '/_authenticated/supervisores/inventario'
+    | '/_authenticated/supervisores/operativo'
+    | '/_authenticated/supervisores/predicciones'
+    | '/_authenticated/supervisores/puntos-venta'
+    | '/_authenticated/supervisores/reportes'
+    | '/_authenticated/supervisores/ventas'
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
+    | '/_authenticated/supervisores/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/_authenticated/sedes/$locationId/'
@@ -416,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/supervisores': {
+      id: '/_authenticated/supervisores'
+      path: '/supervisores'
+      fullPath: '/supervisores'
+      preLoaderRoute: typeof AuthenticatedSupervisoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/configuracion/': {
       id: '/_authenticated/configuracion/'
       path: '/'
@@ -471,6 +619,76 @@ declare module '@tanstack/react-router' {
       fullPath: '/sedes/'
       preLoaderRoute: typeof AuthenticatedSedesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/supervisores/': {
+      id: '/_authenticated/supervisores/'
+      path: '/'
+      fullPath: '/supervisores/'
+      preLoaderRoute: typeof AuthenticatedSupervisoresIndexRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/alertas': {
+      id: '/_authenticated/supervisores/alertas'
+      path: '/alertas'
+      fullPath: '/supervisores/alertas'
+      preLoaderRoute: typeof AuthenticatedSupervisoresAlertasRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/cajas': {
+      id: '/_authenticated/supervisores/cajas'
+      path: '/cajas'
+      fullPath: '/supervisores/cajas'
+      preLoaderRoute: typeof AuthenticatedSupervisoresCajasRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/cierre': {
+      id: '/_authenticated/supervisores/cierre'
+      path: '/cierre'
+      fullPath: '/supervisores/cierre'
+      preLoaderRoute: typeof AuthenticatedSupervisoresCierreRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/inventario': {
+      id: '/_authenticated/supervisores/inventario'
+      path: '/inventario'
+      fullPath: '/supervisores/inventario'
+      preLoaderRoute: typeof AuthenticatedSupervisoresInventarioRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/operativo': {
+      id: '/_authenticated/supervisores/operativo'
+      path: '/operativo'
+      fullPath: '/supervisores/operativo'
+      preLoaderRoute: typeof AuthenticatedSupervisoresOperativoRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/predicciones': {
+      id: '/_authenticated/supervisores/predicciones'
+      path: '/predicciones'
+      fullPath: '/supervisores/predicciones'
+      preLoaderRoute: typeof AuthenticatedSupervisoresPrediccionesRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/puntos-venta': {
+      id: '/_authenticated/supervisores/puntos-venta'
+      path: '/puntos-venta'
+      fullPath: '/supervisores/puntos-venta'
+      preLoaderRoute: typeof AuthenticatedSupervisoresPuntosVentaRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/reportes': {
+      id: '/_authenticated/supervisores/reportes'
+      path: '/reportes'
+      fullPath: '/supervisores/reportes'
+      preLoaderRoute: typeof AuthenticatedSupervisoresReportesRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/ventas': {
+      id: '/_authenticated/supervisores/ventas'
+      path: '/ventas'
+      fullPath: '/supervisores/ventas'
+      preLoaderRoute: typeof AuthenticatedSupervisoresVentasRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
     }
     '/_authenticated/sedes/$locationId/': {
       id: '/_authenticated/sedes/$locationId/'
@@ -534,6 +752,44 @@ const AuthenticatedConfiguracionRouteWithChildren =
     AuthenticatedConfiguracionRouteChildren,
   )
 
+interface AuthenticatedSupervisoresRouteChildren {
+  AuthenticatedSupervisoresAlertasRoute: typeof AuthenticatedSupervisoresAlertasRoute
+  AuthenticatedSupervisoresCajasRoute: typeof AuthenticatedSupervisoresCajasRoute
+  AuthenticatedSupervisoresCierreRoute: typeof AuthenticatedSupervisoresCierreRoute
+  AuthenticatedSupervisoresInventarioRoute: typeof AuthenticatedSupervisoresInventarioRoute
+  AuthenticatedSupervisoresOperativoRoute: typeof AuthenticatedSupervisoresOperativoRoute
+  AuthenticatedSupervisoresPrediccionesRoute: typeof AuthenticatedSupervisoresPrediccionesRoute
+  AuthenticatedSupervisoresPuntosVentaRoute: typeof AuthenticatedSupervisoresPuntosVentaRoute
+  AuthenticatedSupervisoresReportesRoute: typeof AuthenticatedSupervisoresReportesRoute
+  AuthenticatedSupervisoresVentasRoute: typeof AuthenticatedSupervisoresVentasRoute
+  AuthenticatedSupervisoresIndexRoute: typeof AuthenticatedSupervisoresIndexRoute
+}
+
+const AuthenticatedSupervisoresRouteChildren: AuthenticatedSupervisoresRouteChildren =
+  {
+    AuthenticatedSupervisoresAlertasRoute:
+      AuthenticatedSupervisoresAlertasRoute,
+    AuthenticatedSupervisoresCajasRoute: AuthenticatedSupervisoresCajasRoute,
+    AuthenticatedSupervisoresCierreRoute: AuthenticatedSupervisoresCierreRoute,
+    AuthenticatedSupervisoresInventarioRoute:
+      AuthenticatedSupervisoresInventarioRoute,
+    AuthenticatedSupervisoresOperativoRoute:
+      AuthenticatedSupervisoresOperativoRoute,
+    AuthenticatedSupervisoresPrediccionesRoute:
+      AuthenticatedSupervisoresPrediccionesRoute,
+    AuthenticatedSupervisoresPuntosVentaRoute:
+      AuthenticatedSupervisoresPuntosVentaRoute,
+    AuthenticatedSupervisoresReportesRoute:
+      AuthenticatedSupervisoresReportesRoute,
+    AuthenticatedSupervisoresVentasRoute: AuthenticatedSupervisoresVentasRoute,
+    AuthenticatedSupervisoresIndexRoute: AuthenticatedSupervisoresIndexRoute,
+  }
+
+const AuthenticatedSupervisoresRouteWithChildren =
+  AuthenticatedSupervisoresRoute._addFileChildren(
+    AuthenticatedSupervisoresRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdministracionRoute: typeof AuthenticatedAdministracionRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
@@ -544,6 +800,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
+  AuthenticatedSupervisoresRoute: typeof AuthenticatedSupervisoresRouteWithChildren
   AuthenticatedSedesIndexRoute: typeof AuthenticatedSedesIndexRoute
   AuthenticatedSedesLocationIdIndexRoute: typeof AuthenticatedSedesLocationIdIndexRoute
   AuthenticatedSedesLocationIdPosPosIdRoute: typeof AuthenticatedSedesLocationIdPosPosIdRoute
@@ -559,6 +816,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
+  AuthenticatedSupervisoresRoute: AuthenticatedSupervisoresRouteWithChildren,
   AuthenticatedSedesIndexRoute: AuthenticatedSedesIndexRoute,
   AuthenticatedSedesLocationIdIndexRoute:
     AuthenticatedSedesLocationIdIndexRoute,
