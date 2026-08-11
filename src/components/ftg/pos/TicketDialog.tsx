@@ -126,7 +126,7 @@ export function TicketDialog({
         .upload(path, file, { contentType: file.type || "image/jpeg", upsert: false });
       if (uploadError) throw uploadError;
 
-      const { error } = await supabase.from("pos_tickets").insert({
+      const { data: inserted, error } = await supabase.from("pos_tickets").insert({
         organization_id: organizationId,
         location_id: locationId,
         point_of_sale_id: pointOfSaleId,
@@ -144,8 +144,24 @@ export function TicketDialog({
         ocr_confidence: confidence,
         status: "confirmado",
         created_by: userId,
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // Copia del original a Google Drive (no bloquea el registro del ticket).
+      try {
+        const { uploadTicketToDrive } = await import("@/lib/ftg/drive.functions");
+        await uploadTicketToDrive({
+          data: {
+            ticketId: inserted.id,
+            path,
+            fileName: `${issuedOn ?? "sin-fecha"}_${documentNumber || "ticket"}_${supplierName || "sin-proveedor"}.${extension}`,
+          },
+        });
+      } catch (driveError) {
+        toast.warning("El ticket se guardó, pero no se pudo copiar a Google Drive", {
+          description: (driveError as Error).message,
+        });
+      }
     },
     onSuccess: () => {
       toast.success("Ticket registrado con su asiento contable");
