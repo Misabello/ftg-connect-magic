@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { CloudUpload, Receipt, RefreshCw, ScanText, Send, Sparkles, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,11 +28,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
-import { useOfflineQueue } from "@/hooks/useOfflineQueue";
+import { useDaySync } from "@/hooks/useDaySync";
+import { SyncDayButton } from "@/components/ftg/sync/SyncDayButton";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
-import { enqueueSale } from "@/lib/ftg/offline";
+import { enqueueOperation } from "@/lib/ftg/offline.db";
 import {
   listMagicItems,
   removeMagicItem,
@@ -75,7 +77,7 @@ export function PosWorkspace({
   const activeLocation = locations.find((l) => l.id === activeLocationId) ?? null;
   const { user, profile } = useAuth();
   const queryClient = useQueryClient();
-  const { pending, pendingCount, syncing, sync } = useOfflineQueue();
+  const { pendingCount, pendingData: pendingOps } = useDaySync();
 
   const [selectedPosId, setSelectedPosId] = useState<string | null>(null);
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -457,21 +459,29 @@ export function PosWorkspace({
         local_created_at: localCreatedAt,
       };
 
-      const queueLocally = () => {
-        enqueueSale({
-          saleNumber,
-          posCode: activePos.code,
-          total: totals.total,
+      const queueLocally = async () => {
+        await enqueueOperation({
+          entityType: "sale",
+          priority: "alta",
+          idempotencyKey: salePayload.idempotency_key,
+          organizationId: activePos.organization_id,
+          locationId: activeLocationId,
+          pointOfSaleId: activePos.id,
+          cashSessionId: activeSession.id,
           currency,
-          sale: { ...salePayload, source: "offline" },
-          items: itemsPayload,
-          payments: paymentsPayload,
-          audit: auditPayload,
+          amount: totals.total,
+          label: `Venta ${saleNumber}`,
+          payload: {
+            sale: { ...salePayload, source: "offline" },
+            items: itemsPayload,
+            payments: paymentsPayload,
+            audit: auditPayload,
+          },
         });
         return { sale_number: saleNumber, queued: true };
       };
 
-      if (!online) return queueLocally();
+      if (!online) return await queueLocally();
 
       try {
         const { data: sale, error } = await supabase
@@ -495,7 +505,7 @@ export function PosWorkspace({
 
         return { sale_number: sale.sale_number, queued: false };
       } catch (error) {
-        if (!navigator.onLine) return queueLocally();
+        if (!navigator.onLine) return await queueLocally();
         throw error;
       }
     },
@@ -588,12 +598,15 @@ export function PosWorkspace({
                 <WifiOff className="h-3.5 w-3.5" /> Sin conexión
               </Badge>
             )}
-            {pendingCount > 0 && (
-              <Button variant="secondary" size="sm" className="gap-1.5" onClick={() => void sync()} disabled={syncing}>
-                <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
-                {syncing ? "Sincronizando…" : `Sincronizar ${pendingCount}`}
-              </Button>
-            )}
+            <SyncDayButton
+              size="sm"
+              variant="secondary"
+              posName={activePos?.name}
+              userName={profile?.full_name ?? user?.email ?? undefined}
+            />
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/sincronizacion">Centro de sincronización</Link>
+            </Button>
             {!posId && (
               <Select value={activePos?.id ?? ""} onValueChange={setSelectedPosId}>
                 <SelectTrigger className="w-[16rem]">
@@ -718,21 +731,21 @@ export function PosWorkspace({
                 <ScanText className="h-3.5 w-3.5" /> Ingresar ticket (OCR)
               </Button>
             </div>
-            {pending.length > 0 && (
+            {pendingOps.length > 0 && (
               <ul className="mt-4 space-y-2">
-                {pending.map((p) => (
+                {pendingOps.map((p) => (
                   <li
                     key={p.id}
                     className="flex items-center justify-between gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4"
                   >
                     <div>
-                      <p className="text-sm font-medium">{p.saleNumber}</p>
+                      <p className="text-sm font-medium">{p.label ?? "Operación pendiente"}</p>
                       <p className="text-xs text-muted-foreground">
                         Pendiente de sincronizar{p.lastError ? ` · ${p.lastError}` : ""}
                       </p>
                     </div>
                     <span className="flex items-center gap-1.5 text-xs font-medium text-warning">
-                      <CloudUpload className="h-3.5 w-3.5" /> {formatMoney(p.total, p.currency, locale)}
+                      <CloudUpload className="h-3.5 w-3.5" /> {formatMoney(p.amount ?? 0, p.currency ?? currency, locale)}
                     </span>
                   </li>
                 ))}
