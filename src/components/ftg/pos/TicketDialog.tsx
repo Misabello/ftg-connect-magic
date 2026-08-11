@@ -50,7 +50,7 @@ export function TicketDialog({
   const ocr = useServerFn(readTicket);
   const queryClient = useQueryClient();
   const fileInput = useRef<HTMLInputElement>(null);
-  const cameraInput = useRef<HTMLInputElement>(null);
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -168,7 +168,7 @@ export function TicketDialog({
 
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => cameraInput.current?.click()}>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setCameraOpen(true)}>
               <Camera className="h-3.5 w-3.5" /> Sacar foto
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => fileInput.current?.click()}>
@@ -185,13 +185,12 @@ export function TicketDialog({
               </span>
             )}
           </div>
-          <input
-            ref={cameraInput}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
+          <CameraCaptureDialog
+            open={cameraOpen}
+            onOpenChange={setCameraOpen}
+            title="Sacar foto del ticket"
+            description="Encuadrá el comprobante completo y capturá."
+            onCapture={(file) => handleFile(file)}
           />
           <input
             ref={fileInput}
