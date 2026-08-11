@@ -284,6 +284,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
     .eq("key", job.target_key)
     .maybeSingle();
   const family = (target as any)?.family ?? "ventas";
+  const modelId = await resolveModelId(writer);
 
   const setStatus = (status: string, message: string) =>
     writer.from("ml_prediction_jobs").update({ status, status_message: message }).eq("id", jobId);
@@ -318,7 +319,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       is_history: true,
       actual_value: Number(b.value.toFixed(2)),
       currency_code: job.currency_code,
-      model_id: MODEL_ID,
+      model_id: modelId,
       confidence_level: 0.8,
     }));
     const forecastRows = future.map((b, i) => ({
@@ -333,19 +334,20 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       lower_bound: Number(forecast[i]!.lower.toFixed(2)),
       upper_bound: Number(forecast[i]!.upper.toFixed(2)),
       currency_code: job.currency_code,
-      model_id: MODEL_ID,
+      model_id: modelId,
       confidence_level: 0.8,
     }));
-    await writer.from("ml_predictions").insert([...historyRows, ...forecastRows]);
+    const insertPredictions = await writer.from("ml_predictions").insert([...historyRows, ...forecastRows]);
+    if (insertPredictions.error) throw new Error(`No se pudieron guardar las series: ${insertPredictions.error.message}`);
 
     await writer.from("ml_model_evaluations").delete().eq("job_id", jobId);
-    if (metrics) {
-      await writer.from("ml_model_evaluations").insert({
+    if (metrics && modelId) {
+      const insertEval = await writer.from("ml_model_evaluations").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         location_id: job.location_id,
         target_key: job.target_key,
-        model_id: MODEL_ID,
+        model_id: modelId,
         is_selected: true,
         mae: Number(metrics.mae.toFixed(4)),
         rmse: Number(metrics.rmse.toFixed(4)),
@@ -359,6 +361,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
         backtest_to: buckets[buckets.length - 1]?.end ?? job.history_to,
         details: { engine: "local", granularity: job.granularity, buckets: buckets.length },
       });
+      if (insertEval.error) throw new Error(`No se pudieron guardar las métricas: ${insertEval.error.message}`);
     }
 
     const horizonDays = Math.max(
