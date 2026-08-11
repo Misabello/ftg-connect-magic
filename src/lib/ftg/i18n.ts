@@ -98,7 +98,7 @@ const pt: Dict = {
   "nav.pos": "Ponto de venda",
   "nav.fotografias": "Fotografias",
   "nav.operaciones": "Operações",
-  "nav.supervisores": "Supervisores",
+  "nav.supervisores": "Supervisores (Ex Ges-Pro)",
   "nav.inventario": "Estoque",
   "nav.administracion": "Administração",
   "nav.clientes": "Clientes",
