@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { BarChartRace, ShareRibbon, StoryForecastChart } from "@/components/ftg/charts/FlourishCharts";
+import { LookerStudioPanel } from "@/components/ftg/charts/LookerStudioPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -429,6 +430,7 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
               <TabsTrigger value="linea">Línea del tiempo</TabsTrigger>
               <TabsTrigger value="carrera">Carrera de barras</TabsTrigger>
               <TabsTrigger value="reparto">Reparto</TabsTrigger>
+              <TabsTrigger value="looker">Looker Studio</TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="linea" className="animate-fade-in">
@@ -442,6 +444,9 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
           </TabsContent>
           <TabsContent value="reparto" className="animate-fade-in">
             <ShareRibbon segments={shareSegments} />
+          </TabsContent>
+          <TabsContent value="looker" className="animate-fade-in">
+            <LookerStudioPanel rows={exportRows} headers={exportHeaders} fileBase={fileBase} />
           </TabsContent>
         </Tabs>
       </div>
