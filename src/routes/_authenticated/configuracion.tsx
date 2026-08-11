@@ -33,7 +33,7 @@ function ConfiguracionLayout() {
           Inicio
         </Link>
         <span className="mx-1.5">/</span>
-        <Link to="/configuracion" className="hover:text-foreground">
+        <Link to="/configuracion" search={{ tab: undefined }} className="hover:text-foreground">
           {t("page.configuracion.title")}
         </Link>
         {current && (
