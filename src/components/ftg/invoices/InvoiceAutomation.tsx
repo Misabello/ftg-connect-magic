@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Copy, Inbox, Loader2, Mail, Plus, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Copy, Inbox, Loader2, Mail, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { extractInvoiceDocument } from "@/lib/ftg/invoices.functions";
 import { toast } from "sonner";
 
 import { InvoiceReviewDialog } from "@/components/ftg/invoices/InvoiceReviewDialog";
@@ -122,6 +123,21 @@ export function InvoiceAutomation() {
 
   const endpoint = `${typeof window !== "undefined" ? window.location.origin : ""}/api/public/invoices/ingest`;
 
+  const pendingDocs = docs.filter((d) => ["pendiente", "error"].includes(d.extraction_status));
+
+  const processPending = useMutation({
+    mutationFn: async () => {
+      for (const doc of pendingDocs.slice(0, 10)) {
+        await extractInvoiceDocument({ data: { documentId: doc.id } }).catch(() => null);
+      }
+    },
+    onSuccess: async () => {
+      toast.success("Documentos procesados con IA");
+      await queryClient.invalidateQueries({ queryKey: ["invoice-automation"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -131,14 +147,24 @@ export function InvoiceAutomation() {
             Los correos con comprobantes llegan firmados desde Gmail, se leen con IA y esperan tu aprobación.
           </p>
         </div>
-        <Select value={direction} onValueChange={setDirection}>
-          <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todas">Todos los sentidos</SelectItem>
-            <SelectItem value="proveedor">De proveedores</SelectItem>
-            <SelectItem value="cliente">A clientes</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => processPending.mutate()}
+            disabled={processPending.isPending || pendingDocs.length === 0}
+          >
+            {processPending.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            Procesar pendientes ({pendingDocs.length})
+          </Button>
+          <Select value={direction} onValueChange={setDirection}>
+            <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todos los sentidos</SelectItem>
+              <SelectItem value="proveedor">De proveedores</SelectItem>
+              <SelectItem value="cliente">A clientes</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
