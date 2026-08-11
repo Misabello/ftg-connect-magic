@@ -383,7 +383,17 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
         >
           <Table2 className="h-3.5 w-3.5" /> Copiar para Sheets
         </Button>
-        <ExportSheetButton title={fileBase} headers={exportHeaders} rows={exportRows} />
+        <ExportSheetButton
+          title={fileBase}
+          headers={exportHeaders}
+          rows={exportRows}
+          chart={{
+            title: `Estimación ${detail.job.target_key ?? "FTG"}`,
+            type: "LINE",
+            domainHeader: "Desde",
+            seriesHeaders: ["Estimado", "Mínimo", "Máximo"],
+          }}
+        />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -527,10 +537,12 @@ function ExportSheetButton({
   title,
   headers,
   rows,
+  chart,
 }: {
   title: string;
   headers: string[];
   rows: Record<string, string | number | null | undefined>[];
+  chart?: { title: string; type: "LINE" | "COLUMN" | "AREA"; domainHeader: string; seriesHeaders: string[] };
 }) {
   const [busy, setBusy] = useState(false);
   const createSheet = useServerFn(exportRowsToSheet);
@@ -549,11 +561,16 @@ function ExportSheetButton({
               title: `FTG · ${title}`,
               headers,
               rows: rows.map((r) => headers.map((h) => (r[h] === undefined || r[h] === null ? "" : r[h]!))),
+              ...(chart ? { chart } : {}),
             },
           });
           if (res.url) {
             window.open(res.url, "_blank", "noopener");
-            toast.success("Planilla creada en Google Sheets", { description: `${res.rows} filas exportadas.` });
+            toast.success("Planilla creada en Google Sheets", {
+              description: res.chart_added
+                ? `${res.rows} filas exportadas + hoja con el gráfico.`
+                : `${res.rows} filas exportadas.`,
+            });
           } else {
             toast.error("La planilla se creó pero no se obtuvo el enlace.");
           }
