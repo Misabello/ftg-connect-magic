@@ -63,8 +63,8 @@ type PosWorkspaceProps = {
 export function PosWorkspace({
   locationId,
   posId,
-  title = "Punto de venta",
-  description = "Catálogo, carrito, pagos combinados y arqueo de caja por puesto.",
+  title,
+  description,
   headerActions,
   autoCheckout = false,
 }: PosWorkspaceProps) {
