@@ -1139,6 +1139,7 @@ export function MagicStudio({
             </p>
           </section>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );
