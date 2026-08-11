@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Paperclip, Plus, Wallet, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
@@ -22,6 +22,7 @@ import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/ftg/format";
+import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
 import {
   AGING_ORDER,
   FINANCE_STATUS_LABEL,
@@ -59,10 +60,10 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         supabase
           .from("finance_documents")
           .select(
-            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, customer_id, supplier_id, location_id, organization_id, customers(name), suppliers(name)",
+            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, customer_id, supplier_id, location_id, organization_id, customers(name, email), suppliers(name)",
           )
           .order("due_on", { ascending: true }),
-        supabase.from("customers").select("id, name, organization_id").order("name"),
+        supabase.from("customers").select("id, name, email, organization_id").order("name"),
         supabase.from("suppliers").select("id, name, organization_id").order("name"),
         supabase
           .from("cash_sessions")
@@ -132,9 +133,22 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         due_on: draft.due_on || null,
       });
       if (error) throw error;
+      return { party, amount };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast.success(tab === "cobrar" ? "Documento por cobrar creado" : "Documento por pagar creado");
+      if (tab === "cobrar" && result) {
+        const email = (result.party as { email?: string | null } | undefined)?.email ?? null;
+        sendInvoiceEmail({
+          email,
+          customerName: result.party?.name ?? null,
+          concept: draft.concept,
+          documentNumber: draft.document_number || null,
+          amount: result.amount,
+          currency,
+          dueOn: draft.due_on || null,
+        });
+      }
       setOpen(false);
       setDraft({ concept: "", counterparty: "", document_number: "", amount: "", due_on: "", cost_center: "" });
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
@@ -181,6 +195,32 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+  }
+
+  /** Abre el correo al cliente con el detalle de la factura por cobrar. */
+  function sendInvoiceEmail(invoice: {
+    email: string | null;
+    customerName: string | null;
+    concept: string;
+    documentNumber: string | null;
+    amount: number;
+    currency: string;
+    dueOn: string | null;
+  }) {
+    if (!invoice.email) {
+      toast.warning("El cliente no tiene email cargado: agregalo en Clientes para enviarle la factura.");
+      return;
+    }
+    const body = buildInvoiceMessage({
+      concept: invoice.concept,
+      documentNumber: invoice.documentNumber,
+      totalLabel: formatMoney(invoice.amount, invoice.currency),
+      dueOn: invoice.dueOn,
+      customerName: invoice.customerName,
+    });
+    const subject = `Factura FTG${invoice.documentNumber ? ` ${invoice.documentNumber}` : ""}`;
+    window.open(mailtoLink(invoice.email, subject, body), "_blank");
+    toast.success(`Factura preparada para enviar a ${invoice.email}`);
   }
 
   function pickReceipt(file: File | null) {
@@ -283,6 +323,26 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
+                    {tab === "cobrar" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="mr-1.5"
+                        onClick={() =>
+                          sendInvoiceEmail({
+                            email: d.customers?.email ?? null,
+                            customerName: d.customers?.name ?? null,
+                            concept: d.concept,
+                            documentNumber: d.document_number,
+                            amount: Number(d.amount),
+                            currency: d.currency_code,
+                            dueOn: d.due_on,
+                          })
+                        }
+                      >
+                        <Mail className="mr-1.5 h-4 w-4" /> Enviar al cliente
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="secondary"
