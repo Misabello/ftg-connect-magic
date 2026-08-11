@@ -46,6 +46,7 @@ import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './rout
 import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedAdministracionReportesIndexRouteImport } from './routes/_authenticated/administracion.reportes.index'
+import { Route as AuthenticatedAdministracionReportesCajasRouteImport } from './routes/_authenticated/administracion.reportes.cajas'
 import { Route as AuthenticatedAdministracionReportesFacturasRouteImport } from './routes/_authenticated/administracion.reportes.facturas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
@@ -264,6 +265,12 @@ const AuthenticatedAdministracionReportesIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdministracionReportesRoute,
   } as any)
+const AuthenticatedAdministracionReportesCajasRoute =
+  AuthenticatedAdministracionReportesCajasRouteImport.update({
+    id: '/cajas',
+    path: '/cajas',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
 const AuthenticatedAdministracionReportesFacturasRoute =
   AuthenticatedAdministracionReportesFacturasRouteImport.update({
     id: '/facturas',
@@ -330,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -369,6 +377,7 @@ export interface FileRoutesByTo {
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -414,6 +423,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/_authenticated/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/_authenticated/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/configuracion/'
     | '/sedes/'
     | '/supervisores/'
+    | '/administracion/reportes/cajas'
     | '/administracion/reportes/facturas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/sedes'
     | '/supervisores'
+    | '/administracion/reportes/cajas'
     | '/administracion/reportes/facturas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -542,6 +554,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
+    | '/_authenticated/administracion/reportes/cajas'
     | '/_authenticated/administracion/reportes/facturas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -819,6 +832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionReportesIndexRouteImport
       parentRoute: typeof AuthenticatedAdministracionReportesRoute
     }
+    '/_authenticated/administracion/reportes/cajas': {
+      id: '/_authenticated/administracion/reportes/cajas'
+      path: '/cajas'
+      fullPath: '/administracion/reportes/cajas'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesCajasRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
     '/_authenticated/administracion/reportes/facturas': {
       id: '/_authenticated/administracion/reportes/facturas'
       path: '/facturas'
@@ -858,12 +878,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdministracionReportesRouteChildren {
+  AuthenticatedAdministracionReportesCajasRoute: typeof AuthenticatedAdministracionReportesCajasRoute
   AuthenticatedAdministracionReportesFacturasRoute: typeof AuthenticatedAdministracionReportesFacturasRoute
   AuthenticatedAdministracionReportesIndexRoute: typeof AuthenticatedAdministracionReportesIndexRoute
 }
 
 const AuthenticatedAdministracionReportesRouteChildren: AuthenticatedAdministracionReportesRouteChildren =
   {
+    AuthenticatedAdministracionReportesCajasRoute:
+      AuthenticatedAdministracionReportesCajasRoute,
     AuthenticatedAdministracionReportesFacturasRoute:
       AuthenticatedAdministracionReportesFacturasRoute,
     AuthenticatedAdministracionReportesIndexRoute:
