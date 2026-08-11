@@ -120,7 +120,12 @@ export function TicketDialog({
       if (!file || !preview) throw new Error("Adjuntá la foto o el archivo del ticket");
       if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) throw new Error("Ingresá un importe válido");
 
-      const extension = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const mimeExtension = (file.type || "").split("/")[1]?.toLowerCase();
+      const nameExtension = file.name.includes(".") ? file.name.split(".").pop()?.toLowerCase() : undefined;
+      const allowed = ["jpg", "jpeg", "png", "webp", "heic", "pdf"];
+      const extension =
+        (nameExtension && allowed.includes(nameExtension) && nameExtension) ||
+        (mimeExtension === "jpeg" ? "jpg" : mimeExtension && allowed.includes(mimeExtension) ? mimeExtension : "jpg");
       const path = `${organizationId}/${pointOfSaleId}/${crypto.randomUUID()}.${extension}`;
       const { error: uploadError } = await supabase.storage
         .from("pos-tickets")
