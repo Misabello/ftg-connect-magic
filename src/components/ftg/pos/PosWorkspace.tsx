@@ -15,6 +15,7 @@ import {
 } from "@/components/ftg/pos/CheckoutDialog";
 import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
 import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
+import { CashSourcesPanel } from "@/components/ftg/pos/CashSourcesPanel";
 import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -757,6 +758,14 @@ export function PosWorkspace({
               ))}
             </ul>
           </section>
+
+          <CashSourcesPanel
+            pointOfSaleId={activePos.id}
+            posName={activePos.name}
+            locationName={activeLocation?.name ?? null}
+            currency={currency}
+            locale={locale}
+          />
 
           <PosLedgerPanel pointOfSaleId={activePos.id} currency={currency} locale={locale} />
         </>

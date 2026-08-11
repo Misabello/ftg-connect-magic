@@ -78,11 +78,33 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
 
     const initPoint = payload.init_point ?? payload.sandbox_init_point ?? null;
 
+    // Origen de fondos: la fuente de Mercado Pago más específica (puesto > sede > organización).
+    const { data: sources } = await context.supabase
+      .from("cash_sources")
+      .select("id, name, location_id, point_of_sale_id, sort_order")
+      .eq("organization_id", data.organizationId)
+      .eq("provider", "mercadopago")
+      .eq("is_active", true);
+    const cashSource =
+      (sources ?? [])
+        .filter(
+          (s) =>
+            (s.point_of_sale_id === null || s.point_of_sale_id === data.pointOfSaleId) &&
+            (s.location_id === null || s.location_id === data.locationId),
+        )
+        .sort(
+          (a, b) =>
+            Number(b.point_of_sale_id !== null) - Number(a.point_of_sale_id !== null) ||
+            Number(b.location_id !== null) - Number(a.location_id !== null) ||
+            a.sort_order - b.sort_order,
+        )[0] ?? null;
+
     const { error } = await context.supabase.from("payment_intents").insert({
       organization_id: data.organizationId,
       location_id: data.locationId,
       point_of_sale_id: data.pointOfSaleId,
       cash_session_id: data.cashSessionId ?? null,
+      cash_source_id: cashSource?.id ?? null,
       external_reference: externalReference,
       preference_id: payload.id ?? null,
       init_point: initPoint,
@@ -94,7 +116,12 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
-    return { externalReference, initPoint, preferenceId: payload.id ?? null };
+    return {
+      externalReference,
+      initPoint,
+      preferenceId: payload.id ?? null,
+      cashSourceName: cashSource?.name ?? null,
+    };
   });
 
 /** Consulta el estado del cobro en Mercado Pago y actualiza el intento local. */
