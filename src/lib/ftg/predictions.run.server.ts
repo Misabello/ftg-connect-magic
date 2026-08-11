@@ -245,6 +245,10 @@ async function generateReport(payload: Record<string, unknown>): Promise<{ summa
 
 /** Pipeline completo del trabajo. Devuelve el estado final. */
 export async function runPredictionJobPipeline(supabase: AnyClient, jobId: string, userId?: string | null) {
+  // Los resultados los escribe el motor (rol de servicio); las lecturas usan el
+  // cliente del usuario para respetar su alcance.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const writer = supabaseAdmin as unknown as AnyClient;
   const { data: jobRow, error } = await supabase.from("ml_prediction_jobs").select("*").eq("id", jobId).single();
   if (error || !jobRow) throw new Error(error?.message ?? "No se encontró el trabajo de predicción.");
   const job = jobRow as Job;
@@ -257,7 +261,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
   const family = (target as any)?.family ?? "ventas";
 
   const setStatus = (status: string, message: string) =>
-    supabase.from("ml_prediction_jobs").update({ status, status_message: message }).eq("id", jobId);
+    writer.from("ml_prediction_jobs").update({ status, status_message: message }).eq("id", jobId);
 
   try {
     await setStatus("preparando_datos", "Consolidando el histórico registrado.");
@@ -278,7 +282,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
     await setStatus("evaluando", "Validando el modelo contra el histórico reciente.");
     const metrics = backtest(values, job.granularity, Math.max(2, Math.min(future.length, 12)));
 
-    await supabase.from("ml_predictions").delete().eq("job_id", jobId);
+    await writer.from("ml_predictions").delete().eq("job_id", jobId);
     const historyRows = buckets.slice(-24).map((b) => ({
       job_id: jobId,
       organization_id: job.organization_id,
@@ -307,11 +311,11 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       model_id: MODEL_ID,
       confidence_level: 0.8,
     }));
-    await supabase.from("ml_predictions").insert([...historyRows, ...forecastRows]);
+    await writer.from("ml_predictions").insert([...historyRows, ...forecastRows]);
 
-    await supabase.from("ml_model_evaluations").delete().eq("job_id", jobId);
+    await writer.from("ml_model_evaluations").delete().eq("job_id", jobId);
     if (metrics) {
-      await supabase.from("ml_model_evaluations").insert({
+      await writer.from("ml_model_evaluations").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         location_id: job.location_id,
@@ -336,14 +340,14 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       1,
       Math.round((new Date(job.horizon_to).getTime() - new Date(job.horizon_from).getTime()) / 86_400_000),
     );
-    await supabase.from("ml_recommendations").delete().eq("job_id", jobId).eq("decision", "pendiente");
+    await writer.from("ml_recommendations").delete().eq("job_id", jobId).eq("decision", "pendiente");
     if (family === "productos") {
       const historyDays = Math.max(
         1,
         Math.round((new Date(job.history_to).getTime() - new Date(job.history_from).getTime()) / 86_400_000),
       );
       const recs = await buildRecommendations(supabase, job, horizonDays, historyDays);
-      if (recs.length > 0) await supabase.from("ml_recommendations").insert(recs as never);
+      if (recs.length > 0) await writer.from("ml_recommendations").insert(recs as never);
     }
 
     await setStatus("generando_informe", "Redactando el informe del período.");
@@ -368,9 +372,9 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       metricas: metrics,
     });
 
-    await supabase.from("ml_generated_reports").delete().eq("job_id", jobId);
+    await writer.from("ml_generated_reports").delete().eq("job_id", jobId);
     if (report) {
-      await supabase.from("ml_generated_reports").insert({
+      await writer.from("ml_generated_reports").insert({
         job_id: jobId,
         organization_id: job.organization_id,
         created_by: userId ?? null,
@@ -382,7 +386,7 @@ export async function runPredictionJobPipeline(supabase: AnyClient, jobId: strin
       } as never);
     }
 
-    await supabase
+    await writer
       .from("ml_prediction_jobs")
       .update({
         status: "completado",
