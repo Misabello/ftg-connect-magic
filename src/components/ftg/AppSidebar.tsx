@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
   Boxes,
   Building2,
   Camera,
+  ChevronRight,
   ClipboardList,
   Home,
   Settings,
@@ -43,6 +45,17 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
+  const [openKeys, setOpenKeys] = useState<Record<string, boolean>>({});
+
+  // La sección de la ruta actual queda abierta automáticamente.
+  useEffect(() => {
+    const current = ITEMS.find((i) => pathname.startsWith(i.to) && SECTION_SUBNAV[i.key]);
+    if (current) setOpenKeys((prev) => (prev[current.key] === undefined ? { ...prev, [current.key]: true } : prev));
+    if (pathname.startsWith("/sedes")) setOpenKeys((prev) => (prev["sedes"] === undefined ? { ...prev, sedes: true } : prev));
+  }, [pathname]);
+
+  const toggle = (key: string, fallbackOpen: boolean) =>
+    setOpenKeys((prev) => ({ ...prev, [key]: !(prev[key] ?? fallbackOpen) }));
 
   return (
     <nav className="flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground">
@@ -54,6 +67,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
           const active = pathname.startsWith(item.to);
           const subnav = SECTION_SUBNAV[item.key];
           const activeSub = active && subnav ? findSubNavItem(subnav, pathname, search) : undefined;
+          const open = openKeys[item.key] ?? active;
           return (
             <li key={item.key}>
               <Link
@@ -73,8 +87,23 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
                     {item.stage}
                   </span>
                 )}
+                {subnav && (
+                  <button
+                    type="button"
+                    aria-label={open ? "Cerrar submenú" : "Abrir submenú"}
+                    aria-expanded={open}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggle(item.key, active);
+                    }}
+                    className="-mr-1 rounded p-0.5 opacity-70 transition hover:bg-sidebar-accent hover:opacity-100"
+                  >
+                    <ChevronRight className={cn("h-4 w-4 transition-transform", open && "rotate-90")} />
+                  </button>
+                )}
               </Link>
-              {active && subnav && (
+              {open && subnav && (
                 <ul className="mb-2 mt-1 space-y-0.5 border-l border-sidebar-border pl-3">
                   {subnav.map((sub, index) => {
                     const group = sub.group;
@@ -123,8 +152,26 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
             >
               <Building2 className="h-[18px] w-[18px]" />
               <span className="flex-1">{t("nav.sedes")}</span>
+              <button
+                type="button"
+                aria-label={(openKeys["sedes"] ?? pathname.startsWith("/sedes")) ? "Cerrar submenú" : "Abrir submenú"}
+                aria-expanded={openKeys["sedes"] ?? pathname.startsWith("/sedes")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggle("sedes", pathname.startsWith("/sedes"));
+                }}
+                className="-mr-1 rounded p-0.5 opacity-70 transition hover:bg-sidebar-accent hover:opacity-100"
+              >
+                <ChevronRight
+                  className={cn(
+                    "h-4 w-4 transition-transform",
+                    (openKeys["sedes"] ?? pathname.startsWith("/sedes")) && "rotate-90",
+                  )}
+                />
+              </button>
             </Link>
-            <ul className="mt-1 space-y-0.5 border-l border-sidebar-border pl-3">
+            <ul hidden={!(openKeys["sedes"] ?? pathname.startsWith("/sedes"))} className="mt-1 space-y-0.5 border-l border-sidebar-border pl-3">
               {locations.map((loc) => (
                 <li key={loc.id}>
                   <Link
