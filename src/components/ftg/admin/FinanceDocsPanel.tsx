@@ -133,9 +133,22 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         due_on: draft.due_on || null,
       });
       if (error) throw error;
+      return { party, amount };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       toast.success(tab === "cobrar" ? "Documento por cobrar creado" : "Documento por pagar creado");
+      if (tab === "cobrar" && result) {
+        const email = (result.party as { email?: string | null } | undefined)?.email ?? null;
+        sendInvoiceEmail({
+          email,
+          customerName: result.party?.name ?? null,
+          concept: draft.concept,
+          documentNumber: draft.document_number || null,
+          amount: result.amount,
+          currency,
+          dueOn: draft.due_on || null,
+        });
+      }
       setOpen(false);
       setDraft({ concept: "", counterparty: "", document_number: "", amount: "", due_on: "", cost_center: "" });
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
