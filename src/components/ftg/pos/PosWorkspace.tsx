@@ -16,6 +16,7 @@ import {
 } from "@/components/ftg/pos/CheckoutDialog";
 import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
 import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
+import { PosTicketsPanel } from "@/components/ftg/pos/PosTicketsPanel";
 import { CashSourcesPanel } from "@/components/ftg/pos/CashSourcesPanel";
 import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
@@ -726,7 +727,6 @@ export function PosWorkspace({
                 size="sm"
                 className="gap-1.5"
                 onClick={() => setTicketOpen(true)}
-                disabled={!session}
               >
                 <ScanText className="h-3.5 w-3.5" /> Ingresar ticket (OCR)
               </Button>
@@ -779,6 +779,8 @@ export function PosWorkspace({
             currency={currency}
             locale={locale}
           />
+
+          <PosTicketsPanel pointOfSaleId={activePos.id} currency={currency} locale={locale} />
 
           <PosLedgerPanel pointOfSaleId={activePos.id} currency={currency} locale={locale} />
         </>
