@@ -871,6 +871,198 @@ export type Database = {
           },
         ]
       }
+      email_ingestion_accounts: {
+        Row: {
+          active: boolean
+          allowed_mime_types: string[]
+          allowed_senders: string[]
+          country_code: string | null
+          created_at: string
+          email_address: string
+          error_label: string
+          frequency_minutes: number
+          id: string
+          inbox_label: string
+          last_checked_at: string | null
+          legal_entity_id: string | null
+          max_attachment_mb: number
+          organization_id: string
+          processed_label: string
+          processing_label: string
+          review_label: string
+          search_query: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          allowed_mime_types?: string[]
+          allowed_senders?: string[]
+          country_code?: string | null
+          created_at?: string
+          email_address: string
+          error_label?: string
+          frequency_minutes?: number
+          id?: string
+          inbox_label?: string
+          last_checked_at?: string | null
+          legal_entity_id?: string | null
+          max_attachment_mb?: number
+          organization_id: string
+          processed_label?: string
+          processing_label?: string
+          review_label?: string
+          search_query?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          allowed_mime_types?: string[]
+          allowed_senders?: string[]
+          country_code?: string | null
+          created_at?: string
+          email_address?: string
+          error_label?: string
+          frequency_minutes?: number
+          id?: string
+          inbox_label?: string
+          last_checked_at?: string | null
+          legal_entity_id?: string | null
+          max_attachment_mb?: number
+          organization_id?: string
+          processed_label?: string
+          processing_label?: string
+          review_label?: string
+          search_query?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ingestion_accounts_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "email_ingestion_accounts_legal_entity_id_fkey"
+            columns: ["legal_entity_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestion_accounts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_ingestion_events: {
+        Row: {
+          account_id: string
+          attachment_count: number
+          body_snippet: string | null
+          created_at: string
+          error_message: string | null
+          gmail_message_id: string
+          gmail_thread_id: string | null
+          id: string
+          organization_id: string
+          processed_at: string | null
+          received_at: string | null
+          recipients: string[]
+          request_id: string | null
+          sender: string | null
+          signature_verified: boolean
+          status: Database["public"]["Enums"]["email_ingestion_status"]
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          attachment_count?: number
+          body_snippet?: string | null
+          created_at?: string
+          error_message?: string | null
+          gmail_message_id: string
+          gmail_thread_id?: string | null
+          id?: string
+          organization_id: string
+          processed_at?: string | null
+          received_at?: string | null
+          recipients?: string[]
+          request_id?: string | null
+          sender?: string | null
+          signature_verified?: boolean
+          status?: Database["public"]["Enums"]["email_ingestion_status"]
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          attachment_count?: number
+          body_snippet?: string | null
+          created_at?: string
+          error_message?: string | null
+          gmail_message_id?: string
+          gmail_thread_id?: string | null
+          id?: string
+          organization_id?: string
+          processed_at?: string | null
+          received_at?: string | null
+          recipients?: string[]
+          request_id?: string | null
+          sender?: string | null
+          signature_verified?: boolean
+          status?: Database["public"]["Enums"]["email_ingestion_status"]
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ingestion_events_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "email_ingestion_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_ingestion_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_ingestion_requests: {
+        Row: {
+          account_id: string | null
+          received_at: string
+          request_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          received_at?: string
+          request_id: string
+        }
+        Update: {
+          account_id?: string | null
+          received_at?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_ingestion_requests_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "email_ingestion_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           created_at: string
@@ -1045,6 +1237,443 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          email_ingestion_event_id: string | null
+          id: string
+          invoice_document_id: string | null
+          message: string
+          organization_id: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: Database["public"]["Enums"]["invoice_alert_severity"]
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          email_ingestion_event_id?: string | null
+          id?: string
+          invoice_document_id?: string | null
+          message: string
+          organization_id: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["invoice_alert_severity"]
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          email_ingestion_event_id?: string | null
+          id?: string
+          invoice_document_id?: string | null
+          message?: string
+          organization_id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: Database["public"]["Enums"]["invoice_alert_severity"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_alerts_email_ingestion_event_id_fkey"
+            columns: ["email_ingestion_event_id"]
+            isOneToOne: false
+            referencedRelation: "email_ingestion_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_alerts_invoice_document_id_fkey"
+            columns: ["invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_documents: {
+        Row: {
+          approval_status: Database["public"]["Enums"]["invoice_approval_status"]
+          bank_details: string | null
+          confidence_score: number
+          cost_center: string | null
+          country_code: string | null
+          created_at: string
+          currency_code: string | null
+          customer_id: string | null
+          document_direction: Database["public"]["Enums"]["invoice_direction"]
+          document_number: string | null
+          document_type: Database["public"]["Enums"]["invoice_doc_type"]
+          due_date: string | null
+          duplicate_of: string | null
+          event_id: string | null
+          exchange_rate: number | null
+          extraction_status: Database["public"]["Enums"]["invoice_extraction_status"]
+          file_hash: string | null
+          file_name: string | null
+          finance_document_id: string | null
+          fiscal_code: string | null
+          id: string
+          issue_date: string | null
+          issuer_name: string | null
+          issuer_tax_id: string | null
+          legal_entity_id: string | null
+          line_items: Json
+          location_id: string | null
+          mime_type: string | null
+          net_amount: number
+          organization_id: string
+          payment_terms: string | null
+          perception_amount: number
+          point_of_sale_code: string | null
+          purchase_order: string | null
+          receiver_name: string | null
+          receiver_tax_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          series: string | null
+          storage_bucket: string
+          storage_path: string | null
+          supplier_id: string | null
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+          validation_notes: Json
+          venue_id: string | null
+          withholding_amount: number
+        }
+        Insert: {
+          approval_status?: Database["public"]["Enums"]["invoice_approval_status"]
+          bank_details?: string | null
+          confidence_score?: number
+          cost_center?: string | null
+          country_code?: string | null
+          created_at?: string
+          currency_code?: string | null
+          customer_id?: string | null
+          document_direction?: Database["public"]["Enums"]["invoice_direction"]
+          document_number?: string | null
+          document_type?: Database["public"]["Enums"]["invoice_doc_type"]
+          due_date?: string | null
+          duplicate_of?: string | null
+          event_id?: string | null
+          exchange_rate?: number | null
+          extraction_status?: Database["public"]["Enums"]["invoice_extraction_status"]
+          file_hash?: string | null
+          file_name?: string | null
+          finance_document_id?: string | null
+          fiscal_code?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer_name?: string | null
+          issuer_tax_id?: string | null
+          legal_entity_id?: string | null
+          line_items?: Json
+          location_id?: string | null
+          mime_type?: string | null
+          net_amount?: number
+          organization_id: string
+          payment_terms?: string | null
+          perception_amount?: number
+          point_of_sale_code?: string | null
+          purchase_order?: string | null
+          receiver_name?: string | null
+          receiver_tax_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          series?: string | null
+          storage_bucket?: string
+          storage_path?: string | null
+          supplier_id?: string | null
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          validation_notes?: Json
+          venue_id?: string | null
+          withholding_amount?: number
+        }
+        Update: {
+          approval_status?: Database["public"]["Enums"]["invoice_approval_status"]
+          bank_details?: string | null
+          confidence_score?: number
+          cost_center?: string | null
+          country_code?: string | null
+          created_at?: string
+          currency_code?: string | null
+          customer_id?: string | null
+          document_direction?: Database["public"]["Enums"]["invoice_direction"]
+          document_number?: string | null
+          document_type?: Database["public"]["Enums"]["invoice_doc_type"]
+          due_date?: string | null
+          duplicate_of?: string | null
+          event_id?: string | null
+          exchange_rate?: number | null
+          extraction_status?: Database["public"]["Enums"]["invoice_extraction_status"]
+          file_hash?: string | null
+          file_name?: string | null
+          finance_document_id?: string | null
+          fiscal_code?: string | null
+          id?: string
+          issue_date?: string | null
+          issuer_name?: string | null
+          issuer_tax_id?: string | null
+          legal_entity_id?: string | null
+          line_items?: Json
+          location_id?: string | null
+          mime_type?: string | null
+          net_amount?: number
+          organization_id?: string
+          payment_terms?: string | null
+          perception_amount?: number
+          point_of_sale_code?: string | null
+          purchase_order?: string | null
+          receiver_name?: string | null
+          receiver_tax_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          series?: string | null
+          storage_bucket?: string
+          storage_path?: string | null
+          supplier_id?: string | null
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          validation_notes?: Json
+          venue_id?: string | null
+          withholding_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_documents_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "invoice_documents_currency_code_fkey"
+            columns: ["currency_code"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "invoice_documents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "invoice_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_finance_document_id_fkey"
+            columns: ["finance_document_id"]
+            isOneToOne: false
+            referencedRelation: "finance_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_legal_entity_id_fkey"
+            columns: ["legal_entity_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_documents_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_email_links: {
+        Row: {
+          created_at: string
+          email_ingestion_event_id: string
+          id: string
+          invoice_document_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_ingestion_event_id: string
+          id?: string
+          invoice_document_id: string
+        }
+        Update: {
+          created_at?: string
+          email_ingestion_event_id?: string
+          id?: string
+          invoice_document_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_email_links_email_ingestion_event_id_fkey"
+            columns: ["email_ingestion_event_id"]
+            isOneToOne: false
+            referencedRelation: "email_ingestion_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_email_links_invoice_document_id_fkey"
+            columns: ["invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_extracted_fields: {
+        Row: {
+          confidence: number
+          corrected_value: string | null
+          created_at: string
+          extracted_value: string | null
+          extraction_source: Database["public"]["Enums"]["invoice_field_source"]
+          field_name: string
+          id: string
+          invoice_document_id: string
+          page_number: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          confidence?: number
+          corrected_value?: string | null
+          created_at?: string
+          extracted_value?: string | null
+          extraction_source?: Database["public"]["Enums"]["invoice_field_source"]
+          field_name: string
+          id?: string
+          invoice_document_id: string
+          page_number?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          confidence?: number
+          corrected_value?: string | null
+          created_at?: string
+          extracted_value?: string | null
+          extraction_source?: Database["public"]["Enums"]["invoice_field_source"]
+          field_name?: string
+          id?: string
+          invoice_document_id?: string
+          page_number?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_extracted_fields_invoice_document_id_fkey"
+            columns: ["invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_processing_jobs: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          invoice_document_id: string
+          model: string | null
+          provider: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["invoice_extraction_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          invoice_document_id: string
+          model?: string | null
+          provider?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_extraction_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          invoice_document_id?: string
+          model?: string | null
+          provider?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_extraction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_processing_jobs_invoice_document_id_fkey"
+            columns: ["invoice_document_id"]
+            isOneToOne: false
+            referencedRelation: "invoice_documents"
             referencedColumns: ["id"]
           },
         ]
@@ -3134,6 +3763,13 @@ export type Database = {
       cash_session_status: "abierta" | "cerrada" | "arqueada"
       checklist_phase: "apertura" | "cierre"
       customer_kind: "corporativo" | "consumidor_final"
+      email_ingestion_status:
+        | "recibido"
+        | "procesando"
+        | "procesado"
+        | "requiere_revision"
+        | "duplicado"
+        | "error"
       finance_doc_kind: "cobrar" | "pagar"
       finance_doc_status:
         | "pendiente"
@@ -3143,6 +3779,36 @@ export type Database = {
         | "anulado"
       incident_severity: "baja" | "media" | "alta" | "critica"
       incident_status: "abierto" | "en_curso" | "resuelto"
+      invoice_alert_severity: "baja" | "media" | "alta" | "critica"
+      invoice_approval_status:
+        | "recibida"
+        | "procesando"
+        | "requiere_revision"
+        | "pendiente_aprobacion"
+        | "aprobada"
+        | "rechazada"
+        | "programada_pago"
+        | "pagada"
+        | "vencida"
+        | "posible_duplicado"
+      invoice_direction: "proveedor" | "cliente"
+      invoice_doc_type:
+        | "factura_proveedor"
+        | "factura_cliente"
+        | "nota_credito_proveedor"
+        | "nota_credito_cliente"
+        | "nota_debito"
+        | "recibo"
+        | "comprobante_pago"
+        | "orden_compra"
+        | "no_reconocido"
+      invoice_extraction_status:
+        | "pendiente"
+        | "procesando"
+        | "extraido"
+        | "baja_confianza"
+        | "error"
+      invoice_field_source: "texto" | "xml" | "ocr" | "ia" | "usuario"
       operational_status:
         | "planificado"
         | "preparacion"
@@ -3331,6 +3997,14 @@ export const Constants = {
       cash_session_status: ["abierta", "cerrada", "arqueada"],
       checklist_phase: ["apertura", "cierre"],
       customer_kind: ["corporativo", "consumidor_final"],
+      email_ingestion_status: [
+        "recibido",
+        "procesando",
+        "procesado",
+        "requiere_revision",
+        "duplicado",
+        "error",
+      ],
       finance_doc_kind: ["cobrar", "pagar"],
       finance_doc_status: [
         "pendiente",
@@ -3341,6 +4015,39 @@ export const Constants = {
       ],
       incident_severity: ["baja", "media", "alta", "critica"],
       incident_status: ["abierto", "en_curso", "resuelto"],
+      invoice_alert_severity: ["baja", "media", "alta", "critica"],
+      invoice_approval_status: [
+        "recibida",
+        "procesando",
+        "requiere_revision",
+        "pendiente_aprobacion",
+        "aprobada",
+        "rechazada",
+        "programada_pago",
+        "pagada",
+        "vencida",
+        "posible_duplicado",
+      ],
+      invoice_direction: ["proveedor", "cliente"],
+      invoice_doc_type: [
+        "factura_proveedor",
+        "factura_cliente",
+        "nota_credito_proveedor",
+        "nota_credito_cliente",
+        "nota_debito",
+        "recibo",
+        "comprobante_pago",
+        "orden_compra",
+        "no_reconocido",
+      ],
+      invoice_extraction_status: [
+        "pendiente",
+        "procesando",
+        "extraido",
+        "baja_confianza",
+        "error",
+      ],
+      invoice_field_source: ["texto", "xml", "ocr", "ia", "usuario"],
       operational_status: [
         "planificado",
         "preparacion",

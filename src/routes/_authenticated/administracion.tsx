@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { PageHeader } from "@/components/ftg/PageHeader";
 import { SedeAccounting } from "@/components/ftg/SedeAccounting";
+import { InvoiceAutomation } from "@/components/ftg/invoices/InvoiceAutomation";
 import { StatCard } from "@/components/ftg/StatCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -339,6 +340,8 @@ function Administracion() {
       </section>
 
       <SedeAccounting />
+
+      <InvoiceAutomation />
 
       <section className="surface-card p-5">
         <h2 className="text-base font-semibold">Arqueos y cajas recientes</h2>
