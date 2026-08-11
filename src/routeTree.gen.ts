@@ -14,13 +14,13 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdministracionRouteImport } from './routes/_authenticated/administracion'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
-import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedFotografiasRouteImport } from './routes/_authenticated/fotografias'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
 import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenticated/operaciones'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
+import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
@@ -52,12 +52,6 @@ const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   path: '/clientes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConfiguracionRoute =
-  AuthenticatedConfiguracionRouteImport.update({
-    id: '/configuracion',
-    path: '/configuracion',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedFotografiasRoute =
   AuthenticatedFotografiasRouteImport.update({
     id: '/fotografias',
@@ -90,6 +84,12 @@ const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   path: '/reportes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracionIndexRoute =
+  AuthenticatedConfiguracionIndexRouteImport.update({
+    id: '/configuracion/',
+    path: '/configuracion/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
   path: '/sedes/',
@@ -124,13 +124,13 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/administracion': typeof AuthenticatedAdministracionRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/fotografias': typeof AuthenticatedFotografiasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -142,13 +142,13 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/administracion': typeof AuthenticatedAdministracionRoute
   '/clientes': typeof AuthenticatedClientesRoute
-  '/configuracion': typeof AuthenticatedConfiguracionRoute
   '/fotografias': typeof AuthenticatedFotografiasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -162,13 +162,13 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/administracion': typeof AuthenticatedAdministracionRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
-  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRoute
   '/_authenticated/fotografias': typeof AuthenticatedFotografiasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
+  '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
@@ -182,13 +182,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/administracion'
     | '/clientes'
-    | '/configuracion'
     | '/fotografias'
     | '/inicio'
     | '/inventario'
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/'
     | '/sedes/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -200,13 +200,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/administracion'
     | '/clientes'
-    | '/configuracion'
     | '/fotografias'
     | '/inicio'
     | '/inventario'
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion'
     | '/sedes'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -219,13 +219,13 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/administracion'
     | '/_authenticated/clientes'
-    | '/_authenticated/configuracion'
     | '/_authenticated/fotografias'
     | '/_authenticated/inicio'
     | '/_authenticated/inventario'
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
+    | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
@@ -278,13 +278,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/configuracion': {
-      id: '/_authenticated/configuracion'
-      path: '/configuracion'
-      fullPath: '/configuracion'
-      preLoaderRoute: typeof AuthenticatedConfiguracionRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/fotografias': {
       id: '/_authenticated/fotografias'
       path: '/fotografias'
@@ -325,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/reportes'
       fullPath: '/reportes'
       preLoaderRoute: typeof AuthenticatedReportesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/configuracion/': {
+      id: '/_authenticated/configuracion/'
+      path: '/configuracion'
+      fullPath: '/configuracion/'
+      preLoaderRoute: typeof AuthenticatedConfiguracionIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/sedes/': {
@@ -368,13 +368,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdministracionRoute: typeof AuthenticatedAdministracionRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
-  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRoute
   AuthenticatedFotografiasRoute: typeof AuthenticatedFotografiasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
+  AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
   AuthenticatedSedesIndexRoute: typeof AuthenticatedSedesIndexRoute
   AuthenticatedSedesLocationIdIndexRoute: typeof AuthenticatedSedesLocationIdIndexRoute
   AuthenticatedSedesLocationIdPosPosIdRoute: typeof AuthenticatedSedesLocationIdPosPosIdRoute
@@ -383,13 +383,13 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdministracionRoute: AuthenticatedAdministracionRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
-  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRoute,
   AuthenticatedFotografiasRoute: AuthenticatedFotografiasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
+  AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
   AuthenticatedSedesIndexRoute: AuthenticatedSedesIndexRoute,
   AuthenticatedSedesLocationIdIndexRoute:
     AuthenticatedSedesLocationIdIndexRoute,
@@ -410,13 +410,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
