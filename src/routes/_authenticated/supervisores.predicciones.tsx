@@ -521,3 +521,50 @@ function KpiCard({
     </div>
   );
 }
+
+/** Crea una planilla real en Google Sheets con los datos de la predicción. */
+function ExportSheetButton({
+  title,
+  headers,
+  rows,
+}: {
+  title: string;
+  headers: string[];
+  rows: Record<string, string | number | null | undefined>[];
+}) {
+  const [busy, setBusy] = useState(false);
+  const createSheet = useServerFn(exportRowsToSheet);
+
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      className="gap-1.5"
+      disabled={busy || rows.length === 0}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const res = await createSheet({
+            data: {
+              title: `FTG · ${title}`,
+              headers,
+              rows: rows.map((r) => headers.map((h) => (r[h] === undefined || r[h] === null ? "" : r[h]!))),
+            },
+          });
+          if (res.url) {
+            window.open(res.url, "_blank", "noopener");
+            toast.success("Planilla creada en Google Sheets", { description: `${res.rows} filas exportadas.` });
+          } else {
+            toast.error("La planilla se creó pero no se obtuvo el enlace.");
+          }
+        } catch (err) {
+          toast.error("No se pudo exportar a Google Sheets", { description: (err as Error).message });
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <ExternalLink className="h-3.5 w-3.5" /> {busy ? "Exportando…" : "Exportar a Google Sheets"}
+    </Button>
+  );
+}
