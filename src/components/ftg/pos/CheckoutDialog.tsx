@@ -93,6 +93,16 @@ export function CheckoutDialog({
 
   const canConfirm = payments.length > 0 && Math.abs(pending) < 0.01 && !missingReference && !submitting;
 
+  /** Tarjetas / QR se cobran a través de Mercado Pago. */
+  const needsMercadoPago = useMemo(() => {
+    const haystack = (m: PaymentMethodRow | undefined) =>
+      `${m?.code ?? ""} ${m?.name ?? ""} ${m?.kind ?? ""}`.toLowerCase();
+    return payments.some((p) => {
+      const text = haystack(methods.find((m) => m.id === p.methodId));
+      return /tarjeta|card|credit|debit|débito|crédito|mercado|qr/.test(text);
+    });
+  }, [payments, methods]);
+
   const update = (key: string, patch: Partial<PaymentDraft>) =>
     setPayments((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
 
@@ -208,13 +218,13 @@ export function CheckoutDialog({
             <Plus className="h-3.5 w-3.5" /> Agregar medio de pago
           </Button>
 
-          {mercadoPago && mercadoPagoMethodId && (
+          {mercadoPago && mercadoPagoMethodId && (needsMercadoPago || mpApproved) && (
             <MercadoPagoPanel
               context={mercadoPago}
               amount={mpApproved ? total : Math.max(pending, 0) || total}
               currency={currency}
               locale={locale}
-              payerEmail={customer.email}
+              payerEmail=""
               approved={mpApproved}
               onApproved={applyMercadoPago}
             />
@@ -239,25 +249,9 @@ export function CheckoutDialog({
                 placeholder="CUIT / CPF"
               />
             </div>
-            <div className="sm:col-span-2">
-              <Label className="text-xs text-muted-foreground">Email del cliente (para enviar la factura)</Label>
-              <Input
-                type="email"
-                className="mt-1"
-                value={customer.email}
-                onChange={(e) => setCustomer((c) => ({ ...c, email: e.target.value }))}
-                placeholder="cliente@correo.com"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">WhatsApp</Label>
-              <Input
-                className="mt-1"
-                value={customer.phone}
-                onChange={(e) => setCustomer((c) => ({ ...c, phone: e.target.value }))}
-                placeholder="5492235550000"
-              />
-            </div>
+            <p className="text-xs text-muted-foreground sm:col-span-3">
+              El email y WhatsApp para enviar la factura y los recuerdos se piden al finalizar el cobro.
+            </p>
           </div>
 
           <p className={pending === 0 ? "text-sm text-success" : "text-sm text-warning"}>
