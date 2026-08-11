@@ -568,6 +568,76 @@ export type Database = {
           },
         ]
       }
+      cash_sources: {
+        Row: {
+          code: string
+          created_at: string
+          fund_kind: string
+          id: string
+          is_active: boolean
+          location_id: string | null
+          match_kinds: Database["public"]["Enums"]["payment_kind"][]
+          name: string
+          organization_id: string
+          point_of_sale_id: string | null
+          provider: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          fund_kind?: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          match_kinds?: Database["public"]["Enums"]["payment_kind"][]
+          name: string
+          organization_id: string
+          point_of_sale_id?: string | null
+          provider?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          fund_kind?: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          match_kinds?: Database["public"]["Enums"]["payment_kind"][]
+          name?: string
+          organization_id?: string
+          point_of_sale_id?: string | null
+          provider?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sources_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sources_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_sources_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       countries: {
         Row: {
           code: string
@@ -3258,6 +3328,7 @@ export type Database = {
           amount: number
           approved_at: string | null
           cash_session_id: string | null
+          cash_source_id: string | null
           created_at: string
           created_by: string | null
           currency_code: string
@@ -3282,6 +3353,7 @@ export type Database = {
           amount: number
           approved_at?: string | null
           cash_session_id?: string | null
+          cash_source_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -3306,6 +3378,7 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           cash_session_id?: string | null
+          cash_source_id?: string | null
           created_at?: string
           created_by?: string | null
           currency_code?: string
@@ -3332,6 +3405,13 @@ export type Database = {
             columns: ["cash_session_id"]
             isOneToOne: false
             referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_intents_cash_source_id_fkey"
+            columns: ["cash_source_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sources"
             referencedColumns: ["id"]
           },
           {
@@ -4302,38 +4382,54 @@ export type Database = {
       sale_payments: {
         Row: {
           amount: number
+          cash_source_id: string | null
           created_at: string
           currency_code: string
           id: string
+          location_id: string | null
           method_name: string
           payment_method_id: string | null
+          point_of_sale_id: string | null
           received_at: string
           reference: string | null
           sale_id: string
         }
         Insert: {
           amount: number
+          cash_source_id?: string | null
           created_at?: string
           currency_code: string
           id?: string
+          location_id?: string | null
           method_name: string
           payment_method_id?: string | null
+          point_of_sale_id?: string | null
           received_at?: string
           reference?: string | null
           sale_id: string
         }
         Update: {
           amount?: number
+          cash_source_id?: string | null
           created_at?: string
           currency_code?: string
           id?: string
+          location_id?: string | null
           method_name?: string
           payment_method_id?: string | null
+          point_of_sale_id?: string | null
           received_at?: string
           reference?: string | null
           sale_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sale_payments_cash_source_id_fkey"
+            columns: ["cash_source_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sources"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sale_payments_currency_code_fkey"
             columns: ["currency_code"]
@@ -4342,10 +4438,24 @@ export type Database = {
             referencedColumns: ["code"]
           },
           {
+            foreignKeyName: "sale_payments_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sale_payments_payment_method_id_fkey"
             columns: ["payment_method_id"]
             isOneToOne: false
             referencedRelation: "payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sale_payments_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
             referencedColumns: ["id"]
           },
           {
@@ -4930,6 +5040,15 @@ export type Database = {
           _session: string
           _source_id: string
           _source_type: string
+        }
+        Returns: string
+      }
+      resolve_cash_source: {
+        Args: {
+          _kind: Database["public"]["Enums"]["payment_kind"]
+          _loc: string
+          _org: string
+          _pos: string
         }
         Returns: string
       }
