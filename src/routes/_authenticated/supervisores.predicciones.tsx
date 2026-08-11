@@ -317,6 +317,37 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
     return rows;
   })();
 
+  const splitLabel: string | null = history.length > 0 ? String(history[history.length - 1]?.period_start ?? "") : null;
+
+  // Bar chart race: acumulado por mes a medida que avanza el pronóstico.
+  const bucketOf = (iso: string) => {
+    const d = new Date(`${iso}T00:00:00`);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("es-AR", { month: "long", year: "numeric" });
+  };
+  const raceFrames = (() => {
+    const ordered = [...forecast].sort((a: any, b: any) =>
+      String(a.period_start).localeCompare(String(b.period_start)),
+    );
+    const acc = new Map<string, number>();
+    return ordered.map((p: any) => {
+      const bucket = bucketOf(String(p.period_start));
+      acc.set(bucket, (acc.get(bucket) ?? 0) + Number(p.predicted_value ?? 0));
+      return {
+        label: String(p.period_start),
+        items: Array.from(acc.entries()).map(([key, value]) => ({ key, value })),
+      };
+    });
+  })();
+  const shareSegments = (() => {
+    const acc = new Map<string, number>();
+    forecast.forEach((p: any) => {
+      const bucket = bucketOf(String(p.period_start));
+      acc.set(bucket, (acc.get(bucket) ?? 0) + Number(p.predicted_value ?? 0));
+    });
+    return Array.from(acc.entries()).map(([key, value]) => ({ key, value }));
+  })();
+
   if (forecast.length === 0)
     return (
       <p className="mt-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
