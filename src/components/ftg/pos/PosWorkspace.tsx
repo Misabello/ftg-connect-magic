@@ -697,7 +697,7 @@ export function PosWorkspace({
               }
               onClear={() => setLines([])}
               onCheckout={() => setCheckoutOpen(true)}
-              canCheckout={lines.length > 0 && !missingPhotoCode && !!activePos}
+              canCheckout={lines.length > 0 && !!activePos}
               checkoutHint={checkoutHint}
               posName={activePos?.name ?? null}
             />
