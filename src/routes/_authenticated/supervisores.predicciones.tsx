@@ -284,6 +284,24 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
   const evaluation = (detail.evaluations ?? [])[0];
   const report = (detail.reports ?? [])[0];
   const total = forecast.reduce((acc: number, p: any) => acc + Number(p.predicted_value ?? 0), 0);
+  const average = forecast.length > 0 ? total / forecast.length : 0;
+  const best = forecast.reduce(
+    (acc: any, p: any) => (Number(p.predicted_value ?? 0) > Number(acc?.predicted_value ?? -Infinity) ? p : acc),
+    null,
+  );
+  const historyTotal = history.reduce((acc: number, p: any) => acc + Number(p.actual_value ?? 0), 0);
+  const historyAvg = history.length > 0 ? historyTotal / history.length : 0;
+  const variation = historyAvg > 0 ? (average - historyAvg) / historyAvg : null;
+
+  const exportHeaders = ["Desde", "Hasta", "Estimado", "Mínimo", "Máximo"];
+  const exportRows = forecast.map((p: any) => ({
+    Desde: p.period_start,
+    Hasta: p.period_end,
+    Estimado: Number(p.predicted_value ?? 0),
+    Mínimo: Number(p.lower_bound ?? 0),
+    Máximo: Number(p.upper_bound ?? 0),
+  }));
+  const fileBase = `prediccion-${detail.job.target_key ?? "ftg"}-${detail.job.horizon_from ?? ""}`;
 
   const chartData = (() => {
     const rows = [
@@ -316,21 +334,61 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
     );
 
   return (
-    <div className="mt-3 space-y-3 rounded-xl border border-border bg-muted/30 p-3">
-      <div className="flex flex-wrap gap-4 text-xs">
-        <span>
-          <strong className="text-sm">{formatNumber(total)}</strong> total estimado
-        </span>
-        <span className="text-muted-foreground">{forecast.length} períodos estimados</span>
-        <span className="text-muted-foreground">{history.length} períodos históricos analizados</span>
-        {evaluation && (
-          <span className="text-muted-foreground">
-            Error medio {formatNumber(Number(evaluation.mae ?? 0))} · Cobertura{" "}
-            {Math.round(Number(evaluation.interval_coverage ?? 0) * 100)}%
-            {evaluation.beats_baseline ? " · supera al método base" : ""}
-          </span>
-        )}
+    <div className="mt-3 animate-fade-in space-y-4 rounded-xl border border-border bg-muted/30 p-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={() => downloadCsv(fileBase, exportRows, exportHeaders)}
+        >
+          <Download className="h-3.5 w-3.5" /> Descargar CSV
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={async () => {
+            try {
+              await copyForSheets(exportRows, exportHeaders);
+              toast.success("Tabla copiada", { description: "Pegala en Google Sheets con Ctrl/Cmd + V." });
+            } catch {
+              toast.error("No se pudo copiar. Usá la descarga en CSV.");
+            }
+          }}
+        >
+          <Table2 className="h-3.5 w-3.5" /> Copiar para Sheets
+        </Button>
+        <Button size="sm" variant="ghost" className="gap-1.5" asChild>
+          <a href={NEW_SHEET_URL} target="_blank" rel="noreferrer">
+            <ExternalLink className="h-3.5 w-3.5" /> Abrir Google Sheets
+          </a>
+        </Button>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Total estimado" value={formatNumber(total)} hint={`${forecast.length} períodos proyectados`} />
+        <KpiCard label="Promedio por período" value={formatNumber(Math.round(average))} hint="Escenario central (P50)" />
+        <KpiCard
+          label="Variación vs histórico"
+          value={variation === null ? "—" : `${variation >= 0 ? "+" : ""}${(variation * 100).toFixed(1)}%`}
+          hint={`${history.length} períodos históricos analizados`}
+          tone={variation === null ? "neutral" : variation >= 0 ? "up" : "down"}
+        />
+        <KpiCard
+          label="Pico proyectado"
+          value={best ? formatNumber(Number(best.predicted_value ?? 0)) : "—"}
+          hint={best ? String(best.period_start) : "Sin datos"}
+        />
+      </div>
+
+      {evaluation && (
+        <p className="text-xs text-muted-foreground">
+          Precisión del modelo · error medio {formatNumber(Number(evaluation.mae ?? 0))} · cobertura del rango{" "}
+          {Math.round(Number(evaluation.interval_coverage ?? 0) * 100)}%
+          {evaluation.beats_baseline ? " · supera al método base" : ""}
+        </p>
+      )}
 
       {report?.summary && (
         <div className="space-y-1 rounded-lg border border-border bg-background p-3">
@@ -339,17 +397,24 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
         </div>
       )}
 
-      <div className="rounded-lg border border-border bg-background p-3">
+      <div className="rounded-lg border border-border bg-background p-3 shadow-sm">
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Gráfico de estimaciones
         </p>
-        <div className="h-64 w-full">
+        <div className="h-72 w-full animate-fade-in">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+              <defs>
+                <linearGradient id="ftg-forecast-band" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.04} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" minTickGap={16} />
               <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={64} />
               <Tooltip
+                cursor={{ stroke: "hsl(var(--primary))", strokeOpacity: 0.3 }}
                 contentStyle={{
                   background: "hsl(var(--background))",
                   border: "1px solid hsl(var(--border))",
@@ -368,9 +433,11 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
                 dataKey="rango"
                 name="Rango estimado"
                 stroke="none"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.15}
+                fill="url(#ftg-forecast-band)"
                 connectNulls
+                isAnimationActive
+                animationDuration={1200}
+                animationEasing="ease-out"
               />
               <Line
                 type="monotone"
@@ -380,16 +447,24 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
                 strokeWidth={2}
                 dot={false}
                 connectNulls
+                isAnimationActive
+                animationDuration={1100}
+                animationEasing="ease-out"
               />
               <Line
                 type="monotone"
                 dataKey="estimado"
                 name="Estimado"
                 stroke="hsl(var(--primary))"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 strokeDasharray="5 4"
                 dot={false}
+                activeDot={{ r: 5 }}
                 connectNulls
+                isAnimationActive
+                animationBegin={250}
+                animationDuration={1400}
+                animationEasing="ease-out"
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -436,6 +511,36 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
       )}
 
       <p className="text-[11px] text-muted-foreground">{FORECAST_DISCLAIMER}</p>
+    </div>
+  );
+}
+
+function KpiCard({
+  label,
+  value,
+  hint,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone?: "neutral" | "up" | "down";
+}) {
+  return (
+    <div className="hover-scale rounded-lg border border-border bg-background p-3 shadow-sm transition-shadow hover:shadow-md">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p
+        className={
+          tone === "up"
+            ? "mt-1 text-xl font-semibold text-success"
+            : tone === "down"
+              ? "mt-1 text-xl font-semibold text-destructive"
+              : "mt-1 text-xl font-semibold"
+        }
+      >
+        {value}
+      </p>
+      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
     </div>
   );
 }
