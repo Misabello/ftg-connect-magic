@@ -25,6 +25,8 @@ import {
 import {
   listPredictionJobs,
   listPredictionTargets,
+  getPredictionJob,
+  rerunPrediction,
   requestPrediction,
 } from "@/lib/ftg/predictions.functions";
 
@@ -47,6 +49,25 @@ function Predicciones() {
   const fetchTargets = useServerFn(listPredictionTargets);
   const fetchJobs = useServerFn(listPredictionJobs);
   const submit = useServerFn(requestPrediction);
+  const fetchJob = useServerFn(getPredictionJob);
+  const rerun = useServerFn(rerunPrediction);
+  const [openJobId, setOpenJobId] = useState<string | null>(null);
+
+  const jobDetail = useQuery({
+    queryKey: ["ml-job", openJobId],
+    enabled: !!openJobId,
+    queryFn: () => fetchJob({ data: { job_id: openJobId } } as never),
+  });
+
+  const rerunMutation = useMutation({
+    mutationFn: (jobId: string) => rerun({ data: { job_id: jobId } } as never),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ml-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["ml-job"] });
+      toast.success("Predicción recalculada.");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const targets = useQuery({ queryKey: ["ml-targets"], queryFn: () => fetchTargets({} as never) });
   const jobs = useQuery({ queryKey: ["ml-jobs"], queryFn: () => fetchJobs({} as never), refetchInterval: 20_000 });
@@ -79,6 +100,7 @@ function Predicciones() {
     },
     onSuccess: (result: any) => {
       queryClient.invalidateQueries({ queryKey: ["ml-jobs"] });
+      if (result.job_id) setOpenJobId(result.job_id);
       if (result.status === "datos_insuficientes") {
         toast.warning(result.message ?? "No hay datos suficientes para predecir.");
       } else {
@@ -199,11 +221,109 @@ function Predicciones() {
                   {formatNumber(job.observations_used ?? 0)} registros históricos · {relativeTime(job.requested_at)}
                 </p>
                 {job.status_message && <p className="text-xs text-muted-foreground">{job.status_message}</p>}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <Button size="sm" variant="outline" onClick={() => setOpenJobId(openJobId === job.id ? null : job.id)}>
+                    {openJobId === job.id ? "Ocultar resultado" : "Ver resultado"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={rerunMutation.isPending}
+                    onClick={() => rerunMutation.mutate(job.id)}
+                  >
+                    Recalcular
+                  </Button>
+                </div>
+                {openJobId === job.id && <JobDetail detail={jobDetail.data} loading={jobDetail.isLoading} />}
               </li>
             ))}
           </ul>
         )}
       </Panel>
+    </div>
+  );
+}
+
+function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
+  if (loading) return <Loading />;
+  if (!detail?.job) return null;
+  const forecast = (detail.predictions ?? []).filter((p: any) => !p.is_history);
+  const history = (detail.predictions ?? []).filter((p: any) => p.is_history);
+  const evaluation = (detail.evaluations ?? [])[0];
+  const report = (detail.reports ?? [])[0];
+  const total = forecast.reduce((acc: number, p: any) => acc + Number(p.predicted_value ?? 0), 0);
+
+  if (forecast.length === 0)
+    return (
+      <p className="mt-2 rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+        Todavía no hay resultados para esta solicitud.
+      </p>
+    );
+
+  return (
+    <div className="mt-3 space-y-3 rounded-xl border border-border bg-muted/30 p-3">
+      <div className="flex flex-wrap gap-4 text-xs">
+        <span>
+          <strong className="text-sm">{formatNumber(total)}</strong> total estimado
+        </span>
+        <span className="text-muted-foreground">{forecast.length} períodos estimados</span>
+        <span className="text-muted-foreground">{history.length} períodos históricos analizados</span>
+        {evaluation && (
+          <span className="text-muted-foreground">
+            Error medio {formatNumber(Number(evaluation.mae ?? 0))} · Cobertura{" "}
+            {Math.round(Number(evaluation.interval_coverage ?? 0) * 100)}%
+            {evaluation.beats_baseline ? " · supera al método base" : ""}
+          </span>
+        )}
+      </div>
+
+      {report?.summary && (
+        <div className="space-y-1 rounded-lg border border-border bg-background p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Informe</p>
+          <p className="whitespace-pre-line text-sm">{report.summary}</p>
+        </div>
+      )}
+
+      <div className="max-h-64 overflow-auto rounded-lg border border-border bg-background">
+        <table className="w-full text-xs">
+          <thead className="sticky top-0 bg-muted/60 text-left">
+            <tr>
+              <th className="px-3 py-2">Desde</th>
+              <th className="px-3 py-2">Hasta</th>
+              <th className="px-3 py-2 text-right">Estimado</th>
+              <th className="px-3 py-2 text-right">Mínimo</th>
+              <th className="px-3 py-2 text-right">Máximo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {forecast.map((p: any) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="px-3 py-1.5">{p.period_start}</td>
+                <td className="px-3 py-1.5">{p.period_end}</td>
+                <td className="px-3 py-1.5 text-right font-medium">{formatNumber(Number(p.predicted_value ?? 0))}</td>
+                <td className="px-3 py-1.5 text-right text-muted-foreground">{formatNumber(Number(p.lower_bound ?? 0))}</td>
+                <td className="px-3 py-1.5 text-right text-muted-foreground">{formatNumber(Number(p.upper_bound ?? 0))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {(detail.recommendations ?? []).length > 0 && (
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recomendaciones</p>
+          <ul className="space-y-1 text-xs">
+            {detail.recommendations.slice(0, 8).map((r: any) => (
+              <li key={r.id} className="flex flex-wrap justify-between gap-2 rounded-md bg-background px-3 py-1.5">
+                <span>{r.product_name}</span>
+                <span className="text-muted-foreground">{r.reason}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="text-[11px] text-muted-foreground">{FORECAST_DISCLAIMER}</p>
     </div>
   );
 }
