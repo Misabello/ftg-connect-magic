@@ -3774,6 +3774,8 @@ export type Database = {
           created_by: string | null
           currency_code: string
           document_number: string | null
+          drive_file_id: string | null
+          drive_url: string | null
           id: string
           image_path: string
           issued_on: string | null
@@ -3800,6 +3802,8 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           document_number?: string | null
+          drive_file_id?: string | null
+          drive_url?: string | null
           id?: string
           image_path: string
           issued_on?: string | null
@@ -3826,6 +3830,8 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           document_number?: string | null
+          drive_file_id?: string | null
+          drive_url?: string | null
           id?: string
           image_path?: string
           issued_on?: string | null
