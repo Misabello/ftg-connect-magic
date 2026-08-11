@@ -73,6 +73,10 @@ const es: Dict = {
   "config.language.desc":
     "Elegí el idioma con el que se muestra FTG ONE. Se guarda en tu perfil y se aplica en todos tus dispositivos.",
 
+  "role.admin": "Administrador",
+  "role.management": "Gerencia",
+  "role.executive": "Ejecutivo",
+  "role.seller": "Vendedor",
   "role.superadmin": "Superadministrador",
   "role.direccion": "Dirección",
   "role.administracion": "Administración",
@@ -154,6 +158,10 @@ const pt: Dict = {
   "config.language.desc":
     "Escolha o idioma em que o FTG ONE é exibido. Fica salvo no seu perfil e vale em todos os dispositivos.",
 
+  "role.admin": "Administrador",
+  "role.management": "Gerência",
+  "role.executive": "Executivo",
+  "role.seller": "Vendedor",
   "role.superadmin": "Superadministrador",
   "role.direccion": "Diretoria",
   "role.administracion": "Administração",
