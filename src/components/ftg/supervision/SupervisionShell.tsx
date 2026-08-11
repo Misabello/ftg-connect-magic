@@ -12,7 +12,7 @@ export function SectionTitle({ title, hint }: { title: string; hint?: string }) 
 export function Panel({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <section className="surface-card space-y-3 p-5">
-      <SectionTitle title={title} hint={hint} />
+      <SectionTitle title={title} {...(hint ? { hint } : {})} />
       {children}
     </section>
   );

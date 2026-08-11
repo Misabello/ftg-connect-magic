@@ -9,7 +9,9 @@ export const Route = createFileRoute("/_authenticated/supervisores")({
   component: SupervisoresLayout,
 });
 
-export const SUPERVISOR_MENU = [
+type MenuItem = { to: string; label: string; exact?: boolean };
+
+export const SUPERVISOR_MENU: MenuItem[] = [
   { to: "/supervisores", label: "Resumen del parque", exact: true },
   { to: "/supervisores/operativo", label: "Control operativo" },
   { to: "/supervisores/puntos-venta", label: "Control de puntos de venta" },
@@ -20,7 +22,7 @@ export const SUPERVISOR_MENU = [
   { to: "/supervisores/cierre", label: "Cierre diario" },
   { to: "/supervisores/predicciones", label: "Predicciones con IA" },
   { to: "/supervisores/reportes", label: "Reportes" },
-] as const;
+];
 
 function SupervisoresLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -73,7 +75,7 @@ function SupervisoresLayout() {
           return (
             <Link
               key={item.to}
-              to={item.to}
+              to={item.to as never}
               className={cn(
                 "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                 active
