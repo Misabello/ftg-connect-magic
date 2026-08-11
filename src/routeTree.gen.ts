@@ -46,6 +46,8 @@ import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './rout
 import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
+import { Route as AuthenticatedAdministracionEeccDiarioRouteImport } from './routes/_authenticated/administracion.eecc.diario'
+import { Route as AuthenticatedAdministracionEeccMayorRouteImport } from './routes/_authenticated/administracion.eecc.mayor'
 import { Route as AuthenticatedAdministracionEeccResultadosRouteImport } from './routes/_authenticated/administracion.eecc.resultados'
 import { Route as AuthenticatedAdministracionEeccSituacionRouteImport } from './routes/_authenticated/administracion.eecc.situacion'
 import { Route as AuthenticatedAdministracionReportesIndexRouteImport } from './routes/_authenticated/administracion.reportes.index'
@@ -268,6 +270,18 @@ const AuthenticatedAdministracionEeccIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdministracionEeccRoute,
   } as any)
+const AuthenticatedAdministracionEeccDiarioRoute =
+  AuthenticatedAdministracionEeccDiarioRouteImport.update({
+    id: '/diario',
+    path: '/diario',
+    getParentRoute: () => AuthenticatedAdministracionEeccRoute,
+  } as any)
+const AuthenticatedAdministracionEeccMayorRoute =
+  AuthenticatedAdministracionEeccMayorRouteImport.update({
+    id: '/mayor',
+    path: '/mayor',
+    getParentRoute: () => AuthenticatedAdministracionEeccRoute,
+  } as any)
 const AuthenticatedAdministracionEeccResultadosRoute =
   AuthenticatedAdministracionEeccResultadosRouteImport.update({
     id: '/resultados',
@@ -358,6 +372,8 @@ export interface FileRoutesByFullPath {
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
@@ -400,6 +416,8 @@ export interface FileRoutesByTo {
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
@@ -449,6 +467,8 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/_authenticated/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/_authenticated/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/_authenticated/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/_authenticated/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/_authenticated/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
@@ -498,6 +518,8 @@ export interface FileRouteTypes {
     | '/configuracion/'
     | '/sedes/'
     | '/supervisores/'
+    | '/administracion/eecc/diario'
+    | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
@@ -540,6 +562,8 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/sedes'
     | '/supervisores'
+    | '/administracion/eecc/diario'
+    | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
@@ -588,6 +612,8 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
+    | '/_authenticated/administracion/eecc/diario'
+    | '/_authenticated/administracion/eecc/mayor'
     | '/_authenticated/administracion/eecc/resultados'
     | '/_authenticated/administracion/eecc/situacion'
     | '/_authenticated/administracion/reportes/cajas'
@@ -869,6 +895,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionEeccIndexRouteImport
       parentRoute: typeof AuthenticatedAdministracionEeccRoute
     }
+    '/_authenticated/administracion/eecc/diario': {
+      id: '/_authenticated/administracion/eecc/diario'
+      path: '/diario'
+      fullPath: '/administracion/eecc/diario'
+      preLoaderRoute: typeof AuthenticatedAdministracionEeccDiarioRouteImport
+      parentRoute: typeof AuthenticatedAdministracionEeccRoute
+    }
+    '/_authenticated/administracion/eecc/mayor': {
+      id: '/_authenticated/administracion/eecc/mayor'
+      path: '/mayor'
+      fullPath: '/administracion/eecc/mayor'
+      preLoaderRoute: typeof AuthenticatedAdministracionEeccMayorRouteImport
+      parentRoute: typeof AuthenticatedAdministracionEeccRoute
+    }
     '/_authenticated/administracion/eecc/resultados': {
       id: '/_authenticated/administracion/eecc/resultados'
       path: '/resultados'
@@ -936,6 +976,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdministracionEeccRouteChildren {
+  AuthenticatedAdministracionEeccDiarioRoute: typeof AuthenticatedAdministracionEeccDiarioRoute
+  AuthenticatedAdministracionEeccMayorRoute: typeof AuthenticatedAdministracionEeccMayorRoute
   AuthenticatedAdministracionEeccResultadosRoute: typeof AuthenticatedAdministracionEeccResultadosRoute
   AuthenticatedAdministracionEeccSituacionRoute: typeof AuthenticatedAdministracionEeccSituacionRoute
   AuthenticatedAdministracionEeccIndexRoute: typeof AuthenticatedAdministracionEeccIndexRoute
@@ -943,6 +985,10 @@ interface AuthenticatedAdministracionEeccRouteChildren {
 
 const AuthenticatedAdministracionEeccRouteChildren: AuthenticatedAdministracionEeccRouteChildren =
   {
+    AuthenticatedAdministracionEeccDiarioRoute:
+      AuthenticatedAdministracionEeccDiarioRoute,
+    AuthenticatedAdministracionEeccMayorRoute:
+      AuthenticatedAdministracionEeccMayorRoute,
     AuthenticatedAdministracionEeccResultadosRoute:
       AuthenticatedAdministracionEeccResultadosRoute,
     AuthenticatedAdministracionEeccSituacionRoute:
@@ -1121,3 +1167,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
