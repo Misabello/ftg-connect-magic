@@ -54,6 +54,32 @@ export function buildReceiptMessage(data: ReceiptShareData) {
 }
 
 /** Texto para compartir un recuerdo generado con IA. */
+export type InvoiceShareData = {
+  concept: string;
+  documentNumber?: string | null | undefined;
+  totalLabel: string;
+  dueOn?: string | null | undefined;
+  customerName?: string | null | undefined;
+  sellerEmail?: string | null | undefined;
+};
+
+/** Texto de la factura por cobrar para enviar al cliente. */
+export function buildInvoiceMessage(data: InvoiceShareData) {
+  return [
+    `Hola${data.customerName ? ` ${data.customerName}` : ""}, te enviamos tu factura de FTG.`,
+    "",
+    data.documentNumber ? `Comprobante: ${data.documentNumber}` : null,
+    `Concepto: ${data.concept}`,
+    `Importe: ${data.totalLabel}`,
+    data.dueOn ? `Vencimiento: ${data.dueOn}` : null,
+    "",
+    "Ante cualquier duda respondé este correo.",
+    data.sellerEmail ? `Contacto: ${data.sellerEmail}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function buildSouvenirMessage(opts: {
   label: string;
   link?: string | null | undefined;
