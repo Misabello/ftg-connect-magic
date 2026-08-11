@@ -559,7 +559,9 @@ export function PosWorkspace({
   const missingPhotoCode = lines.some((l) => l.requiresPhoto && !l.photoCode?.trim());
   const mercadoPagoMethodId =
     methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
-  const checkoutHint = !session
+  const checkoutHint = !activePos
+    ? "Elegí el punto de venta donde querés asentar la venta."
+    : !session
     ? online
       ? `Al cobrar se abrirá la caja de ${activePos?.name ?? "este puesto"} y la venta quedará asentada ahí.`
       : "Sin conexión: abrí la caja mientras tengas señal para poder cobrar."
