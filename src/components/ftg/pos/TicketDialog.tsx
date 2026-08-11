@@ -5,6 +5,7 @@ import { Camera, Loader2, ScanText, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { CameraCaptureDialog } from "@/components/ftg/CameraCaptureDialog";
 import {
   Dialog,
   DialogContent,
