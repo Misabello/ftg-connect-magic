@@ -22,6 +22,7 @@ import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
+import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
@@ -97,6 +98,12 @@ const AuthenticatedConfiguracionIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
+const AuthenticatedConfiguracionUsuariosRoute =
+  AuthenticatedConfiguracionUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
   path: '/sedes/',
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
+  '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/usuarios'
     | '/configuracion/'
     | '/sedes/'
     | '/api/public/invoices/ingest'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/usuarios'
     | '/configuracion'
     | '/sedes'
     | '/api/public/invoices/ingest'
@@ -236,6 +248,7 @@ export interface FileRouteTypes {
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
+    | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/api/public/invoices/ingest'
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracionIndexRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
     }
+    '/_authenticated/configuracion/usuarios': {
+      id: '/_authenticated/configuracion/usuarios'
+      path: '/usuarios'
+      fullPath: '/configuracion/usuarios'
+      preLoaderRoute: typeof AuthenticatedConfiguracionUsuariosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
     '/_authenticated/sedes/': {
       id: '/_authenticated/sedes/'
       path: '/sedes'
@@ -384,11 +404,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedConfiguracionRouteChildren {
+  AuthenticatedConfiguracionUsuariosRoute: typeof AuthenticatedConfiguracionUsuariosRoute
   AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
 }
 
 const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteChildren =
   {
+    AuthenticatedConfiguracionUsuariosRoute:
+      AuthenticatedConfiguracionUsuariosRoute,
     AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
   }
 
