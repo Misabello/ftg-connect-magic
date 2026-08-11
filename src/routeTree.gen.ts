@@ -35,6 +35,7 @@ import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_
 import { Route as AuthenticatedSupervisoresCajasRouteImport } from './routes/_authenticated/supervisores.cajas'
 import { Route as AuthenticatedSupervisoresInventarioRouteImport } from './routes/_authenticated/supervisores.inventario'
 import { Route as AuthenticatedSupervisoresOperativoRouteImport } from './routes/_authenticated/supervisores.operativo'
+import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './routes/_authenticated/supervisores.predicciones'
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
@@ -188,6 +189,12 @@ const AuthenticatedSupervisoresOperativoRoute =
     path: '/operativo',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
+const AuthenticatedSupervisoresPrediccionesRoute =
+  AuthenticatedSupervisoresPrediccionesRouteImport.update({
+    id: '/predicciones',
+    path: '/predicciones',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
 const AuthenticatedSupervisoresPuntosVentaRoute =
   AuthenticatedSupervisoresPuntosVentaRouteImport.update({
     id: '/puntos-venta',
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
@@ -278,6 +286,7 @@ export interface FileRoutesByTo {
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
@@ -313,6 +322,7 @@ export interface FileRoutesById {
   '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/_authenticated/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/_authenticated/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
+  '/_authenticated/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/_authenticated/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
   '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/supervisores/cajas'
     | '/supervisores/inventario'
     | '/supervisores/operativo'
+    | '/supervisores/predicciones'
     | '/supervisores/puntos-venta'
     | '/supervisores/ventas'
     | '/configuracion/'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/supervisores/cajas'
     | '/supervisores/inventario'
     | '/supervisores/operativo'
+    | '/supervisores/predicciones'
     | '/supervisores/puntos-venta'
     | '/supervisores/ventas'
     | '/configuracion'
@@ -413,6 +425,7 @@ export interface FileRouteTypes {
     | '/_authenticated/supervisores/cajas'
     | '/_authenticated/supervisores/inventario'
     | '/_authenticated/supervisores/operativo'
+    | '/_authenticated/supervisores/predicciones'
     | '/_authenticated/supervisores/puntos-venta'
     | '/_authenticated/supervisores/ventas'
     | '/_authenticated/configuracion/'
@@ -616,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupervisoresOperativoRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
+    '/_authenticated/supervisores/predicciones': {
+      id: '/_authenticated/supervisores/predicciones'
+      path: '/predicciones'
+      fullPath: '/supervisores/predicciones'
+      preLoaderRoute: typeof AuthenticatedSupervisoresPrediccionesRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
     '/_authenticated/supervisores/puntos-venta': {
       id: '/_authenticated/supervisores/puntos-venta'
       path: '/puntos-venta'
@@ -697,6 +717,7 @@ interface AuthenticatedSupervisoresRouteChildren {
   AuthenticatedSupervisoresCajasRoute: typeof AuthenticatedSupervisoresCajasRoute
   AuthenticatedSupervisoresInventarioRoute: typeof AuthenticatedSupervisoresInventarioRoute
   AuthenticatedSupervisoresOperativoRoute: typeof AuthenticatedSupervisoresOperativoRoute
+  AuthenticatedSupervisoresPrediccionesRoute: typeof AuthenticatedSupervisoresPrediccionesRoute
   AuthenticatedSupervisoresPuntosVentaRoute: typeof AuthenticatedSupervisoresPuntosVentaRoute
   AuthenticatedSupervisoresVentasRoute: typeof AuthenticatedSupervisoresVentasRoute
   AuthenticatedSupervisoresIndexRoute: typeof AuthenticatedSupervisoresIndexRoute
@@ -711,6 +732,8 @@ const AuthenticatedSupervisoresRouteChildren: AuthenticatedSupervisoresRouteChil
       AuthenticatedSupervisoresInventarioRoute,
     AuthenticatedSupervisoresOperativoRoute:
       AuthenticatedSupervisoresOperativoRoute,
+    AuthenticatedSupervisoresPrediccionesRoute:
+      AuthenticatedSupervisoresPrediccionesRoute,
     AuthenticatedSupervisoresPuntosVentaRoute:
       AuthenticatedSupervisoresPuntosVentaRoute,
     AuthenticatedSupervisoresVentasRoute: AuthenticatedSupervisoresVentasRoute,
