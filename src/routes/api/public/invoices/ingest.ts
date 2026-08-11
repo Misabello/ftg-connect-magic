@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
+import { sha256Hex, verifySignature } from "@/lib/ftg/invoice-signature";
+
 /**
  * Endpoint público firmado que recibe los correos con facturas recolectados
  * por el Apps Script de Gmail. El script NUNCA usa credenciales privilegiadas:
@@ -33,36 +35,6 @@ const Payload = z.object({
   attachments: z.array(Attachment).max(10).default([]),
 });
 
-const MAX_AGE_SECONDS = 300;
-
-function toHex(buffer: ArrayBuffer) {
-  return Array.from(new Uint8Array(buffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-async function hmacHex(secret: string, message: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  return toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message)));
-}
-
-function safeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
-
-async function sha256Hex(bytes: Uint8Array) {
-  return toHex(await crypto.subtle.digest("SHA-256", bytes as unknown as ArrayBuffer));
-}
-
 function base64ToBytes(value: string) {
   const binary = atob(value.replace(/\s/g, ""));
   const out = new Uint8Array(binary.length);
@@ -86,12 +58,10 @@ export const Route = createFileRoute("/api/public/invoices/ingest")({
         const raw = await request.text();
 
         if (!timestamp || !requestId || !signature) return json({ error: "missing_signature" }, 401);
-        const age = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
-        if (!Number.isFinite(age) || age > MAX_AGE_SECONDS) return json({ error: "stale_request" }, 401);
         if (raw.length > 30 * 1024 * 1024) return json({ error: "payload_too_large" }, 413);
 
-        const expected = await hmacHex(secret, `${timestamp}.${requestId}.${raw}`);
-        if (!safeEqual(expected, signature)) return json({ error: "invalid_signature" }, 401);
+        const verified = await verifySignature({ secret, timestamp, requestId, signature, body: raw });
+        if (!verified.ok) return json({ error: verified.reason }, 401);
 
         let payload: z.infer<typeof Payload>;
         try {
