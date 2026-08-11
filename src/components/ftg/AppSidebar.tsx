@@ -20,6 +20,7 @@ import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { cn } from "@/lib/utils";
 import type { ModuleKey } from "@/lib/ftg/roles";
+import { SECTION_SUBNAV, findSubNavItem } from "@/lib/ftg/nav";
 
 type Item = { key: ModuleKey; to: string; icon: typeof Home; stage?: string };
 
@@ -41,6 +42,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { locations } = useScope();
   const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.search as Record<string, unknown> });
 
   return (
     <nav className="flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground">
@@ -50,6 +52,8 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
       <ul className="flex-1 space-y-1 overflow-y-auto p-3">
         {ITEMS.filter((item) => can(item.key)).map((item) => {
           const active = pathname.startsWith(item.to);
+          const subnav = SECTION_SUBNAV[item.key];
+          const activeSub = active && subnav ? findSubNavItem(subnav, pathname, search) : undefined;
           return (
             <li key={item.key}>
               <Link
@@ -70,6 +74,37 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
                   </span>
                 )}
               </Link>
+              {active && subnav && (
+                <ul className="mb-2 mt-1 space-y-0.5 border-l border-sidebar-border pl-3">
+                  {subnav.map((sub, index) => {
+                    const group = sub.group;
+                    const showGroup = group && group !== subnav[index - 1]?.group;
+                    const isActive = activeSub?.label === sub.label && activeSub?.to === sub.to;
+                    return (
+                      <li key={`${sub.to}-${sub.label}`}>
+                        {showGroup && (
+                          <p className="px-3 pb-0.5 pt-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
+                            {group}
+                          </p>
+                        )}
+                        <Link
+                          to={sub.to as never}
+                          search={sub.search as never}
+                          onClick={onNavigate}
+                          className={cn(
+                            "block rounded-lg px-3 py-1.5 text-[13px] transition-colors",
+                            isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                          )}
+                        >
+                          {sub.label}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </li>
           );
         })}
