@@ -86,7 +86,7 @@ export const createUserAccount = createServerFn({ method: "POST" })
     if (data.send_invite) {
       const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
         data: meta,
-        redirectTo: siteUrl,
+        ...(siteUrl ? { redirectTo: siteUrl } : {}),
       });
       if (error) throw new Error(error.message);
       userId = invited.user?.id ?? null;
@@ -193,7 +193,7 @@ export const setUserStatus = createServerFn({ method: "POST" })
       .update({
         status: data.status,
         is_active: !blocked,
-        end_date: data.end_date ?? undefined,
+        ...(data.end_date === undefined ? {} : { end_date: data.end_date }),
         deactivated_at: blocked ? new Date().toISOString() : null,
       })
       .eq("id", data.user_id);

@@ -73,8 +73,8 @@ export const saveEmployee = createServerFn({ method: "POST" })
     const payload = clean(rest);
     const table = context.supabase.from("employees");
     const result = id
-      ? await table.update(payload).eq("id", id).select("id").single()
-      : await table.insert({ ...payload, created_by: context.userId }).select("id").single();
+      ? await table.update(payload as never).eq("id", id).select("id").single()
+      : await table.insert({ ...payload, created_by: context.userId } as never).select("id").single();
     if (result.error) throw new Error(result.error.message);
 
     await context.supabase.from("audit_logs").insert({

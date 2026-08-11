@@ -37,7 +37,47 @@ export const Route = createFileRoute("/_authenticated/configuracion/empleados")(
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-type EmployeeForm = Record<string, any>;
+type EmployeeForm = {
+  id?: any;
+  organization_id?: any;
+  user_id?: any;
+  employee_number?: any;
+  first_name?: any;
+  last_name?: any;
+  document_type?: any;
+  document_number?: any;
+  tax_id?: any;
+  birth_date?: any;
+  nationality?: any;
+  gender?: any;
+  marital_status?: any;
+  personal_email?: any;
+  phone?: any;
+  address?: any;
+  city?: any;
+  region?: any;
+  country_code?: any;
+  emergency_contact_name?: any;
+  emergency_contact_phone?: any;
+  position?: any;
+  department?: any;
+  supervisor_employee_id?: any;
+  contract_type?: any;
+  work_schedule?: any;
+  work_shift?: any;
+  hire_date?: any;
+  termination_date?: any;
+  termination_reason?: any;
+  employment_status?: any;
+  primary_location_id?: any;
+  primary_point_of_sale_id?: any;
+  cost_center?: any;
+  reference_currency?: any;
+  notes?: any;
+  created_at?: any;
+  updated_at?: any;
+  created_by?: any;
+};
 
 const emptyEmployee = (organization_id: string): EmployeeForm => ({
   organization_id,
