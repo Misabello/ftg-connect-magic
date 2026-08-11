@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, Cloud, Loader2, Plus, Smartphone } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,6 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateVisitorCode } from "@/lib/ftg/photos";
+import { supabase } from "@/integrations/supabase/client";
+
+const MAX_UPLOAD_MB = 12;
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // un año
 
 export type PhotoDraft = {
   visitor_code: string;
@@ -40,6 +45,9 @@ export function PhotoFormDialog({
   pending?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState<PhotoDraft>(() => ({
     visitor_code: generateVisitorCode(),
     image_url: SAMPLES[0] ?? "",
@@ -51,6 +59,37 @@ export function PhotoFormDialog({
 
   const set = <K extends keyof PhotoDraft>(key: K, value: PhotoDraft[K]) =>
     setDraft((prev) => ({ ...prev, [key]: value }));
+
+  async function uploadFile(file: File) {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Formato no permitido", { description: "Subí una imagen JPG, PNG o WEBP." });
+      return;
+    }
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      toast.error("Archivo demasiado grande", { description: `El máximo es ${MAX_UPLOAD_MB} MB.` });
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${draft.visitor_code || "foto"}/${Date.now()}.${ext}`;
+      const upload = await supabase.storage.from("visitor-photos").upload(path, file, {
+        contentType: file.type || "image/jpeg",
+        upsert: true,
+      });
+      if (upload.error) throw new Error(upload.error.message);
+      const signed = await supabase.storage.from("visitor-photos").createSignedUrl(path, SIGNED_URL_TTL);
+      if (signed.error || !signed.data?.signedUrl) throw new Error(signed.error?.message ?? "Sin URL");
+      set("image_url", signed.data.signedUrl);
+      toast.success("Fotografía cargada");
+    } catch (error) {
+      toast.error("No pudimos subir la fotografía", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -87,7 +126,57 @@ export function PhotoFormDialog({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="image">URL de la imagen</Label>
+            <Label htmlFor="image">Imagen</Label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadFile(file);
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadFile(file);
+                e.target.value = "";
+              }}
+            />
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
+                {uploading ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Smartphone className="mr-1.5 h-4 w-4" />
+                )}
+                Subir desde el dispositivo
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={uploading}
+                onClick={() => cameraRef.current?.click()}
+              >
+                <Camera className="mr-1.5 h-4 w-4" /> Sacar foto ahora
+              </Button>
+            </div>
+            {draft.image_url && (
+              <div className="overflow-hidden rounded-lg border border-border">
+                <img src={draft.image_url} alt="Fotografía cargada" className="max-h-48 w-full object-contain" />
+              </div>
+            )}
+            <Label htmlFor="image" className="flex items-center gap-1.5 pt-1 text-xs text-muted-foreground">
+              <Cloud className="h-3.5 w-3.5" /> o pegá un enlace público de la nube
+            </Label>
             <Input id="image" value={draft.image_url} onChange={(e) => set("image_url", e.target.value)} />
             <div className="flex gap-2 pt-1">
               {SAMPLES.map((url) => (
@@ -134,7 +223,7 @@ export function PhotoFormDialog({
             Cancelar
           </Button>
           <Button
-            disabled={pending || !draft.visitor_code || !draft.image_url}
+            disabled={pending || uploading || !draft.visitor_code || !draft.image_url}
             onClick={async () => {
               await onSubmit(draft);
               setOpen(false);
