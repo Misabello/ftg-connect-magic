@@ -33,10 +33,12 @@ import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
 import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
 import { Route as AuthenticatedSupervisoresCajasRouteImport } from './routes/_authenticated/supervisores.cajas'
+import { Route as AuthenticatedSupervisoresCierreRouteImport } from './routes/_authenticated/supervisores.cierre'
 import { Route as AuthenticatedSupervisoresInventarioRouteImport } from './routes/_authenticated/supervisores.inventario'
 import { Route as AuthenticatedSupervisoresOperativoRouteImport } from './routes/_authenticated/supervisores.operativo'
 import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './routes/_authenticated/supervisores.predicciones'
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
+import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
@@ -177,6 +179,12 @@ const AuthenticatedSupervisoresCajasRoute =
     path: '/cajas',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
+const AuthenticatedSupervisoresCierreRoute =
+  AuthenticatedSupervisoresCierreRouteImport.update({
+    id: '/cierre',
+    path: '/cierre',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
 const AuthenticatedSupervisoresInventarioRoute =
   AuthenticatedSupervisoresInventarioRouteImport.update({
     id: '/inventario',
@@ -199,6 +207,12 @@ const AuthenticatedSupervisoresPuntosVentaRoute =
   AuthenticatedSupervisoresPuntosVentaRouteImport.update({
     id: '/puntos-venta',
     path: '/puntos-venta',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresReportesRoute =
+  AuthenticatedSupervisoresReportesRouteImport.update({
+    id: '/reportes',
+    path: '/reportes',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
 const AuthenticatedSupervisoresVentasRoute =
@@ -252,10 +266,12 @@ export interface FileRoutesByFullPath {
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
   '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
@@ -284,10 +300,12 @@ export interface FileRoutesByTo {
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
   '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
@@ -320,10 +338,12 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
   '/_authenticated/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/_authenticated/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
   '/_authenticated/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/_authenticated/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/_authenticated/supervisores/predicciones': typeof AuthenticatedSupervisoresPrediccionesRoute
   '/_authenticated/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/_authenticated/supervisores/reportes': typeof AuthenticatedSupervisoresReportesRoute
   '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
@@ -356,10 +376,12 @@ export interface FileRouteTypes {
     | '/configuracion/vacaciones'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
+    | '/supervisores/cierre'
     | '/supervisores/inventario'
     | '/supervisores/operativo'
     | '/supervisores/predicciones'
     | '/supervisores/puntos-venta'
+    | '/supervisores/reportes'
     | '/supervisores/ventas'
     | '/configuracion/'
     | '/sedes/'
@@ -388,10 +410,12 @@ export interface FileRouteTypes {
     | '/configuracion/vacaciones'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
+    | '/supervisores/cierre'
     | '/supervisores/inventario'
     | '/supervisores/operativo'
     | '/supervisores/predicciones'
     | '/supervisores/puntos-venta'
+    | '/supervisores/reportes'
     | '/supervisores/ventas'
     | '/configuracion'
     | '/sedes'
@@ -423,10 +447,12 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/vacaciones'
     | '/_authenticated/supervisores/alertas'
     | '/_authenticated/supervisores/cajas'
+    | '/_authenticated/supervisores/cierre'
     | '/_authenticated/supervisores/inventario'
     | '/_authenticated/supervisores/operativo'
     | '/_authenticated/supervisores/predicciones'
     | '/_authenticated/supervisores/puntos-venta'
+    | '/_authenticated/supervisores/reportes'
     | '/_authenticated/supervisores/ventas'
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
@@ -615,6 +641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupervisoresCajasRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
+    '/_authenticated/supervisores/cierre': {
+      id: '/_authenticated/supervisores/cierre'
+      path: '/cierre'
+      fullPath: '/supervisores/cierre'
+      preLoaderRoute: typeof AuthenticatedSupervisoresCierreRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
     '/_authenticated/supervisores/inventario': {
       id: '/_authenticated/supervisores/inventario'
       path: '/inventario'
@@ -641,6 +674,13 @@ declare module '@tanstack/react-router' {
       path: '/puntos-venta'
       fullPath: '/supervisores/puntos-venta'
       preLoaderRoute: typeof AuthenticatedSupervisoresPuntosVentaRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/reportes': {
+      id: '/_authenticated/supervisores/reportes'
+      path: '/reportes'
+      fullPath: '/supervisores/reportes'
+      preLoaderRoute: typeof AuthenticatedSupervisoresReportesRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
     '/_authenticated/supervisores/ventas': {
@@ -715,10 +755,12 @@ const AuthenticatedConfiguracionRouteWithChildren =
 interface AuthenticatedSupervisoresRouteChildren {
   AuthenticatedSupervisoresAlertasRoute: typeof AuthenticatedSupervisoresAlertasRoute
   AuthenticatedSupervisoresCajasRoute: typeof AuthenticatedSupervisoresCajasRoute
+  AuthenticatedSupervisoresCierreRoute: typeof AuthenticatedSupervisoresCierreRoute
   AuthenticatedSupervisoresInventarioRoute: typeof AuthenticatedSupervisoresInventarioRoute
   AuthenticatedSupervisoresOperativoRoute: typeof AuthenticatedSupervisoresOperativoRoute
   AuthenticatedSupervisoresPrediccionesRoute: typeof AuthenticatedSupervisoresPrediccionesRoute
   AuthenticatedSupervisoresPuntosVentaRoute: typeof AuthenticatedSupervisoresPuntosVentaRoute
+  AuthenticatedSupervisoresReportesRoute: typeof AuthenticatedSupervisoresReportesRoute
   AuthenticatedSupervisoresVentasRoute: typeof AuthenticatedSupervisoresVentasRoute
   AuthenticatedSupervisoresIndexRoute: typeof AuthenticatedSupervisoresIndexRoute
 }
@@ -728,6 +770,7 @@ const AuthenticatedSupervisoresRouteChildren: AuthenticatedSupervisoresRouteChil
     AuthenticatedSupervisoresAlertasRoute:
       AuthenticatedSupervisoresAlertasRoute,
     AuthenticatedSupervisoresCajasRoute: AuthenticatedSupervisoresCajasRoute,
+    AuthenticatedSupervisoresCierreRoute: AuthenticatedSupervisoresCierreRoute,
     AuthenticatedSupervisoresInventarioRoute:
       AuthenticatedSupervisoresInventarioRoute,
     AuthenticatedSupervisoresOperativoRoute:
@@ -736,6 +779,8 @@ const AuthenticatedSupervisoresRouteChildren: AuthenticatedSupervisoresRouteChil
       AuthenticatedSupervisoresPrediccionesRoute,
     AuthenticatedSupervisoresPuntosVentaRoute:
       AuthenticatedSupervisoresPuntosVentaRoute,
+    AuthenticatedSupervisoresReportesRoute:
+      AuthenticatedSupervisoresReportesRoute,
     AuthenticatedSupervisoresVentasRoute: AuthenticatedSupervisoresVentasRoute,
     AuthenticatedSupervisoresIndexRoute: AuthenticatedSupervisoresIndexRoute,
   }
