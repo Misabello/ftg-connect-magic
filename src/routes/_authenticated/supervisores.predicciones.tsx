@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useScope } from "@/hooks/useScope";
 import { formatNumber, relativeTime } from "@/lib/ftg/format";
-import { NEW_SHEET_URL, copyForSheets, downloadCsv } from "@/lib/ftg/export";
+import { copyForSheets, downloadCsv } from "@/lib/ftg/export";
+import { exportRowsToSheet } from "@/lib/ftg/sheets.functions";
 import {
   FORECAST_DISCLAIMER,
   GRANULARITY_LABELS,
@@ -382,11 +383,7 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
         >
           <Table2 className="h-3.5 w-3.5" /> Copiar para Sheets
         </Button>
-        <Button size="sm" variant="ghost" className="gap-1.5" asChild>
-          <a href={NEW_SHEET_URL} target="_blank" rel="noreferrer">
-            <ExternalLink className="h-3.5 w-3.5" /> Abrir Google Sheets
-          </a>
-        </Button>
+        <ExportSheetButton title={fileBase} headers={exportHeaders} rows={exportRows} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
