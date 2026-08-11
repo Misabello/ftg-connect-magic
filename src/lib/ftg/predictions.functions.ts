@@ -79,14 +79,14 @@ async function countHistory(
     if (rows.length > 0) return { observations: rows.length, distinctDays: days.size };
     const { data: docs } = await supabase
       .from("finance_documents")
-      .select("issue_date")
+      .select("issued_on")
       .eq("kind", "pagar")
-      .gte("issue_date", from)
-      .lte("issue_date", to);
-    const docRows = (docs ?? []) as { issue_date: string | null }[];
+      .gte("issued_on", from)
+      .lte("issued_on", to);
+    const docRows = (docs ?? []) as { issued_on: string | null }[];
     return {
       observations: docRows.length,
-      distinctDays: new Set(docRows.map((r) => r.issue_date).filter(Boolean)).size,
+      distinctDays: new Set(docRows.map((r) => r.issued_on).filter(Boolean)).size,
     };
   }
 
@@ -143,12 +143,12 @@ export const requestPrediction = createServerFn({ method: "POST" })
     });
 
     const serviceUrl = process.env["ML_SERVICE_URL"];
-    const status = !sufficiency.ok ? "datos_insuficientes" : serviceUrl ? "en_cola" : "pendiente";
+    const status = !sufficiency.ok ? "datos_insuficientes" : "en_cola";
     const statusMessage = !sufficiency.ok
       ? sufficiency.reason
       : serviceUrl
         ? "Solicitud enviada al servicio de modelos."
-        : "El servicio de modelos todavía no está conectado. La solicitud queda registrada y se procesará al activarlo.";
+        : "Procesando con el motor de predicción local.";
 
     const { data: job, error } = await supabase
       .from("ml_prediction_jobs")
@@ -209,6 +209,21 @@ export const requestPrediction = createServerFn({ method: "POST" })
           } as never)
           .eq("id", job.id);
       }
+    } else if (sufficiency.ok) {
+      const { runPredictionJobPipeline } = await import("@/lib/ftg/predictions.run.server");
+      const result = await runPredictionJobPipeline(supabase, job.id as string, userId);
+      return {
+        job_id: job.id as string,
+        status: result.status,
+        message:
+          result.status === "completado"
+            ? "Predicción generada con el motor local."
+            : (result as { message?: string }).message ?? "No se pudo completar la predicción.",
+        observations: counted.observations,
+        history_days: counted.distinctDays,
+        history_from: history.from,
+        history_to: history.to,
+      };
     }
 
     return {
