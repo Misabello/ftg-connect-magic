@@ -23,12 +23,28 @@ function ControlInventario() {
   const { data, isLoading } = useSupervision(activeLocationId);
   if (isLoading || !data) return <Loading />;
 
+  const soldPerDay = new Map<string, number>();
+  for (const item of data.saleItems) {
+    if (!item.product_id) continue;
+    soldPerDay.set(item.product_id, (soldPerDay.get(item.product_id) ?? 0) + Number(item.quantity ?? 0));
+  }
+  const movementsByProduct = new Map<string, number>();
+  for (const m of data.movements) {
+    if (!m.product_id) continue;
+    movementsByProduct.set(m.product_id, (movementsByProduct.get(m.product_id) ?? 0) + Math.abs(Number(m.quantity ?? 0)));
+  }
+  const transferenciasPendientes = data.movements.filter((m: any) => m.kind === "transferencia").length;
+
   const rows = data.stock
     .map((s) => {
       const product = data.products.find((p) => p.id === s.product_id);
       const available = Number(s.quantity ?? 0) - Number(s.reserved_quantity ?? 0);
       const min = Number(s.min_quantity ?? 0);
+      const dailyDemand = soldPerDay.get(s.product_id ?? "") ?? 0;
+      const rotation = movementsByProduct.get(s.product_id ?? "") ?? 0;
       return {
+        coverage: dailyDemand > 0 ? available / dailyDemand : null,
+        rotation,
         id: s.id,
         name: product?.name ?? "Producto",
         sku: product?.sku ?? "—",
@@ -64,7 +80,10 @@ function ControlInventario() {
         )}
       </Panel>
 
-      <Panel title="Existencias" hint="Stock disponible por producto">
+      <Panel
+        title="Existencias"
+        hint={`${formatNumber(rows.filter((r) => r.rotation === 0).length)} productos sin movimiento en 30 días · ${formatNumber(transferenciasPendientes)} transferencias registradas`}
+      >
         {rows.length === 0 ? (
           <EmptyState message="Sin inventario cargado para este parque." />
         ) : (
@@ -83,6 +102,10 @@ function ControlInventario() {
                   <td className="py-2">{r.name}</td>
                   <td className="text-right font-medium">{formatNumber(r.available)}</td>
                   <td className="text-right text-muted-foreground">{formatNumber(r.min)}</td>
+                  <td className="text-right text-muted-foreground">{formatNumber(r.rotation)}</td>
+                  <td className="text-right text-muted-foreground">
+                    {r.coverage === null ? "Sin demanda" : `${r.coverage.toFixed(1)} días`}
+                  </td>
                   <td className="text-right text-muted-foreground">{formatNumber(r.damaged)}</td>
                 </tr>
               ))}

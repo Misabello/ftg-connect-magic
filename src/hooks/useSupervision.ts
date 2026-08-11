@@ -29,6 +29,9 @@ export function useSupervision(locationId: string | null) {
         incidents,
         operationDay,
         photos,
+        movements,
+        categories,
+        people,
       ] = await Promise.all([
         supabase.from("points_of_sale").select("*").eq("location_id", loc).eq("is_active", true).order("name"),
         supabase.from("devices").select("*").eq("location_id", loc),
@@ -49,10 +52,17 @@ export function useSupervision(locationId: string | null) {
           .limit(50),
         supabase.from("operation_days").select("*").eq("location_id", loc).eq("day", day).maybeSingle(),
         supabase.from("photos").select("id, status, point_of_sale_id, captured_at").eq("location_id", loc).gte("captured_at", dayStart),
+        supabase
+          .from("stock_movements")
+          .select("id, product_id, kind, quantity, created_at, point_of_sale_id")
+          .eq("location_id", loc)
+          .gte("created_at", new Date(Date.now() - 30 * 86_400_000).toISOString()),
+        supabase.from("product_categories").select("id, name"),
+        supabase.from("profiles").select("id, full_name"),
       ]);
 
       const opDay = operationDay.data;
-      const [checklist, staff, saleItems] = await Promise.all([
+      const [checklist, staff, saleItems, salePayments] = await Promise.all([
         opDay
           ? supabase.from("operation_checklist_items").select("*").eq("operation_day_id", opDay.id).order("created_at")
           : Promise.resolve({ data: [] as any[] }),
@@ -63,6 +73,12 @@ export function useSupervision(locationId: string | null) {
           ? supabase
               .from("sale_items")
               .select("sale_id, product_id, description, quantity, line_total, discount_amount")
+              .in("sale_id", (sales.data ?? []).map((s) => s.id))
+          : Promise.resolve({ data: [] as any[] }),
+        (sales.data ?? []).length > 0
+          ? supabase
+              .from("sale_payments")
+              .select("sale_id, payment_method_id, method_name, amount, currency_code, received_at")
               .in("sale_id", (sales.data ?? []).map((s) => s.id))
           : Promise.resolve({ data: [] as any[] }),
       ]);
@@ -82,6 +98,10 @@ export function useSupervision(locationId: string | null) {
         checklist: (checklist.data ?? []) as any[],
         staff: (staff.data ?? []) as any[],
         photos: photos.data ?? [],
+        movements: (movements.data ?? []) as any[],
+        categories: (categories.data ?? []) as any[],
+        people: (people.data ?? []) as any[],
+        salePayments: (salePayments.data ?? []) as any[],
       };
     },
   });
