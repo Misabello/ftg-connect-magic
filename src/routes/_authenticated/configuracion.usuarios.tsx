@@ -440,61 +440,124 @@ function UsuariosPage() {
   );
 }
 
-function CreateUserDialog({
+type UserFormRefs =
+  | {
+      orgs: { id: string; name: string }[];
+      countries: { code: string; name: string }[];
+      pos: { id: string; name: string; location_id: string | null }[];
+    }
+  | undefined;
+
+function UserFormDialog({
   open,
   onOpenChange,
   refs,
   locations,
   employees,
-  onCreate,
+  takenUsernames,
+  initial,
+  onSubmit,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  refs: { orgs: { id: string; name: string }[]; countries: { code: string; name: string }[]; pos: { id: string; name: string; location_id: string | null }[] } | undefined;
+  refs: UserFormRefs;
   locations: { id: string; name: string }[];
   employees: any[];
-  onCreate: (payload: Record<string, unknown>) => Promise<void>;
+  takenUsernames: string[];
+  initial?: any;
+  onSubmit: (payload: Record<string, unknown>) => Promise<void>;
 }) {
+  const isEdit = !!initial;
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [usernameTouched, setUsernameTouched] = useState(isEdit);
   const [form, setForm] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
+    first_name: initial?.first_name ?? "",
+    last_name: initial?.last_name ?? "",
+    username: initial?.username ?? "",
+    email: initial?.email ?? "",
+    phone: initial?.phone ?? "",
+    tax_id: initial?.tax_id ?? "",
+    document_number: initial?.document_number ?? "",
+    birth_date: initial?.birth_date ?? "",
+    job_title: initial?.job_title ?? "",
+    notes: initial?.notes ?? "",
     role: "seller" as string,
-    organization_id: "",
-    country_code: "AR",
-    default_location_id: "",
+    organization_id: initial?.organization_id ?? "",
+    country_code: initial?.country_code ?? "AR",
+    default_location_id: initial?.default_location_id ?? "",
     point_of_sale_ids: [] as string[],
-    start_date: today(),
-    end_date: "",
+    start_date: initial?.start_date ?? today(),
+    end_date: initial?.end_date ?? "",
     send_invite: true,
     employee_id: "",
   });
 
   const orgId = form.organization_id || refs?.orgs[0]?.id || "";
-  const posOptions = (refs?.pos ?? []).filter((p) => !form.default_location_id || p.location_id === form.default_location_id);
+  const posOptions = (refs?.pos ?? []).filter(
+    (p) => !form.default_location_id || p.location_id === form.default_location_id,
+  );
+  const suggestion = suggestUsername(form.first_name, form.last_name, takenUsernames);
+  const usernameTaken =
+    !!form.username && takenUsernames.some((u) => u.toLowerCase() === form.username.trim().toLowerCase());
+  const cuilInvalid = !!form.tax_id && !isValidCuil(form.tax_id);
+
+  const setNames = (patch: { first_name?: string; last_name?: string }) => {
+    const next = { ...form, ...patch };
+    if (!usernameTouched) next.username = suggestUsername(next.first_name, next.last_name, takenUsernames);
+    setForm(next);
+  };
+
+  const basePayload = () => ({
+    first_name: form.first_name,
+    last_name: form.last_name,
+    username: form.username.trim() || null,
+    email: form.email,
+    phone: form.phone || null,
+    tax_id: form.tax_id || null,
+    document_number: form.document_number || null,
+    birth_date: form.birth_date || null,
+    job_title: form.job_title || null,
+    notes: form.notes || null,
+    country_code: form.country_code || null,
+    default_location_id: form.default_location_id || null,
+    start_date: form.start_date,
+    end_date: form.end_date || null,
+  });
 
   const submit = async () => {
     setSaving(true);
     try {
-      await onCreate({
-        first_name: form.first_name,
-        last_name: form.last_name,
-        email: form.email,
-        role: form.role,
-        organization_id: orgId || null,
-        country_code: form.country_code || null,
-        default_location_id: form.default_location_id || null,
-        point_of_sale_ids: form.point_of_sale_ids,
-        start_date: form.start_date,
-        end_date: form.end_date || null,
-        send_invite: form.send_invite,
-        employee_id: form.employee_id || null,
-      });
+      await onSubmit(
+        isEdit
+          ? basePayload()
+          : {
+              ...basePayload(),
+              role: form.role,
+              organization_id: orgId || null,
+              point_of_sale_ids: form.point_of_sale_ids,
+              send_invite: form.send_invite,
+              employee_id: form.employee_id || null,
+            },
+      );
       onOpenChange(false);
       setStep(0);
-      setForm({ ...form, first_name: "", last_name: "", email: "", point_of_sale_ids: [], employee_id: "" });
+      if (!isEdit)
+        setForm({
+          ...form,
+          first_name: "",
+          last_name: "",
+          username: "",
+          email: "",
+          phone: "",
+          tax_id: "",
+          document_number: "",
+          birth_date: "",
+          job_title: "",
+          notes: "",
+          point_of_sale_ids: [],
+          employee_id: "",
+        });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -502,13 +565,16 @@ function CreateUserDialog({
     }
   };
 
+  const canContinue =
+    !!form.first_name && !!form.last_name && !!form.email && !usernameTaken && !cuilInvalid;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Crear usuario</DialogTitle>
+          <DialogTitle>{isEdit ? `Editar ${initial?.full_name ?? "usuario"}` : "Crear usuario"}</DialogTitle>
           <DialogDescription>
-            Paso {step + 1} de 2 · {step === 0 ? "Datos y rol" : "Alcance y vigencia"}
+            Paso {step + 1} de 2 · {step === 0 ? "Datos personales y RR. HH." : "Alcance, rol y vigencia"}
           </DialogDescription>
         </DialogHeader>
 
@@ -516,67 +582,151 @@ function CreateUserDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label className="text-xs text-muted-foreground">Nombre</Label>
-              <Input className="mt-1" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
+              <Input className="mt-1" value={form.first_name} onChange={(e) => setNames({ first_name: e.target.value })} />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Apellido</Label>
-              <Input className="mt-1" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
+              <Input className="mt-1" value={form.last_name} onChange={(e) => setNames({ last_name: e.target.value })} />
             </div>
             <div className="sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Nombre de usuario</Label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={form.username}
+                  placeholder={suggestion || "nombre.apellido"}
+                  onChange={(e) => {
+                    setUsernameTouched(true);
+                    setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, "") });
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!suggestion}
+                  onClick={() => {
+                    setUsernameTouched(true);
+                    setForm({ ...form, username: suggestion });
+                  }}
+                >
+                  Sugerir
+                </Button>
+              </div>
+              <p className={`mt-1 text-[11px] ${usernameTaken ? "text-destructive" : "text-muted-foreground"}`}>
+                {usernameTaken ? "Ese nombre de usuario ya está en uso." : `Sugerido: ${suggestion || "—"}`}
+              </p>
+            </div>
+            <div>
               <Label className="text-xs text-muted-foreground">Correo</Label>
               <Input className="mt-1" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Rol</Label>
-              <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CORE_ROLES.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {ROLE_LABELS[r]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">Teléfono</Label>
+              <Input className="mt-1" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+54 9 11 …" />
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Empleado vinculado (opcional)</Label>
-              <Select value={form.employee_id || "none"} onValueChange={(v) => setForm({ ...form, employee_id: v === "none" ? "" : v })}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Sin vincular" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sin vincular</SelectItem>
-                  {employees
-                    .filter((e) => !e.user_id)
-                    .map((e) => (
-                      <SelectItem key={e.id} value={e.id}>
-                        {e.last_name}, {e.first_name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs text-muted-foreground">CUIL / CUIT</Label>
+              <Input
+                className="mt-1"
+                inputMode="numeric"
+                value={form.tax_id}
+                placeholder="20-12345678-9"
+                onChange={(e) => setForm({ ...form, tax_id: formatCuil(e.target.value) })}
+              />
+              {cuilInvalid && <p className="mt-1 text-[11px] text-destructive">CUIL/CUIT inválido.</p>}
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Documento (DNI)</Label>
+              <Input
+                className="mt-1"
+                value={form.document_number}
+                onChange={(e) => setForm({ ...form, document_number: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Fecha de nacimiento</Label>
+              <Input
+                className="mt-1"
+                type="date"
+                value={form.birth_date}
+                onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Puesto</Label>
+              <Input
+                className="mt-1"
+                value={form.job_title}
+                onChange={(e) => setForm({ ...form, job_title: e.target.value })}
+                placeholder="Cajero, Fotógrafo…"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label className="text-xs text-muted-foreground">Notas de RR. HH. (opcional)</Label>
+              <Textarea
+                className="mt-1"
+                rows={2}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
             </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label className="text-xs text-muted-foreground">Empresa</Label>
-              <Select value={orgId} onValueChange={(v) => setForm({ ...form, organization_id: v })}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(refs?.orgs ?? []).map((o) => (
-                    <SelectItem key={o.id} value={o.id}>
-                      {o.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!isEdit && (
+              <>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Rol</Label>
+                  <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CORE_ROLES.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {ROLE_LABELS[r]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Empleado vinculado (opcional)</Label>
+                  <Select
+                    value={form.employee_id || "none"}
+                    onValueChange={(v) => setForm({ ...form, employee_id: v === "none" ? "" : v })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Sin vincular" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sin vincular</SelectItem>
+                      {employees
+                        .filter((e) => !e.user_id)
+                        .map((e) => (
+                          <SelectItem key={e.id} value={e.id}>
+                            {e.last_name}, {e.first_name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Empresa</Label>
+                  <Select value={orgId} onValueChange={(v) => setForm({ ...form, organization_id: v })}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(refs?.orgs ?? []).map((o) => (
+                        <SelectItem key={o.id} value={o.id}>
+                          {o.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
             <div>
               <Label className="text-xs text-muted-foreground">País</Label>
               <Select value={form.country_code} onValueChange={(v) => setForm({ ...form, country_code: v })}>
@@ -596,7 +746,9 @@ function CreateUserDialog({
               <Label className="text-xs text-muted-foreground">Sede principal</Label>
               <Select
                 value={form.default_location_id || "none"}
-                onValueChange={(v) => setForm({ ...form, default_location_id: v === "none" ? "" : v, point_of_sale_ids: [] })}
+                onValueChange={(v) =>
+                  setForm({ ...form, default_location_id: v === "none" ? "" : v, point_of_sale_ids: [] })
+                }
               >
                 <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Sin asignar" />
@@ -619,40 +771,44 @@ function CreateUserDialog({
               <Label className="text-xs text-muted-foreground">Fecha de baja (opcional)</Label>
               <Input className="mt-1" type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
             </div>
-            <div className="sm:col-span-2">
-              <Label className="text-xs text-muted-foreground">Puntos de venta asignados</Label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {posOptions.map((p) => {
-                  const active = form.point_of_sale_ids.includes(p.id);
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          point_of_sale_ids: active
-                            ? form.point_of_sale_ids.filter((id) => id !== p.id)
-                            : [...form.point_of_sale_ids, p.id],
-                        })
-                      }
-                      className={
-                        active
-                          ? "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
-                          : "rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary"
-                      }
-                    >
-                      {p.name}
-                    </button>
-                  );
-                })}
-                {posOptions.length === 0 && <Badge variant="secondary">Sin puntos de venta en la sede</Badge>}
-              </div>
-            </div>
-            <div className="flex items-center gap-3 sm:col-span-2">
-              <Switch checked={form.send_invite} onCheckedChange={(v) => setForm({ ...form, send_invite: v })} />
-              <span className="text-sm">Enviar invitación por correo</span>
-            </div>
+            {!isEdit && (
+              <>
+                <div className="sm:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Puntos de venta asignados</Label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {posOptions.map((p) => {
+                      const active = form.point_of_sale_ids.includes(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() =>
+                            setForm({
+                              ...form,
+                              point_of_sale_ids: active
+                                ? form.point_of_sale_ids.filter((id) => id !== p.id)
+                                : [...form.point_of_sale_ids, p.id],
+                            })
+                          }
+                          className={
+                            active
+                              ? "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                              : "rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary"
+                          }
+                        >
+                          {p.name}
+                        </button>
+                      );
+                    })}
+                    {posOptions.length === 0 && <Badge variant="secondary">Sin puntos de venta en la sede</Badge>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 sm:col-span-2">
+                  <Switch checked={form.send_invite} onCheckedChange={(v) => setForm({ ...form, send_invite: v })} />
+                  <span className="text-sm">Enviar invitación por correo</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -663,15 +819,12 @@ function CreateUserDialog({
             </Button>
           )}
           {step === 0 ? (
-            <Button
-              disabled={!form.first_name || !form.last_name || !form.email}
-              onClick={() => setStep(1)}
-            >
+            <Button disabled={!canContinue} onClick={() => setStep(1)}>
               Continuar
             </Button>
           ) : (
             <Button disabled={saving} onClick={submit}>
-              {saving ? "Creando…" : "Crear usuario"}
+              {saving ? "Guardando…" : isEdit ? "Guardar cambios" : "Crear usuario"}
             </Button>
           )}
         </DialogFooter>
