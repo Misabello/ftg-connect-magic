@@ -323,6 +323,26 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
+                    {tab === "cobrar" && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="mr-1.5"
+                        onClick={() =>
+                          sendInvoiceEmail({
+                            email: d.customers?.email ?? null,
+                            customerName: d.customers?.name ?? null,
+                            concept: d.concept,
+                            documentNumber: d.document_number,
+                            amount: Number(d.amount),
+                            currency: d.currency_code,
+                            dueOn: d.due_on,
+                          })
+                        }
+                      >
+                        <Mail className="mr-1.5 h-4 w-4" /> Enviar al cliente
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="secondary"
