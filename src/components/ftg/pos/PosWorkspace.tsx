@@ -286,17 +286,12 @@ export function PosWorkspace({
     const pending = listMagicItems();
     pending.forEach((item) => addMagicItemToCart(item));
     setAutoLoaded(true);
-    if (!session) {
-      toast.info("Abrí la caja para poder cobrar", {
-        description: "Los ítems del carrito ya están cargados en este punto de venta.",
-      });
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckout, autoLoaded, activePos, session]);
 
   const [autoOpened, setAutoOpened] = useState(false);
   useEffect(() => {
-    if (!autoCheckout || autoOpened || !autoLoaded || !session || lines.length === 0) return;
+    if (!autoCheckout || autoOpened || !autoLoaded || lines.length === 0) return;
     setAutoOpened(true);
     setCheckoutOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -347,6 +342,32 @@ export function PosWorkspace({
     onError: (error: Error) => toast.error(error.message),
   });
 
+  /**
+   * Devuelve la caja abierta del punto de venta actual y, si no existe, la abre
+   * automáticamente en cero para que la venta quede asentada en este puesto.
+   */
+  const ensureSession = async (): Promise<CashSession> => {
+    if (session) return session;
+    if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
+    if (!online) throw new Error("Abrí la caja mientras tengas conexión para poder cobrar");
+    const { data, error } = await supabase
+      .from("cash_sessions")
+      .insert({
+        organization_id: activePos.organization_id,
+        location_id: activeLocationId,
+        point_of_sale_id: activePos.id,
+        currency_code: activePos.currency_code,
+        opening_amount: 0,
+        opened_by: user?.id ?? null,
+      })
+      .select("id, opened_at, opening_amount, status, currency_code")
+      .single();
+    if (error) throw error;
+    await queryClient.invalidateQueries({ queryKey: ["cash-session"] });
+    toast.info(`Caja abierta en ${activePos.name} para registrar la venta`);
+    return data as CashSession;
+  };
+
   const registerSale = useMutation({
     mutationFn: async ({
       payments,
@@ -355,7 +376,8 @@ export function PosWorkspace({
       payments: PaymentDraft[];
       customer: CheckoutCustomer;
     }) => {
-      if (!activePos || !activeLocationId || !session) throw new Error("Abrí la caja antes de vender");
+      if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
+      const activeSession = await ensureSession();
       const localSequence = sessionSales.length + pendingCount + 1;
       const count = online
         ? (
@@ -373,7 +395,7 @@ export function PosWorkspace({
         location_id: activeLocationId,
         point_of_sale_id: activePos.id,
         event_id: activePos.event_id,
-        cash_session_id: session.id,
+        cash_session_id: activeSession.id,
         sale_number: saleNumber,
         sold_by: user?.id ?? null,
         customer_name: customer.name || null,
@@ -523,10 +545,12 @@ export function PosWorkspace({
   const mercadoPagoMethodId =
     methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
   const checkoutHint = !session
-    ? "Abrí la caja para poder cobrar."
+    ? online
+      ? `Al cobrar se abrirá la caja de ${activePos?.name ?? "este puesto"} y la venta quedará asentada ahí.`
+      : "Sin conexión: abrí la caja mientras tengas señal para poder cobrar."
     : missingPhotoCode
       ? "Completá el código de foto en los productos que lo requieren."
-      : null;
+      : `La venta se registra en ${activePos?.name ?? "este punto de venta"}.`;
 
   return (
     <div className="space-y-6">
@@ -602,7 +626,7 @@ export function PosWorkspace({
                           </p>
                         </div>
                         <div className="flex shrink-0 gap-1.5">
-                          <Button size="sm" onClick={() => addMagicItemToCart(item)} disabled={!session}>
+                          <Button size="sm" onClick={() => addMagicItemToCart(item)}>
                             <Send className="mr-1.5 h-3.5 w-3.5" /> Al carrito
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => removeMagicItem(item.id)}>
@@ -627,7 +651,7 @@ export function PosWorkspace({
               activeCategory={category}
               onCategoryChange={setCategory}
               onSelect={addProduct}
-              disabled={!session}
+              disabled={!activePos}
             />
 
             <CartPanel
@@ -650,7 +674,7 @@ export function PosWorkspace({
               }
               onClear={() => setLines([])}
               onCheckout={() => setCheckoutOpen(true)}
-              canCheckout={lines.length > 0 && !!session && !missingPhotoCode}
+              canCheckout={lines.length > 0 && !missingPhotoCode && (!!session || online)}
               checkoutHint={checkoutHint}
             />
           </div>
@@ -726,12 +750,12 @@ export function PosWorkspace({
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
         mercadoPagoMethodId={mercadoPagoMethodId}
         mercadoPago={
-          online && activePos && activeLocationId && session
+          online && activePos && activeLocationId
             ? {
                 organizationId: activePos.organization_id,
                 locationId: activeLocationId,
                 pointOfSaleId: activePos.id,
-                cashSessionId: session.id,
+                cashSessionId: session?.id ?? null,
                 description: `Venta ${activePos.name}`,
               }
             : null
