@@ -1,0 +1,3 @@
+INSERT INTO public.ml_models (key, version, kind, provider, reference, display_name, is_baseline, is_active, notes)
+VALUES ('ftg_local_tsf', 'v1', 'series_temporales', 'interno', 'ftg-local-tsf-v1', 'Motor local de series temporales FTG', false, true, 'Regresión robusta con índices estacionales, ejecutada dentro de la plataforma.')
+ON CONFLICT (key, version) DO UPDATE SET is_active = true, display_name = EXCLUDED.display_name;
