@@ -17,6 +17,13 @@ const createSchema = z.object({
   first_name: z.string().trim().min(1).max(80),
   last_name: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(255),
+  username: z.string().trim().min(3).max(40).regex(/^[a-z0-9._-]+$/i, "Usuario inválido").nullable().optional(),
+  phone: z.string().trim().max(40).nullable().optional(),
+  tax_id: z.string().trim().max(20).nullable().optional(),
+  document_number: z.string().trim().max(30).nullable().optional(),
+  birth_date: z.string().trim().min(8).max(10).nullable().optional(),
+  job_title: z.string().trim().max(80).nullable().optional(),
+  notes: z.string().trim().max(600).nullable().optional(),
   role: z.string().trim().min(2).max(40),
   organization_id: z.string().uuid().nullable().optional(),
   country_code: z.string().trim().length(2).nullable().optional(),
@@ -57,7 +64,7 @@ export const listUsers = createServerFn({ method: "GET" })
       supabase
         .from("profiles")
         .select(
-          "id, full_name, first_name, last_name, email, phone, status, country_code, organization_id, default_location_id, start_date, end_date, deactivated_at, last_sign_in_at, created_at, is_active",
+          "id, full_name, first_name, last_name, username, email, phone, tax_id, document_number, birth_date, job_title, notes, status, country_code, organization_id, default_location_id, start_date, end_date, deactivated_at, last_sign_in_at, created_at, is_active",
         )
         .order("created_at", { ascending: false }),
       supabase.from("user_roles").select("id, user_id, role, location_id, point_of_sale_id, valid_from, valid_to"),
@@ -117,6 +124,13 @@ export const createUserAccount = createServerFn({ method: "POST" })
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
+        username: data.username ?? null,
+        phone: data.phone ?? null,
+        tax_id: data.tax_id ?? null,
+        document_number: data.document_number ?? null,
+        birth_date: data.birth_date ?? null,
+        job_title: data.job_title ?? null,
+        notes: data.notes ?? null,
         organization_id: data.organization_id ?? null,
         country_code: data.country_code ?? null,
         default_location_id: data.default_location_id ?? null,
@@ -125,7 +139,12 @@ export const createUserAccount = createServerFn({ method: "POST" })
         status,
         is_active: true,
       });
-    if (profileError) throw new Error(profileError.message);
+    if (profileError)
+      throw new Error(
+        profileError.message.includes("profiles_username_key")
+          ? "Ese nombre de usuario ya está en uso."
+          : profileError.message,
+      );
 
     // Rol principal + alcance por punto de venta
     const roleRows =
@@ -168,6 +187,74 @@ export const createUserAccount = createServerFn({ method: "POST" })
     });
 
     return { userId, status };
+  });
+
+const updateSchema = z.object({
+  user_id: z.string().uuid(),
+  first_name: z.string().trim().min(1).max(80),
+  last_name: z.string().trim().min(1).max(80),
+  username: z.string().trim().min(3).max(40).regex(/^[a-z0-9._-]+$/i, "Usuario inválido").nullable().optional(),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().max(40).nullable().optional(),
+  tax_id: z.string().trim().max(20).nullable().optional(),
+  document_number: z.string().trim().max(30).nullable().optional(),
+  birth_date: z.string().trim().min(8).max(10).nullable().optional(),
+  job_title: z.string().trim().max(80).nullable().optional(),
+  notes: z.string().trim().max(600).nullable().optional(),
+  country_code: z.string().trim().length(2).nullable().optional(),
+  default_location_id: z.string().uuid().nullable().optional(),
+  start_date: z.string().trim().min(8).max(10),
+  end_date: z.string().trim().min(8).max(10).nullable().optional(),
+});
+
+/** Modificación de la ficha de un usuario existente (ABM). */
+export const updateUserAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => updateSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    await assertUserAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const fullName = `${data.first_name} ${data.last_name}`.trim();
+
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        full_name: fullName,
+        username: data.username ?? null,
+        email: data.email,
+        phone: data.phone ?? null,
+        tax_id: data.tax_id ?? null,
+        document_number: data.document_number ?? null,
+        birth_date: data.birth_date ?? null,
+        job_title: data.job_title ?? null,
+        notes: data.notes ?? null,
+        country_code: data.country_code ?? null,
+        default_location_id: data.default_location_id ?? null,
+        start_date: data.start_date,
+        end_date: data.end_date ?? null,
+      })
+      .eq("id", data.user_id);
+    if (error) {
+      throw new Error(
+        error.message.includes("profiles_username_key")
+          ? "Ese nombre de usuario ya está en uso."
+          : error.message,
+      );
+    }
+
+    await supabaseAdmin.auth.admin
+      .updateUserById(data.user_id, { email: data.email, user_metadata: { full_name: fullName } })
+      .catch(() => undefined);
+
+    await writeAudit(supabaseAdmin, {
+      user_id: context.userId,
+      action: "user.update",
+      entity_id: data.user_id,
+      details: { email: data.email, username: data.username ?? null, job_title: data.job_title ?? null },
+    });
+    return { ok: true };
   });
 
 /** Cambia el estado de la cuenta; suspender o dar de baja revoca las sesiones activas. */

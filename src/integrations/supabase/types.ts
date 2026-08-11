@@ -4110,69 +4110,87 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          birth_date: string | null
           country_code: string | null
           created_at: string
           deactivated_at: string | null
           default_location_id: string | null
+          document_number: string | null
           email: string | null
           end_date: string | null
           first_name: string | null
           full_name: string
           id: string
           is_active: boolean
+          job_title: string | null
           language: string
           last_name: string | null
           last_sign_in_at: string | null
+          notes: string | null
           organization_id: string | null
           phone: string | null
           sender_email: string | null
           start_date: string
           status: Database["public"]["Enums"]["user_account_status"]
+          tax_id: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          birth_date?: string | null
           country_code?: string | null
           created_at?: string
           deactivated_at?: string | null
           default_location_id?: string | null
+          document_number?: string | null
           email?: string | null
           end_date?: string | null
           first_name?: string | null
           full_name?: string
           id: string
           is_active?: boolean
+          job_title?: string | null
           language?: string
           last_name?: string | null
           last_sign_in_at?: string | null
+          notes?: string | null
           organization_id?: string | null
           phone?: string | null
           sender_email?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["user_account_status"]
+          tax_id?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          birth_date?: string | null
           country_code?: string | null
           created_at?: string
           deactivated_at?: string | null
           default_location_id?: string | null
+          document_number?: string | null
           email?: string | null
           end_date?: string | null
           first_name?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
+          job_title?: string | null
           language?: string
           last_name?: string | null
           last_sign_in_at?: string | null
+          notes?: string | null
           organization_id?: string | null
           phone?: string | null
           sender_email?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["user_account_status"]
+          tax_id?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: [
           {
