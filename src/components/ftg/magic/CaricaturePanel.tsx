@@ -58,7 +58,7 @@ export function CaricaturePanel({
   locationId: string | null;
   organizationId: string | null;
   pointOfSaleId?: string | null;
-  onAddToCart?: (item: { outputType: "imagen"; jobId: string; price: number; label: string }) => void;
+  onAddToCart?: ((item: { outputType: "imagen"; jobId: string; price: number; label: string }) => void) | undefined;
 }) {
   const { user } = useAuth();
   const detect = useServerFn(detectPhotoFaces);
