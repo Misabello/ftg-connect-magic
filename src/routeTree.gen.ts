@@ -31,9 +31,12 @@ import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes
 import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
+import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
 import { Route as AuthenticatedSupervisoresCajasRouteImport } from './routes/_authenticated/supervisores.cajas'
+import { Route as AuthenticatedSupervisoresInventarioRouteImport } from './routes/_authenticated/supervisores.inventario'
 import { Route as AuthenticatedSupervisoresOperativoRouteImport } from './routes/_authenticated/supervisores.operativo'
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
+import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
@@ -161,10 +164,22 @@ const AuthenticatedSupervisoresIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
+const AuthenticatedSupervisoresAlertasRoute =
+  AuthenticatedSupervisoresAlertasRouteImport.update({
+    id: '/alertas',
+    path: '/alertas',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
 const AuthenticatedSupervisoresCajasRoute =
   AuthenticatedSupervisoresCajasRouteImport.update({
     id: '/cajas',
     path: '/cajas',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresInventarioRoute =
+  AuthenticatedSupervisoresInventarioRouteImport.update({
+    id: '/inventario',
+    path: '/inventario',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
 const AuthenticatedSupervisoresOperativoRoute =
@@ -177,6 +192,12 @@ const AuthenticatedSupervisoresPuntosVentaRoute =
   AuthenticatedSupervisoresPuntosVentaRouteImport.update({
     id: '/puntos-venta',
     path: '/puntos-venta',
+    getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedSupervisoresVentasRoute =
+  AuthenticatedSupervisoresVentasRouteImport.update({
+    id: '/ventas',
+    path: '/ventas',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
 const AuthenticatedSedesLocationIdIndexRoute =
@@ -222,9 +243,12 @@ export interface FileRoutesByFullPath {
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
@@ -250,9 +274,12 @@ export interface FileRoutesByTo {
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
@@ -282,9 +309,12 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/_authenticated/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
+  '/_authenticated/supervisores/inventario': typeof AuthenticatedSupervisoresInventarioRoute
   '/_authenticated/supervisores/operativo': typeof AuthenticatedSupervisoresOperativoRoute
   '/_authenticated/supervisores/puntos-venta': typeof AuthenticatedSupervisoresPuntosVentaRoute
+  '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
@@ -314,9 +344,12 @@ export interface FileRouteTypes {
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/supervisores/alertas'
     | '/supervisores/cajas'
+    | '/supervisores/inventario'
     | '/supervisores/operativo'
     | '/supervisores/puntos-venta'
+    | '/supervisores/ventas'
     | '/configuracion/'
     | '/sedes/'
     | '/supervisores/'
@@ -342,9 +375,12 @@ export interface FileRouteTypes {
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/supervisores/alertas'
     | '/supervisores/cajas'
+    | '/supervisores/inventario'
     | '/supervisores/operativo'
     | '/supervisores/puntos-venta'
+    | '/supervisores/ventas'
     | '/configuracion'
     | '/sedes'
     | '/supervisores'
@@ -373,9 +409,12 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/roles'
     | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/vacaciones'
+    | '/_authenticated/supervisores/alertas'
     | '/_authenticated/supervisores/cajas'
+    | '/_authenticated/supervisores/inventario'
     | '/_authenticated/supervisores/operativo'
     | '/_authenticated/supervisores/puntos-venta'
+    | '/_authenticated/supervisores/ventas'
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
@@ -549,11 +588,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupervisoresIndexRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
+    '/_authenticated/supervisores/alertas': {
+      id: '/_authenticated/supervisores/alertas'
+      path: '/alertas'
+      fullPath: '/supervisores/alertas'
+      preLoaderRoute: typeof AuthenticatedSupervisoresAlertasRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
     '/_authenticated/supervisores/cajas': {
       id: '/_authenticated/supervisores/cajas'
       path: '/cajas'
       fullPath: '/supervisores/cajas'
       preLoaderRoute: typeof AuthenticatedSupervisoresCajasRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/inventario': {
+      id: '/_authenticated/supervisores/inventario'
+      path: '/inventario'
+      fullPath: '/supervisores/inventario'
+      preLoaderRoute: typeof AuthenticatedSupervisoresInventarioRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
     '/_authenticated/supervisores/operativo': {
@@ -568,6 +621,13 @@ declare module '@tanstack/react-router' {
       path: '/puntos-venta'
       fullPath: '/supervisores/puntos-venta'
       preLoaderRoute: typeof AuthenticatedSupervisoresPuntosVentaRouteImport
+      parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/supervisores/ventas': {
+      id: '/_authenticated/supervisores/ventas'
+      path: '/ventas'
+      fullPath: '/supervisores/ventas'
+      preLoaderRoute: typeof AuthenticatedSupervisoresVentasRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
     '/_authenticated/sedes/$locationId/': {
@@ -633,19 +693,27 @@ const AuthenticatedConfiguracionRouteWithChildren =
   )
 
 interface AuthenticatedSupervisoresRouteChildren {
+  AuthenticatedSupervisoresAlertasRoute: typeof AuthenticatedSupervisoresAlertasRoute
   AuthenticatedSupervisoresCajasRoute: typeof AuthenticatedSupervisoresCajasRoute
+  AuthenticatedSupervisoresInventarioRoute: typeof AuthenticatedSupervisoresInventarioRoute
   AuthenticatedSupervisoresOperativoRoute: typeof AuthenticatedSupervisoresOperativoRoute
   AuthenticatedSupervisoresPuntosVentaRoute: typeof AuthenticatedSupervisoresPuntosVentaRoute
+  AuthenticatedSupervisoresVentasRoute: typeof AuthenticatedSupervisoresVentasRoute
   AuthenticatedSupervisoresIndexRoute: typeof AuthenticatedSupervisoresIndexRoute
 }
 
 const AuthenticatedSupervisoresRouteChildren: AuthenticatedSupervisoresRouteChildren =
   {
+    AuthenticatedSupervisoresAlertasRoute:
+      AuthenticatedSupervisoresAlertasRoute,
     AuthenticatedSupervisoresCajasRoute: AuthenticatedSupervisoresCajasRoute,
+    AuthenticatedSupervisoresInventarioRoute:
+      AuthenticatedSupervisoresInventarioRoute,
     AuthenticatedSupervisoresOperativoRoute:
       AuthenticatedSupervisoresOperativoRoute,
     AuthenticatedSupervisoresPuntosVentaRoute:
       AuthenticatedSupervisoresPuntosVentaRoute,
+    AuthenticatedSupervisoresVentasRoute: AuthenticatedSupervisoresVentasRoute,
     AuthenticatedSupervisoresIndexRoute: AuthenticatedSupervisoresIndexRoute,
   }
 
@@ -701,3 +769,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
