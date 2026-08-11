@@ -197,6 +197,40 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
     });
   }
 
+  /** Abre el correo al cliente con el detalle de la factura por cobrar. */
+  function sendInvoiceEmail(invoice: {
+    email: string | null;
+    customerName: string | null;
+    concept: string;
+    documentNumber: string | null;
+    amount: number;
+    currency: string;
+    dueOn: string | null;
+  }) {
+    if (!invoice.email) {
+      toast.warning("El cliente no tiene email cargado: agregalo en Clientes para enviarle la factura.");
+      return;
+    }
+    const body = buildInvoiceMessage({
+      concept: invoice.concept,
+      documentNumber: invoice.documentNumber,
+      totalLabel: formatMoney(invoice.amount, invoice.currency),
+      dueOn: invoice.dueOn,
+      customerName: invoice.customerName,
+    });
+    const subject = `Factura FTG${invoice.documentNumber ? ` ${invoice.documentNumber}` : ""}`;
+    window.open(mailtoLink(invoice.email, subject, body), "_blank");
+    toast.success(`Factura preparada para enviar a ${invoice.email}`);
+  }
+
+  function clearReceiptLegacy() {
+    setReceipt(null);
+    setReceiptPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }
+
   function pickReceipt(file: File | null) {
     if (!file) return;
     if (file.size > 15 * 1024 * 1024) {
