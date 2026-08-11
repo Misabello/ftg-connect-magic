@@ -167,7 +167,7 @@ export function InvoiceReviewDialog({ document, onClose }: Props) {
     mutationFn: async (status: string) => {
       const { error } = await supabase
         .from("invoice_documents")
-        .update({ approval_status: status })
+        .update({ approval_status: status as "rechazada" })
         .eq("id", document!.id);
       if (error) throw error;
     },
