@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -284,7 +284,7 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
   const report = (detail.reports ?? [])[0];
   const total = forecast.reduce((acc: number, p: any) => acc + Number(p.predicted_value ?? 0), 0);
 
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     const rows = [
       ...history.map((p: any) => ({
         label: p.period_start,
@@ -305,7 +305,7 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
       rows[lastHistoryIdx]!.estimado = rows[lastHistoryIdx]!.historico;
     }
     return rows;
-  }, [detail]);
+  })();
 
   if (forecast.length === 0)
     return (
