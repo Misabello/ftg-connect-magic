@@ -250,9 +250,10 @@ function UsuariosPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Usuario</TableHead>
+              <TableHead>Contacto</TableHead>
               <TableHead>Rol</TableHead>
               <TableHead>Sede</TableHead>
-              <TableHead>País</TableHead>
+              <TableHead>CUIL</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Alta</TableHead>
               <TableHead>Baja</TableHead>
@@ -269,13 +270,20 @@ function UsuariosPage() {
                 <TableRow key={p.id}>
                   <TableCell>
                     <p className="font-medium">{p.full_name || `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Sin nombre"}</p>
-                    <p className="text-xs text-muted-foreground">{p.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {p.username ? `@${p.username}` : "sin usuario"}
+                      {p.job_title ? ` · ${p.job_title}` : ""}
+                    </p>
+                  </TableCell>
+                  <TableCell className="text-xs">
+                    <p>{p.email ?? "—"}</p>
+                    <p className="text-muted-foreground">{p.phone ?? "—"}</p>
                   </TableCell>
                   <TableCell className="text-xs">
                     {userRoles.map((r) => ROLE_LABELS[r] ?? r).join(", ") || "—"}
                   </TableCell>
                   <TableCell className="text-xs">{loc?.name ?? "—"}</TableCell>
-                  <TableCell className="text-xs">{p.country_code ?? "—"}</TableCell>
+                  <TableCell className="text-xs">{p.tax_id ?? "—"}</TableCell>
                   <TableCell>
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${STATUS_TONE[status] ?? ""}`}>
                       {USER_STATUS_LABELS[status] ?? status}
@@ -293,6 +301,9 @@ function UsuariosPage() {
                       </Button>
                       {isAdmin && (
                         <>
+                          <Button size="sm" variant="ghost" onClick={() => setEditUser(p)}>
+                            Editar
+                          </Button>
                           <Button size="sm" variant="ghost" onClick={() => setRolesFor({ id: p.id, name: p.full_name ?? "" })}>
                             Rol
                           </Button>
@@ -333,7 +344,7 @@ function UsuariosPage() {
             })}
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="py-10 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={10} className="py-10 text-center text-sm text-muted-foreground">
                   No hay usuarios que coincidan con la búsqueda.
                 </TableCell>
               </TableRow>
@@ -342,16 +353,37 @@ function UsuariosPage() {
         </Table>
       </section>
 
-      <CreateUserDialog
+      <UserFormDialog
         open={openCreate}
-        onOpenChange={setOpenCreate}
+        onOpenChange={(o) => setOpenCreate(o)}
         refs={refs}
         locations={locations}
         employees={data?.employees ?? []}
-        onCreate={async (payload) => {
+        takenUsernames={(data?.profiles ?? []).map((p: any) => p.username).filter(Boolean) as string[]}
+        onSubmit={async (payload) => {
           await createFn({ data: payload });
           toast.success("Usuario creado");
           invalidate();
+        }}
+      />
+
+      <UserFormDialog
+        key={editUser?.id ?? "edit"}
+        open={!!editUser}
+        onOpenChange={(o) => !o && setEditUser(null)}
+        refs={refs}
+        locations={locations}
+        employees={data?.employees ?? []}
+        takenUsernames={(data?.profiles ?? [])
+          .filter((p: any) => p.id !== editUser?.id)
+          .map((p: any) => p.username)
+          .filter(Boolean) as string[]}
+        initial={editUser ?? undefined}
+        onSubmit={async (payload) => {
+          await updateFn({ data: { ...payload, user_id: editUser.id } as never });
+          toast.success("Usuario actualizado");
+          invalidate();
+          setEditUser(null);
         }}
       />
 
