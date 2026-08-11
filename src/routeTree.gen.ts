@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdministracionRouteImport } from './routes/_authenticated/administracion'
 import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
+import { Route as AuthenticatedConfiguracionRouteImport } from './routes/_authenticated/configuracion'
 import { Route as AuthenticatedFotografiasRouteImport } from './routes/_authenticated/fotografias'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
@@ -52,6 +53,12 @@ const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
   path: '/clientes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConfiguracionRoute =
+  AuthenticatedConfiguracionRouteImport.update({
+    id: '/configuracion',
+    path: '/configuracion',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFotografiasRoute =
   AuthenticatedFotografiasRouteImport.update({
     id: '/fotografias',
@@ -86,9 +93,9 @@ const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
 } as any)
 const AuthenticatedConfiguracionIndexRoute =
   AuthenticatedConfiguracionIndexRouteImport.update({
-    id: '/configuracion/',
-    path: '/configuracion/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
@@ -124,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/administracion': typeof AuthenticatedAdministracionRoute
   '/clientes': typeof AuthenticatedClientesRoute
+  '/configuracion': typeof AuthenticatedConfiguracionRouteWithChildren
   '/fotografias': typeof AuthenticatedFotografiasRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/administracion': typeof AuthenticatedAdministracionRoute
   '/_authenticated/clientes': typeof AuthenticatedClientesRoute
+  '/_authenticated/configuracion': typeof AuthenticatedConfiguracionRouteWithChildren
   '/_authenticated/fotografias': typeof AuthenticatedFotografiasRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/administracion'
     | '/clientes'
+    | '/configuracion'
     | '/fotografias'
     | '/inicio'
     | '/inventario'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/administracion'
     | '/_authenticated/clientes'
+    | '/_authenticated/configuracion'
     | '/_authenticated/fotografias'
     | '/_authenticated/inicio'
     | '/_authenticated/inventario'
@@ -278,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/configuracion': {
+      id: '/_authenticated/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof AuthenticatedConfiguracionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/fotografias': {
       id: '/_authenticated/fotografias'
       path: '/fotografias'
@@ -322,10 +340,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/configuracion/': {
       id: '/_authenticated/configuracion/'
-      path: '/configuracion'
+      path: '/'
       fullPath: '/configuracion/'
       preLoaderRoute: typeof AuthenticatedConfiguracionIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedConfiguracionRoute
     }
     '/_authenticated/sedes/': {
       id: '/_authenticated/sedes/'
@@ -365,16 +383,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedConfiguracionRouteChildren {
+  AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
+}
+
+const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteChildren =
+  {
+    AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
+  }
+
+const AuthenticatedConfiguracionRouteWithChildren =
+  AuthenticatedConfiguracionRoute._addFileChildren(
+    AuthenticatedConfiguracionRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdministracionRoute: typeof AuthenticatedAdministracionRoute
   AuthenticatedClientesRoute: typeof AuthenticatedClientesRoute
+  AuthenticatedConfiguracionRoute: typeof AuthenticatedConfiguracionRouteWithChildren
   AuthenticatedFotografiasRoute: typeof AuthenticatedFotografiasRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
-  AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
   AuthenticatedSedesIndexRoute: typeof AuthenticatedSedesIndexRoute
   AuthenticatedSedesLocationIdIndexRoute: typeof AuthenticatedSedesLocationIdIndexRoute
   AuthenticatedSedesLocationIdPosPosIdRoute: typeof AuthenticatedSedesLocationIdPosPosIdRoute
@@ -383,13 +415,13 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdministracionRoute: AuthenticatedAdministracionRoute,
   AuthenticatedClientesRoute: AuthenticatedClientesRoute,
+  AuthenticatedConfiguracionRoute: AuthenticatedConfiguracionRouteWithChildren,
   AuthenticatedFotografiasRoute: AuthenticatedFotografiasRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
-  AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
   AuthenticatedSedesIndexRoute: AuthenticatedSedesIndexRoute,
   AuthenticatedSedesLocationIdIndexRoute:
     AuthenticatedSedesLocationIdIndexRoute,
