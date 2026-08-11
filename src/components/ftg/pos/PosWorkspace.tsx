@@ -286,17 +286,12 @@ export function PosWorkspace({
     const pending = listMagicItems();
     pending.forEach((item) => addMagicItemToCart(item));
     setAutoLoaded(true);
-    if (!session) {
-      toast.info("Abrí la caja para poder cobrar", {
-        description: "Los ítems del carrito ya están cargados en este punto de venta.",
-      });
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckout, autoLoaded, activePos, session]);
 
   const [autoOpened, setAutoOpened] = useState(false);
   useEffect(() => {
-    if (!autoCheckout || autoOpened || !autoLoaded || !session || lines.length === 0) return;
+    if (!autoCheckout || autoOpened || !autoLoaded || lines.length === 0) return;
     setAutoOpened(true);
     setCheckoutOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -755,12 +750,12 @@ export function PosWorkspace({
         onConfirm={(payments, customer) => registerSale.mutate({ payments, customer })}
         mercadoPagoMethodId={mercadoPagoMethodId}
         mercadoPago={
-          online && activePos && activeLocationId && session
+          online && activePos && activeLocationId
             ? {
                 organizationId: activePos.organization_id,
                 locationId: activeLocationId,
                 pointOfSaleId: activePos.id,
-                cashSessionId: session.id,
+                cashSessionId: session?.id ?? null,
                 description: `Venta ${activePos.name}`,
               }
             : null
