@@ -1,34 +1,52 @@
-# Mejora del reporte de Predicciones con IA
+# Sincronización manual de la jornada con un clic
 
-## Diagnóstico previo (lo pedido en "antes de implementar")
+## Diagnóstico previo (estado actual)
 
-1. **Componente actual del reporte**: `src/routes/_authenticated/supervisores.predicciones.tsx` (440 líneas) — formulario de generación + detalle del job (resumen, gráfico, tabla, recomendaciones).
-2. **Librería de gráficos**: `recharts` (ya instalada, usada en esa misma ruta).
-3. **Cómo se generan las métricas**: `backtest()` en `src/lib/ftg/predictions.engine.ts`; se persisten en `ml_model_evaluations` desde `src/lib/ftg/predictions.run.server.ts` (mae, rmse, mape, wape, bias, interval_coverage, folds, beats_baseline).
-4. **Cálculo del total**: suma de `forecast[i].value` por período en `predictions.run.server.ts`; se guarda en `ml_generated_reports.content.total_estimado`. Se validará contra la suma de filas de `ml_predictions`.
-5. **Por qué los intervalos son tan amplios**: `spread = 1.28 * sigma * sqrt(1 + h/period)` donde `sigma` es el desvío de los residuos de la serie **diaria con ceros rellenados** (`fillDaily`). Los días sin venta inflan la varianza, `sigma` supera al nivel previsto y entonces `lower` queda truncado en 0 y `upper` se dispara. Se corrige calculando la incertidumbre sobre residuos relativos/robustos (MAD) y usando cuantiles P10/P50/P90 con piso en 0 marcado como "truncado".
-6. **Componentes a modificar/crear**: ver abajo.
-7. **Sin datos ficticios**: todo sale de `ml_predictions`, `ml_model_evaluations`, `ml_generated_reports`, `ml_recommendations` y del histórico real.
+- **Cola offline actual**: `src/lib/ftg/offline.ts` guarda solo **ventas** en `localStorage` (clave `ftg.offline.sales`), con `idempotency_key` ya generada en el dispositivo. No hay IndexedDB todavía, ni pagos/caja/stock/fotos en cola.
+- **Sincronización automática**: `src/hooks/useOfflineQueue.tsx` reintenta al volver la conexión y desde el botón del `TopBar`. Se mantiene tal cual.
+- **POS**: `src/components/ftg/pos/PosWorkspace.tsx` encola la venta completa (venta + ítems + pagos + auditoría) cuando está offline.
+- **Tablas centrales**: `sales` (ya tiene `idempotency_key`, `local_created_at`, `synced_at`, `source`, `device_id`), `sale_items`, `sale_payments`, `cash_sessions`, `stock_movements`, `photos`, `photo_consents`, `operation_incidents`, `operation_checklist_items`, `finance_documents`, `audit_logs`, `devices`.
+- **Dependencias a respetar**: jornada → caja → venta → ítems → pagos → stock → facturación → archivos → cierre.
 
-## Cambios
+## Alcance por etapas
 
-### Motor y backend
-- `predictions.engine.ts`: incertidumbre robusta (MAD sobre residuos), cuantiles P10/P50/P90, ancho relativo del intervalo, flag `lowerClamped`, degradación del nivel de confianza cuando el rango es excesivo.
-- `predictions.run.server.ts`: guardar cuantiles y ancho relativo, calcular el nivel de confiabilidad (Alta/Media/Baja/No confiable) según `beatsBaseline` + WAPE + ancho de intervalos + cantidad de datos, y reescribir el prompt del informe con la estructura pedida (resumen, resultados, confiabilidad, patrones, riesgos, recomendaciones, limitaciones, próximos pasos) y tono profesional. Recomendaciones conservadoras si `beatsBaseline = false`.
+### Etapa 1 — Base de datos y motor de sincronización
+- Nuevas tablas: `sync_devices`, `sync_batches`, `sync_batch_items`, `sync_conflicts`, con RLS por organización/sede/punto de venta y auditoría.
+- Índices y claves únicas de idempotencia (`idempotency_key` por entidad; único por dispositivo + secuencia local).
+- Columnas de idempotencia faltantes en las entidades que hoy no las tienen (pagos, movimientos de caja, movimientos de stock, fotos, consentimientos, incidentes).
+- Servidor: `src/lib/ftg/sync.functions.ts` con `pushBatch` (autenticado, valida dispositivo/POS, aplica por sub-lotes y devuelve por operación: recibida / ya existía / rechazada / requiere revisión / error recuperable / error definitivo).
 
-### Nuevos módulos front
-- `src/lib/ftg/predictions.report.ts`: formato local (ARS sin decimales, fechas `12 ago 2026`, porcentajes), cálculo de KPIs, reglas de confiabilidad, hallazgos automáticos y validaciones (totales, fechas consecutivas, intervalos inválidos, duplicados, moneda mezclada).
-- `src/lib/ftg/predictions.export.ts`: XLSX multi-hoja (Resumen, Predicción diaria, Predicción semanal, Histórico, Métricas, Recomendaciones, Configuración), CSV configurable, JSON técnico, PNG del gráfico y PDF ejecutivo.
-- Componentes en `src/components/ftg/predicciones/`: `ReportHeader`, `KpiCards`, `ReliabilityCard`, `MetricsExplainer`, `ForecastChart` (histórico vs predicción, banda, objetivo, línea de corte, controles diario/semanal/mensual, zoom, toggles), `ResultsTable` (orden, filtros, búsqueda, paginación, agrupación, totales, datos técnicos), `FindingsSection`, `RecommendationsBoard`, `ExportMenu`, `ShareMenu`, `ModelComparison`.
+### Etapa 2 — Cola local en IndexedDB
+- `src/lib/ftg/offline.db.ts`: almacén IndexedDB con migración automática desde la cola actual de `localStorage` (sin perder ventas pendientes).
+- Registro genérico de operación: `uuid`, `entity_type`, `device_id`, `point_of_sale_id`, `business_date`, `local_sequence`, `local_created_at`, `idempotency_key`, `sync_status`, `attempts`, prioridad (alta/media/baja).
+- El POS pasa a encolar todas las entidades del listado (caja, ventas, ítems, pagos, descuentos, anulaciones, movimientos de caja y stock, fotos, consentimientos, trabajos de IA, facturas, incidentes, cierre y checklist).
+- Manifiesto de jornada con conteos por tipo, importes por moneda, primera/última secuencia y hash de integridad.
 
-### Ruta
-- `supervisores.predicciones.tsx` pasa a componer estos bloques (sin duplicar tablas ni jobs).
+### Etapa 3 — Experiencia de usuario
+- `SyncDayButton`: botón "Sincronizar operaciones del día" / "Todo está sincronizado", con estados (pendientes, verificando conexión, sincronizando, parcial, completado, sin conexión, error). Se coloca en POS, cierre de caja, cierre diario y centro de sincronización.
+- Diálogo previo con el resumen de la jornada (fecha, país, parque, punto de venta, caja, dispositivo, usuario, conteos, importes por moneda, última sincronización).
+- Pantalla de progreso por fases, con porcentaje, tiempo transcurrido, enviadas/pendientes y "Trabajar en segundo plano"; aviso al cerrar la app con sincronización activa.
+- Resultado: jornada sincronizada o "Algunas operaciones requieren atención", con reintento solo de las pendientes y descarga del comprobante del lote.
+- Modo offline: mensaje claro, solicitud en "Esperando conexión", acciones Reintentar / Continuar trabajando / Ver pendientes, y aviso al recuperar la conexión.
 
-### Google Sheets
-- Opción visible en el menú Exportar con flujo OAuth. Mientras el conector de Google no esté habilitado en el proyecto, muestra "Conexión con Google Sheets pendiente" y ofrece XLSX/CSV; no simula éxito.
+### Etapa 4 — Centro de sincronización, archivos y cierre
+- Ruta `/_authenticated/sincronizacion`: estado de conexión, jornada, última sincronización, pendientes por tipo, errores, dispositivo, espacio local, historial de lotes y acciones (sincronizar, reintentar, ver errores, comprobante, exportar lote de emergencia).
+- Archivos pesados en cola aparte y con reanudación: primero datos financieros, luego metadatos, luego fotos/videos; una foto fallida no invalida su venta.
+- Cierre de caja: bloqueo suave "Cierre pendiente de sincronización" mientras falten operaciones, verificación de secuencias y totales, recálculo y alerta al supervisor ante diferencias.
+- Conflictos: se conservan ambas versiones, se marca "Requiere revisión" y se notifica; nunca se resuelven automáticamente diferencias financieras.
+- Exportación/importación de lote de emergencia: archivo cifrado y firmado, con identificador único y sin credenciales, más registro de quién exportó y desde qué dispositivo.
+- Modo automático/manual configurable, manteniendo siempre el botón manual.
 
-### Pruebas
-- Vitest para formatos, KPIs, reglas de confiabilidad, validaciones y coherencia de totales exportados.
+## Componentes que se modifican o crean
 
-## Nota
-Google Sheets requiere activar el conector de Google (OAuth por usuario). Lo dejo preparado y te aviso para conectarlo.
+Modificados: `src/lib/ftg/offline.ts`, `src/hooks/useOfflineQueue.tsx`, `src/components/ftg/pos/PosWorkspace.tsx`, `src/components/ftg/pos/CashSessionCard.tsx`, `src/components/ftg/TopBar.tsx`, `src/routes/_authenticated/supervisores.cierre.tsx`, `src/lib/ftg/nav.ts`, `src/lib/ftg/i18n.ts`.
+
+Nuevos: `src/lib/ftg/offline.db.ts`, `src/lib/ftg/sync.manifest.ts`, `src/lib/ftg/sync.functions.ts`, `src/lib/ftg/sync.server.ts`, `src/lib/ftg/sync.emergency.ts`, `src/hooks/useDaySync.tsx`, `src/components/ftg/sync/SyncDayButton.tsx`, `SyncPreviewDialog.tsx`, `SyncProgressDialog.tsx`, `SyncResultDialog.tsx`, `SyncCenter.tsx`, ruta `src/routes/_authenticated/sincronizacion.tsx`.
+
+Pruebas (Vitest): desconexión, recuperación, duplicados (doble clic), interrupción y sincronización parcial, además del manifiesto y el hash de integridad.
+
+## Notas
+
+- No se generan datos ficticios: todo sale de operaciones reales del dispositivo.
+- No se reconstruye el POS ni se reemplaza la sincronización automática.
+- Las cargas reanudables de archivos usan el almacenamiento privado ya existente.
