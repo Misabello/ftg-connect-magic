@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Receipt, RefreshCw } from "lucide-react";
+import { BookOpen, Download, ExternalLink, Eye, Receipt, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMoney } from "@/lib/ftg/format";
 
@@ -44,6 +45,7 @@ export function PosLedgerPanel({
   locale: string;
 }) {
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ ticket: TicketRow; url: string } | null>(null);
   const queryClient = useQueryClient();
 
   const { data: entries = [], isLoading } = useQuery({
@@ -87,7 +89,7 @@ export function PosLedgerPanel({
     setOpeningId(ticket.id);
     const { data } = await supabase.storage.from("pos-tickets").createSignedUrl(ticket.image_path, 60 * 10);
     setOpeningId(null);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener");
+    if (data?.signedUrl) setPreview({ ticket, url: data.signedUrl });
   }
 
   const accounts = useMemo(() => {
@@ -227,8 +229,15 @@ export function PosLedgerPanel({
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className="text-sm font-medium">{formatMoney(Number(ticket.amount), currency, locale)}</span>
-                  <Button size="sm" variant="ghost" onClick={() => void openTicket(ticket)} disabled={openingId === ticket.id}>
-                    Ver
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    onClick={() => void openTicket(ticket)}
+                    disabled={openingId === ticket.id}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    {openingId === ticket.id ? "Abriendo…" : "Ver ticket"}
                   </Button>
                 </div>
               </li>
@@ -236,6 +245,46 @@ export function PosLedgerPanel({
           </ul>
         )}
       </div>
+
+      <Dialog open={!!preview} onOpenChange={(open) => !open && setPreview(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>
+              Ticket {preview?.ticket.document_number ? `N° ${preview.ticket.document_number}` : "sin número"}
+              {preview?.ticket.supplier_name ? ` · ${preview.ticket.supplier_name}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {preview ? (
+            <div className="space-y-3">
+              <div className="max-h-[65vh] overflow-auto rounded-xl border border-border bg-surface p-2">
+                {preview.ticket.image_path.toLowerCase().endsWith(".pdf") ? (
+                  <iframe src={preview.url} title="Comprobante" className="h-[65vh] w-full rounded-lg" />
+                ) : (
+                  <img src={preview.url} alt="Comprobante del ticket" className="mx-auto w-full rounded-lg object-contain" />
+                )}
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                <span>
+                  {preview.ticket.issued_on ?? "sin fecha"} ·{" "}
+                  {formatMoney(Number(preview.ticket.amount), currency, locale)}
+                </span>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                    <a href={preview.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5" /> Abrir original
+                    </a>
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                    <a href={preview.url} download>
+                      <Download className="h-3.5 w-3.5" /> Descargar
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
