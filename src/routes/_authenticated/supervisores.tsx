@@ -71,26 +71,6 @@ function SupervisoresLayout() {
         }
       />
 
-      <div className="flex flex-wrap gap-2">
-        {SUPERVISOR_MENU.map((item) => {
-          const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-          return (
-            <Link
-              key={item.to}
-              to={item.to as never}
-              className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
-                active
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
-              )}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-
       {!activeLocationId && (
         <p className="rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Elegí un parque para ver la información de supervisión.
