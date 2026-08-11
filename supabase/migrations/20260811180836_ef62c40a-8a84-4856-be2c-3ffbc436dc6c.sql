@@ -1,0 +1,3 @@
+CREATE POLICY "visitor_photos_read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'visitor-photos');
+CREATE POLICY "visitor_photos_insert" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'visitor-photos');
+CREATE POLICY "visitor_photos_update" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'visitor-photos') WITH CHECK (bucket_id = 'visitor-photos');
