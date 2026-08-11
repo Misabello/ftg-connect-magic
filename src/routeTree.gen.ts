@@ -22,6 +22,7 @@ import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
+import { Route as AuthenticatedConfiguracionEmpleadosRouteImport } from './routes/_authenticated/configuracion.empleados'
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
@@ -98,6 +99,12 @@ const AuthenticatedConfiguracionIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
+const AuthenticatedConfiguracionEmpleadosRoute =
+  AuthenticatedConfiguracionEmpleadosRouteImport.update({
+    id: '/empleados',
+    path: '/empleados',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
 const AuthenticatedConfiguracionUsuariosRoute =
   AuthenticatedConfiguracionUsuariosRouteImport.update({
     id: '/usuarios',
@@ -145,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
   '/reportes': typeof AuthenticatedReportesRoute
+  '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
+  '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/empleados'
     | '/configuracion/usuarios'
     | '/configuracion/'
     | '/sedes/'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/operaciones'
     | '/pos'
     | '/reportes'
+    | '/configuracion/empleados'
     | '/configuracion/usuarios'
     | '/configuracion'
     | '/sedes'
@@ -248,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
     | '/_authenticated/reportes'
+    | '/_authenticated/configuracion/empleados'
     | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracionIndexRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
     }
+    '/_authenticated/configuracion/empleados': {
+      id: '/_authenticated/configuracion/empleados'
+      path: '/empleados'
+      fullPath: '/configuracion/empleados'
+      preLoaderRoute: typeof AuthenticatedConfiguracionEmpleadosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
     '/_authenticated/configuracion/usuarios': {
       id: '/_authenticated/configuracion/usuarios'
       path: '/usuarios'
@@ -404,12 +424,15 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedConfiguracionRouteChildren {
+  AuthenticatedConfiguracionEmpleadosRoute: typeof AuthenticatedConfiguracionEmpleadosRoute
   AuthenticatedConfiguracionUsuariosRoute: typeof AuthenticatedConfiguracionUsuariosRoute
   AuthenticatedConfiguracionIndexRoute: typeof AuthenticatedConfiguracionIndexRoute
 }
 
 const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteChildren =
   {
+    AuthenticatedConfiguracionEmpleadosRoute:
+      AuthenticatedConfiguracionEmpleadosRoute,
     AuthenticatedConfiguracionUsuariosRoute:
       AuthenticatedConfiguracionUsuariosRoute,
     AuthenticatedConfiguracionIndexRoute: AuthenticatedConfiguracionIndexRoute,
