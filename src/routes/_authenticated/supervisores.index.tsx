@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertTriangle, Camera, Receipt, Store, Target, Wallet } from "lucide-react";
 
 import { StatCard } from "@/components/ftg/StatCard";
+import { ParkTrendCharts } from "@/components/ftg/supervision/ParkTrendCharts";
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { useScope } from "@/hooks/useScope";
 import { useSupervision, isOffline } from "@/hooks/useSupervision";
