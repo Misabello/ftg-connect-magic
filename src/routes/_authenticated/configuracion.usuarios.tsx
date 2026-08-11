@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/hooks/useAuth";
 import { useScope } from "@/hooks/useScope";
@@ -30,9 +31,11 @@ import {
   setUserRole,
   setUserStatus,
   applyScheduledDeactivations,
+  updateUserAccount,
   USER_STATUSES,
 } from "@/lib/ftg/admin-users.functions";
 import { USER_STATUS_LABELS } from "@/lib/ftg/hr";
+import { formatCuil, isValidCuil, suggestUsername } from "@/lib/ftg/user-form";
 import { CORE_ROLES, ROLE_LABELS, canManageUsers, type AppRole } from "@/lib/ftg/roles";
 
 export const Route = createFileRoute("/_authenticated/configuracion/usuarios")({
