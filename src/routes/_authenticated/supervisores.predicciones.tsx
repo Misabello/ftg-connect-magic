@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useScope } from "@/hooks/useScope";
 import { formatNumber, relativeTime } from "@/lib/ftg/format";
-import { NEW_SHEET_URL, copyForSheets, downloadCsv } from "@/lib/ftg/export";
+import { copyForSheets, downloadCsv } from "@/lib/ftg/export";
+import { exportRowsToSheet } from "@/lib/ftg/sheets.functions";
 import {
   FORECAST_DISCLAIMER,
   GRANULARITY_LABELS,
@@ -382,11 +383,7 @@ function JobDetail({ detail, loading }: { detail: any; loading: boolean }) {
         >
           <Table2 className="h-3.5 w-3.5" /> Copiar para Sheets
         </Button>
-        <Button size="sm" variant="ghost" className="gap-1.5" asChild>
-          <a href={NEW_SHEET_URL} target="_blank" rel="noreferrer">
-            <ExternalLink className="h-3.5 w-3.5" /> Abrir Google Sheets
-          </a>
-        </Button>
+        <ExportSheetButton title={fileBase} headers={exportHeaders} rows={exportRows} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -522,5 +519,52 @@ function KpiCard({
       </p>
       {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
     </div>
+  );
+}
+
+/** Crea una planilla real en Google Sheets con los datos de la predicción. */
+function ExportSheetButton({
+  title,
+  headers,
+  rows,
+}: {
+  title: string;
+  headers: string[];
+  rows: Record<string, string | number | null | undefined>[];
+}) {
+  const [busy, setBusy] = useState(false);
+  const createSheet = useServerFn(exportRowsToSheet);
+
+  return (
+    <Button
+      size="sm"
+      variant="secondary"
+      className="gap-1.5"
+      disabled={busy || rows.length === 0}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          const res = await createSheet({
+            data: {
+              title: `FTG · ${title}`,
+              headers,
+              rows: rows.map((r) => headers.map((h) => (r[h] === undefined || r[h] === null ? "" : r[h]!))),
+            },
+          });
+          if (res.url) {
+            window.open(res.url, "_blank", "noopener");
+            toast.success("Planilla creada en Google Sheets", { description: `${res.rows} filas exportadas.` });
+          } else {
+            toast.error("La planilla se creó pero no se obtuvo el enlace.");
+          }
+        } catch (err) {
+          toast.error("No se pudo exportar a Google Sheets", { description: (err as Error).message });
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <ExternalLink className="h-3.5 w-3.5" /> {busy ? "Exportando…" : "Exportar a Google Sheets"}
+    </Button>
   );
 }
