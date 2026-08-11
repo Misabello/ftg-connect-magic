@@ -32,7 +32,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_ROLES, type AppRole } from "@/lib/ftg/roles";
 
-export const Route = createFileRoute("/_authenticated/configuracion")({
+export const Route = createFileRoute("/_authenticated/configuracion/")({
   head: () => ({
     meta: [
       { title: "Configuración — FTG ONE" },
@@ -40,6 +40,9 @@ export const Route = createFileRoute("/_authenticated/configuracion")({
       { property: "og:title", content: "Configuración — FTG ONE" },
       { property: "og:description", content: "Sedes, puntos de venta, países, usuarios y roles." },
     ],
+  }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: typeof search["tab"] === "string" ? (search["tab"] as string) : undefined,
   }),
   component: Configuracion,
 });
@@ -53,6 +56,7 @@ const locationSchema = z.object({
 });
 
 function Configuracion() {
+  const { tab } = Route.useSearch();
   const { roles, user } = useAuth();
   const { t, tRole, language, setLanguage } = useI18n();
   const isAdmin = roles.includes("superadmin") || roles.includes("direccion");
@@ -146,12 +150,7 @@ function Configuracion() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t("page.configuracion.title")}
-        description={t("page.configuracion.desc")}
-      />
-
-      <Tabs defaultValue="sedes">
+      <Tabs defaultValue={tab ?? "sedes"}>
         <TabsList>
           <TabsTrigger value="sedes">{t("config.tab.sedes")}</TabsTrigger>
           <TabsTrigger value="pos">{t("config.tab.pos")}</TabsTrigger>
