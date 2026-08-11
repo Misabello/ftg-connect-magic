@@ -319,7 +319,7 @@ export function InvoiceAutomation() {
   );
 }
 
-function Metric({ label, value, tone }: { label: string; value: string | number; tone?: "warn" | "bad" }) {
+function Metric({ label, value, tone }: { label: string; value: string | number; tone?: "warn" | "bad" | undefined }) {
   return (
     <div className="surface-card p-4">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
