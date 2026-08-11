@@ -1,10 +1,34 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Check, ImageUp, RotateCcw, RotateCw, Trash2, TriangleAlert, Upload, ZoomIn } from "lucide-react";
+import {
+  Camera,
+  Check,
+  Cloud,
+  ImageUp,
+  Loader2,
+  RotateCcw,
+  RotateCw,
+  Smartphone,
+  Trash2,
+  TriangleAlert,
+  Upload,
+  ZoomIn,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { loadRemoteImage } from "@/lib/ftg/magic.functions";
 import {
   ACCEPTED_TYPES,
   MAX_UPLOAD_MB,
@@ -38,10 +62,42 @@ export function CustomerPhotoStep({
   const [dragging, setDragging] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [working, setWorking] = useState(false);
+  const [cloudOpen, setCloudOpen] = useState(false);
+  const [cloudUrl, setCloudUrl] = useState("");
+  const [cloudLoading, setCloudLoading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const fetchRemote = useServerFn(loadRemoteImage);
+
+  const isTouchDevice =
+    typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  /** En móvil abrimos la cámara nativa; en escritorio usamos la webcam. */
+  function takePhoto() {
+    if (isTouchDevice) mobileInputRef.current?.click();
+    else void startCamera();
+  }
+
+  async function loadFromCloud() {
+    const url = cloudUrl.trim();
+    if (!url) return;
+    setCloudLoading(true);
+    try {
+      const remote = await fetchRemote({ data: { url } });
+      setCloudOpen(false);
+      setCloudUrl("");
+      await loadDataUrl(remote.dataUrl);
+    } catch {
+      toast.error("No pudimos traer la imagen", {
+        description: "Verificá que el enlace sea público y apunte a una imagen.",
+      });
+    } finally {
+      setCloudLoading(false);
+    }
+  }
 
   const stopCamera = () => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
