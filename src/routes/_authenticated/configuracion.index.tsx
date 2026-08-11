@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { PageHeader } from "@/components/ftg/PageHeader";
 import { GoogleAccountCard } from "@/components/ftg/GoogleAccountCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
