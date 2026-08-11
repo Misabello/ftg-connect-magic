@@ -347,6 +347,32 @@ export function PosWorkspace({
     onError: (error: Error) => toast.error(error.message),
   });
 
+  /**
+   * Devuelve la caja abierta del punto de venta actual y, si no existe, la abre
+   * automáticamente en cero para que la venta quede asentada en este puesto.
+   */
+  const ensureSession = async (): Promise<CashSession> => {
+    if (session) return session;
+    if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
+    if (!online) throw new Error("Abrí la caja mientras tengas conexión para poder cobrar");
+    const { data, error } = await supabase
+      .from("cash_sessions")
+      .insert({
+        organization_id: activePos.organization_id,
+        location_id: activeLocationId,
+        point_of_sale_id: activePos.id,
+        currency_code: activePos.currency_code,
+        opening_amount: 0,
+        opened_by: user?.id ?? null,
+      })
+      .select("id, opened_at, opening_amount, status, currency_code")
+      .single();
+    if (error) throw error;
+    await queryClient.invalidateQueries({ queryKey: ["cash-session"] });
+    toast.info(`Caja abierta en ${activePos.name} para registrar la venta`);
+    return data as CashSession;
+  };
+
   const registerSale = useMutation({
     mutationFn: async ({
       payments,
@@ -355,7 +381,8 @@ export function PosWorkspace({
       payments: PaymentDraft[];
       customer: CheckoutCustomer;
     }) => {
-      if (!activePos || !activeLocationId || !session) throw new Error("Abrí la caja antes de vender");
+      if (!activePos || !activeLocationId) throw new Error("Seleccioná un punto de venta");
+      const activeSession = await ensureSession();
       const localSequence = sessionSales.length + pendingCount + 1;
       const count = online
         ? (
@@ -373,7 +400,7 @@ export function PosWorkspace({
         location_id: activeLocationId,
         point_of_sale_id: activePos.id,
         event_id: activePos.event_id,
-        cash_session_id: session.id,
+        cash_session_id: activeSession.id,
         sale_number: saleNumber,
         sold_by: user?.id ?? null,
         customer_name: customer.name || null,
