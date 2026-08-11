@@ -282,8 +282,14 @@ export function PosWorkspace({
    */
   const [autoLoaded, setAutoLoaded] = useState(false);
   useEffect(() => {
-    if (!autoCheckout || autoLoaded || !activePos) return;
+    // Siempre bajamos los ítems del carrito global al puesto activo, así el
+    // botón "Cobrar" nunca queda gris teniendo cosas en el carrito.
+    if (autoLoaded || !activePos) return;
     const pending = listMagicItems();
+    if (pending.length === 0) {
+      if (autoCheckout) setAutoLoaded(true);
+      return;
+    }
     pending.forEach((item) => addMagicItemToCart(item));
     setAutoLoaded(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
