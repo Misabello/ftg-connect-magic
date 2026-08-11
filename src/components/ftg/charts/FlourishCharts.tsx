@@ -292,3 +292,160 @@ export function ShareRibbon({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Ranked bars — barras horizontales animadas (estilo Flourish)         */
+/* ------------------------------------------------------------------ */
+
+export function RankedBars({
+  items,
+  valueFormatter = (v: number) => formatNumber(Math.round(v)),
+  topN = 10,
+  labelWidth = "w-32 sm:w-44",
+}: {
+  items: { key: string; value: number }[];
+  valueFormatter?: (v: number) => string;
+  topN?: number;
+  labelWidth?: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, [items]);
+
+  const ranked = [...items].sort((a, b) => b.value - a.value).slice(0, topN);
+  const max = Math.max(1, ...ranked.map((r) => Math.abs(r.value)));
+
+  if (ranked.length === 0) {
+    return <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Sin datos en el período.</p>;
+  }
+
+  return (
+    <div className="space-y-2.5">
+      {ranked.map((item, i) => (
+        <div key={item.key} className="flex items-center gap-2">
+          <span className={cn("shrink-0 truncate text-right text-xs text-muted-foreground", labelWidth)}>{item.key}</span>
+          <div className="relative h-6 flex-1 overflow-hidden rounded-r-md bg-muted/40">
+            <div
+              className="h-full rounded-r-md transition-[width] duration-700 ease-out"
+              style={{
+                width: mounted ? `${Math.max(2, (Math.abs(item.value) / max) * 100)}%` : "0%",
+                transitionDelay: `${i * 45}ms`,
+                background: FLOURISH_PALETTE[i % FLOURISH_PALETTE.length],
+              }}
+            />
+          </div>
+          <span className="w-24 shrink-0 text-right text-xs font-semibold tabular-nums">{valueFormatter(item.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Story area / multi-line — series temporales con reveal animado       */
+/* ------------------------------------------------------------------ */
+
+export type SeriesDef = { key: string; name: string; color?: string; type?: "area" | "line" };
+
+export function StorySeriesChart({
+  data,
+  xKey,
+  series,
+  height = 260,
+  valueFormatter = (v: number) => formatNumber(Math.round(v)),
+  axisFormatter,
+  labelFormatter,
+}: {
+  data: Record<string, any>[];
+  xKey: string;
+  series: SeriesDef[];
+  height?: number;
+  valueFormatter?: (v: number) => string;
+  axisFormatter?: (v: any) => string;
+  labelFormatter?: (v: any) => string;
+}) {
+  const [revealed, setRevealed] = useState(0);
+
+  useEffect(() => {
+    setRevealed(0);
+    if (data.length === 0) return;
+    let frame = 0;
+    const step = Math.max(1, Math.ceil(data.length / 45));
+    const id = setInterval(() => {
+      frame += step;
+      setRevealed(frame);
+      if (frame >= data.length) clearInterval(id);
+    }, 24);
+    return () => clearInterval(id);
+  }, [data]);
+
+  const shown = data.slice(0, Math.max(revealed, Math.min(2, data.length)));
+
+  return (
+    <div style={{ height }} className="w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={shown} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+          <defs>
+            {series.map((s, i) => (
+              <linearGradient key={s.key} id={`ftg-series-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={s.color ?? FLOURISH_PALETTE[i % FLOURISH_PALETTE.length]} stopOpacity={0.34} />
+                <stop offset="100%" stopColor={s.color ?? FLOURISH_PALETTE[i % FLOURISH_PALETTE.length]} stopOpacity={0.02} />
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
+          <XAxis
+            dataKey={xKey}
+            tick={{ fontSize: 10 }}
+            stroke="var(--muted-foreground)"
+            minTickGap={20}
+            tickFormatter={labelFormatter as any}
+          />
+          <YAxis tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" width={64} tickFormatter={axisFormatter as any} />
+          <Tooltip
+            cursor={{ stroke: "var(--primary)", strokeOpacity: 0.35 }}
+            contentStyle={{
+              background: "var(--popover)",
+              color: "var(--popover-foreground)",
+              border: "1px solid var(--border)",
+              borderRadius: 10,
+              fontSize: 12,
+            }}
+            labelFormatter={labelFormatter as any}
+            formatter={(value: any, name: string) => [valueFormatter(Number(value ?? 0)), name]}
+          />
+          {series.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} />}
+          {series.map((s, i) =>
+            (s.type ?? "area") === "area" ? (
+              <Area
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.name}
+                stroke={s.color ?? FLOURISH_PALETTE[i % FLOURISH_PALETTE.length]}
+                strokeWidth={2.5}
+                fill={`url(#ftg-series-${s.key})`}
+                connectNulls
+                isAnimationActive={false}
+              />
+            ) : (
+              <Line
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.name}
+                stroke={s.color ?? FLOURISH_PALETTE[i % FLOURISH_PALETTE.length]}
+                strokeWidth={2.5}
+                dot={false}
+                connectNulls
+                isAnimationActive={false}
+              />
+            ),
+          )}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
