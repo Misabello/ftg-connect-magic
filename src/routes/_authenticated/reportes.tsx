@@ -116,8 +116,6 @@ function Reportes() {
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
   }, [payments]);
 
-  const maxDay = Math.max(1, ...byDay.map(([, v]) => v));
-  const totalCategory = Math.max(1, byCategory.reduce((acc, [, v]) => acc + v, 0));
   const aiCost = (data?.souvenirs ?? []).reduce((acc, s) => acc + Number(s.estimated_cost ?? 0), 0);
 
   return (
