@@ -219,6 +219,66 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
     });
   }
 
+  function clearDocFile() {
+    setDocFile(null);
+    setDocPreview(null);
+    setOcrConfidence(null);
+  }
+
+  /** Sube/saca foto del comprobante y completa el formulario con OCR + IA. */
+  async function scanDocument(selected: File | null) {
+    if (!selected) return;
+    if (selected.size > 15 * 1024 * 1024) {
+      toast.error("El comprobante no puede superar 15 MB");
+      return;
+    }
+    setDocFile(selected);
+    setOcrConfidence(null);
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+      reader.readAsDataURL(selected);
+    });
+    setDocPreview(selected.type.startsWith("image/") ? dataUrl : null);
+
+    setScanning(true);
+    try {
+      const result = await ocr({ data: { imageUrl: dataUrl } });
+      setDraft((prev) => ({
+        ...prev,
+        amount: result.amount !== null ? String(result.amount) : prev.amount,
+        document_number: result.documentNumber ?? prev.document_number,
+        due_on: prev.due_on || result.issuedOn || "",
+        concept:
+          prev.concept ||
+          (result.supplierName
+            ? `Comprobante ${result.supplierName}`
+            : result.documentNumber
+              ? `Comprobante ${result.documentNumber}`
+              : ""),
+      }));
+      setOcrConfidence(result.confidence);
+
+      const partyList = tab === "cobrar" ? data?.customers ?? [] : data?.suppliers ?? [];
+      const needle = (result.supplierName ?? "").toLowerCase().trim();
+      const match = needle
+        ? partyList.find((p) => p.name.toLowerCase().includes(needle) || needle.includes(p.name.toLowerCase()))
+        : undefined;
+      if (match) setDraft((prev) => ({ ...prev, counterparty: match.id }));
+
+      toast.success("Comprobante leído", {
+        description: match
+          ? `Datos completados y contraparte detectada: ${match.name}. Revisalos antes de guardar.`
+          : "Revisá los datos y elegí la contraparte antes de guardar.",
+      });
+    } catch (error) {
+      toast.error("No pudimos leer el comprobante", { description: (error as Error).message });
+    } finally {
+      setScanning(false);
+    }
+  }
+
   /** Abre el correo al cliente con el detalle de la factura por cobrar. */
   function sendInvoiceEmail(invoice: {
     email: string | null;
@@ -241,7 +301,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
       customerName: invoice.customerName,
     });
     const subject = `Factura FTG${invoice.documentNumber ? ` ${invoice.documentNumber}` : ""}`;
-    window.open(mailtoLink(invoice.email, subject, body), "_blank");
+    window.location.href = mailtoLink(invoice.email, subject, body);
     toast.success(`Factura preparada para enviar a ${invoice.email}`);
   }
 
