@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Paperclip, Plus, Wallet, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Camera, Loader2, Mail, Paperclip, Plus, Wallet, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
@@ -22,6 +22,7 @@ import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/ftg/format";
+import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
 import {
   AGING_ORDER,
   FINANCE_STATUS_LABEL,
@@ -59,10 +60,10 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         supabase
           .from("finance_documents")
           .select(
-            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, customer_id, supplier_id, location_id, organization_id, customers(name), suppliers(name)",
+            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, customer_id, supplier_id, location_id, organization_id, customers(name, email), suppliers(name)",
           )
           .order("due_on", { ascending: true }),
-        supabase.from("customers").select("id, name, organization_id").order("name"),
+        supabase.from("customers").select("id, name, email, organization_id").order("name"),
         supabase.from("suppliers").select("id, name, organization_id").order("name"),
         supabase
           .from("cash_sessions")
