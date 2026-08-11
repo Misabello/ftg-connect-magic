@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { generateVisitorCode } from "@/lib/ftg/photos";
 import { supabase } from "@/integrations/supabase/client";
+import { CameraCaptureDialog } from "@/components/ftg/CameraCaptureDialog";
 
 const MAX_UPLOAD_MB = 12;
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365; // un año
@@ -46,8 +47,8 @@ export function PhotoFormDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState<PhotoDraft>(() => ({
     visitor_code: generateVisitorCode(),
     image_url: SAMPLES[0] ?? "",
@@ -138,17 +139,12 @@ export function PhotoFormDialog({
                 e.target.value = "";
               }}
             />
-            <input
-              ref={cameraRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void uploadFile(file);
-                e.target.value = "";
-              }}
+            <CameraCaptureDialog
+              open={cameraOpen}
+              onOpenChange={setCameraOpen}
+              title="Sacar foto ahora"
+              description="Encuadrá al visitante y capturá la fotografía."
+              onCapture={(file) => uploadFile(file)}
             />
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
@@ -164,7 +160,7 @@ export function PhotoFormDialog({
                 size="sm"
                 variant="secondary"
                 disabled={uploading}
-                onClick={() => cameraRef.current?.click()}
+                onClick={() => setCameraOpen(true)}
               >
                 <Camera className="mr-1.5 h-4 w-4" /> Sacar foto ahora
               </Button>
