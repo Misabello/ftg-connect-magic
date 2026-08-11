@@ -474,3 +474,11 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
               onClick={() => registerPayment.mutate()}
             >
               {registerPayment.isPending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
