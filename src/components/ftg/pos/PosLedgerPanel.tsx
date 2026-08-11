@@ -32,6 +32,7 @@ type TicketRow = {
   image_path: string;
   created_at: string;
   journal_entry_id: string | null;
+  drive_url: string | null;
 };
 
 /** Libro contable del punto de venta: saldos por cuenta y últimos asientos. */
@@ -75,7 +76,7 @@ export function PosLedgerPanel({
       const { data, error } = await supabase
         .from("pos_tickets")
         .select(
-          "id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at, journal_entry_id",
+          "id, kind, amount, tax_amount, document_number, supplier_name, issued_on, image_path, created_at, journal_entry_id, drive_url",
         )
         .eq("point_of_sale_id", pointOfSaleId)
         .order("created_at", { ascending: false })
@@ -239,6 +240,13 @@ export function PosLedgerPanel({
                     <Eye className="h-3.5 w-3.5" />
                     {openingId === ticket.id ? "Abriendo…" : "Ver ticket"}
                   </Button>
+                  {ticket.drive_url ? (
+                    <Button size="sm" variant="ghost" className="gap-1.5" asChild>
+                      <a href={ticket.drive_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" /> Drive
+                      </a>
+                    </Button>
+                  ) : null}
                 </div>
               </li>
             ))}
@@ -269,6 +277,13 @@ export function PosLedgerPanel({
                   {formatMoney(Number(preview.ticket.amount), currency, locale)}
                 </span>
                 <div className="flex gap-2">
+                  {preview.ticket.drive_url ? (
+                    <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                      <a href={preview.ticket.drive_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" /> Ver en Drive
+                      </a>
+                    </Button>
+                  ) : null}
                   <Button size="sm" variant="outline" className="gap-1.5" asChild>
                     <a href={preview.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-3.5 w-3.5" /> Abrir original
