@@ -6,6 +6,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const Input = z.object({
   /** Imagen del ticket en data URL o URL firmada. */
   imageUrl: z.string().min(10).max(12_000_000),
+  /** Tipo MIME real del archivo (para poder leer PDFs además de imágenes). */
+  mimeType: z.string().trim().max(120).optional(),
+  /** Nombre del archivo original, útil para PDFs. */
+  fileName: z.string().trim().max(200).optional(),
 });
 
 export type TicketOcrResult = {
@@ -37,6 +41,11 @@ Reglas:
   Si hay varios números, priorizá el de la factura/ticket sobre CUIT, CAE o teléfono.
   Solo devolvé null si realmente no hay ningún número de comprobante visible.
 - "taxId" es CUIT/CNPJ del emisor (no lo pongas en documentNumber).
+- "supplierName" es la RAZÓN SOCIAL del EMISOR del comprobante (quien factura),
+  tal como figura en el encabezado (por ejemplo "SWISS MEDICAL S.A.").
+  No devuelvas el nombre del receptor/cliente ni el nombre de fantasía del sistema
+  de facturación. Si la razón social tiene sufijo societario (S.A., S.R.L., LTDA),
+  incluilo. Solo devolvé null si no hay emisor identificable.
 - "confidence" es de 0 a 100 según la nitidez del ticket.
 - "rawText" es el texto que pudiste leer, resumido en menos de 600 caracteres.`;
 
@@ -66,6 +75,18 @@ export const readTicket = createServerFn({ method: "POST" })
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("Falta la clave del servicio de IA");
 
+    const isPdf =
+      (data.mimeType ?? "").toLowerCase().includes("pdf") ||
+      data.imageUrl.startsWith("data:application/pdf") ||
+      (data.fileName ?? "").toLowerCase().endsWith(".pdf");
+
+    const attachment = isPdf
+      ? {
+          type: "file" as const,
+          file: { filename: data.fileName || "comprobante.pdf", file_data: data.imageUrl },
+        }
+      : { type: "image_url" as const, image_url: { url: data.imageUrl } };
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
@@ -77,7 +98,7 @@ export const readTicket = createServerFn({ method: "POST" })
             role: "user",
             content: [
               { type: "text", text: "Leé este ticket y devolvé el JSON pedido." },
-              { type: "image_url", image_url: { url: data.imageUrl } },
+              attachment,
             ],
           },
         ],
