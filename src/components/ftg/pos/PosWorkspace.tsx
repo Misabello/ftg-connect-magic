@@ -689,8 +689,9 @@ export function PosWorkspace({
               }
               onClear={() => setLines([])}
               onCheckout={() => setCheckoutOpen(true)}
-              canCheckout={lines.length > 0 && !missingPhotoCode && (!!session || online)}
+              canCheckout={lines.length > 0 && !missingPhotoCode && !!activePos}
               checkoutHint={checkoutHint}
+              posName={activePos?.name ?? null}
             />
           </div>
 
