@@ -572,8 +572,13 @@ export function PosWorkspace({
   return (
     <div className="space-y-6">
       <PageHeader
-        title={title}
-        description={description}
+        title={title ?? activePos?.name ?? "Punto de venta"}
+        description={
+          description ??
+          (activePos
+            ? `${activePos.code}${activeLocation ? ` · ${activeLocation.name}` : ""} — la venta se asienta en este puesto.`
+            : "Catálogo, carrito, pagos combinados y arqueo de caja por puesto.")
+        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             {headerActions}
