@@ -26,6 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { readTicket } from "@/lib/ftg/ocr.functions";
+import { uploadTicketToDrive } from "@/lib/ftg/drive.functions";
 
 type TicketKind = "gasto" | "ingreso";
 
@@ -149,7 +150,6 @@ export function TicketDialog({
 
       // Copia del original a Google Drive (no bloquea el registro del ticket).
       try {
-        const { uploadTicketToDrive } = await import("@/lib/ftg/drive.functions");
         await uploadTicketToDrive({
           data: {
             ticketId: inserted.id,
