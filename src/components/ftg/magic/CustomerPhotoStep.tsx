@@ -214,6 +214,19 @@ export function CustomerPhotoStep({
         }}
       />
 
+      <input
+        ref={mobileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void loadFile(file);
+          e.target.value = "";
+        }}
+      />
+
       {!source && !cameraOn && (
         <div
           onDragOver={(e) => {
@@ -237,10 +250,13 @@ export function CustomerPhotoStep({
           <p className="text-xs text-muted-foreground">JPG, PNG o WEBP · hasta {MAX_UPLOAD_MB} MB</p>
           <div className="flex flex-wrap justify-center gap-2 pt-1">
             <Button size="sm" onClick={() => inputRef.current?.click()} disabled={working}>
-              <Upload className="mr-1.5 h-4 w-4" /> Subir archivo
+              <Smartphone className="mr-1.5 h-4 w-4" /> Desde el dispositivo
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => void startCamera()} disabled={working}>
+            <Button size="sm" variant="secondary" onClick={takePhoto} disabled={working}>
               <Camera className="mr-1.5 h-4 w-4" /> Tomar foto
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setCloudOpen(true)} disabled={working}>
+              <Cloud className="mr-1.5 h-4 w-4" /> Desde la nube
             </Button>
           </div>
         </div>
