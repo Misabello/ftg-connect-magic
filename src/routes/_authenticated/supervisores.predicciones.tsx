@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles } from "lucide-react";
+import { Download, ExternalLink, Sparkles, Table2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Area,
   CartesianGrid,
   ComposedChart,
+  defs,
   Legend,
   Line,
   ResponsiveContainer,
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useScope } from "@/hooks/useScope";
 import { formatNumber, relativeTime } from "@/lib/ftg/format";
+import { NEW_SHEET_URL, copyForSheets, downloadCsv } from "@/lib/ftg/export";
 import {
   FORECAST_DISCLAIMER,
   GRANULARITY_LABELS,
