@@ -1,9 +1,20 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { Badge } from "@/components/ui/badge";
@@ -43,8 +54,15 @@ export const Route = createFileRoute("/_authenticated/supervisores/predicciones"
 });
 
 function Predicciones() {
-  const { activeLocationId, activeLocation } = useScope();
+  const { activeLocationId, activeLocation, locations } = useScope();
   const queryClient = useQueryClient();
+  const [scopeLocationId, setScopeLocationId] = useState<string>("all");
+
+  useEffect(() => {
+    if (activeLocationId) setScopeLocationId(activeLocationId);
+  }, [activeLocationId]);
+
+  const scopeLocation = locations.find((l) => l.id === scopeLocationId) ?? null;
 
   const fetchTargets = useServerFn(listPredictionTargets);
   const fetchJobs = useServerFn(listPredictionJobs);
@@ -89,11 +107,11 @@ function Predicciones() {
         data: {
           target_key: targetKey,
           organization_id: null,
-          location_id: activeLocationId,
+          location_id: scopeLocationId === "all" ? null : scopeLocationId,
           granularity,
           horizon_from: range.from,
           horizon_to: range.to,
-          currency_code: activeLocation?.currency_code ?? "ARS",
+          currency_code: scopeLocation?.currency_code ?? activeLocation?.currency_code ?? "ARS",
           filters: {},
         },
       } as never);
@@ -168,8 +186,21 @@ function Predicciones() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Alcance</Label>
-            <Input value={activeLocation?.name ?? ""} readOnly />
+            <Label>Sede</Label>
+            <Select value={scopeLocationId} onValueChange={setScopeLocationId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Elegí una sede" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las sedes</SelectItem>
+                {locations.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>
+                    {l.name}
+                    {l.city ? ` · ${l.city}` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {horizon === "custom" && (
