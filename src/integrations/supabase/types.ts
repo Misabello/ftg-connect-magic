@@ -2137,6 +2137,780 @@ export type Database = {
           },
         ]
       }
+      ml_actual_results: {
+        Row: {
+          absolute_error: number | null
+          actual_value: number | null
+          created_at: string
+          currency_code: string | null
+          id: string
+          job_id: string | null
+          measured_at: string
+          organization_id: string | null
+          percentage_error: number | null
+          period_end: string
+          period_start: string
+          predicted_value: number | null
+          prediction_id: string | null
+          recommendation_id: string | null
+        }
+        Insert: {
+          absolute_error?: number | null
+          actual_value?: number | null
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          job_id?: string | null
+          measured_at?: string
+          organization_id?: string | null
+          percentage_error?: number | null
+          period_end: string
+          period_start: string
+          predicted_value?: number | null
+          prediction_id?: string | null
+          recommendation_id?: string | null
+        }
+        Update: {
+          absolute_error?: number | null
+          actual_value?: number | null
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          job_id?: string | null
+          measured_at?: string
+          organization_id?: string | null
+          percentage_error?: number | null
+          period_end?: string
+          period_start?: string
+          predicted_value?: number | null
+          prediction_id?: string | null
+          recommendation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_actual_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_actual_results_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_actual_results_prediction_id_fkey"
+            columns: ["prediction_id"]
+            isOneToOne: false
+            referencedRelation: "ml_predictions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_actual_results_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "ml_recommendations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_generated_reports: {
+        Row: {
+          content: Json | null
+          created_at: string
+          created_by: string | null
+          disclaimer: string
+          id: string
+          job_id: string
+          language: string
+          model_reference: string | null
+          organization_id: string | null
+          summary: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          disclaimer?: string
+          id?: string
+          job_id: string
+          language?: string
+          model_reference?: string | null
+          organization_id?: string | null
+          summary?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string
+          created_by?: string | null
+          disclaimer?: string
+          id?: string
+          job_id?: string
+          language?: string
+          model_reference?: string | null
+          organization_id?: string | null
+          summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_generated_reports_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_generated_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_model_evaluations: {
+        Row: {
+          backtest_from: string | null
+          backtest_to: string | null
+          beats_baseline: boolean | null
+          bias: number | null
+          created_at: string
+          details: Json | null
+          folds: number | null
+          id: string
+          interval_coverage: number | null
+          is_selected: boolean
+          job_id: string | null
+          location_id: string | null
+          mae: number | null
+          mape: number | null
+          model_id: string
+          organization_id: string | null
+          rmse: number | null
+          target_key: string
+          wape: number | null
+        }
+        Insert: {
+          backtest_from?: string | null
+          backtest_to?: string | null
+          beats_baseline?: boolean | null
+          bias?: number | null
+          created_at?: string
+          details?: Json | null
+          folds?: number | null
+          id?: string
+          interval_coverage?: number | null
+          is_selected?: boolean
+          job_id?: string | null
+          location_id?: string | null
+          mae?: number | null
+          mape?: number | null
+          model_id: string
+          organization_id?: string | null
+          rmse?: number | null
+          target_key: string
+          wape?: number | null
+        }
+        Update: {
+          backtest_from?: string | null
+          backtest_to?: string | null
+          beats_baseline?: boolean | null
+          bias?: number | null
+          created_at?: string
+          details?: Json | null
+          folds?: number | null
+          id?: string
+          interval_coverage?: number | null
+          is_selected?: boolean
+          job_id?: string | null
+          location_id?: string | null
+          mae?: number | null
+          mape?: number | null
+          model_id?: string
+          organization_id?: string | null
+          rmse?: number | null
+          target_key?: string
+          wape?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_model_evaluations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_model_evaluations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_model_evaluations_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_model_evaluations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_model_evaluations_target_key_fkey"
+            columns: ["target_key"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_targets"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      ml_models: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          is_baseline: boolean
+          key: string
+          kind: Database["public"]["Enums"]["ml_model_kind"]
+          notes: string | null
+          provider: string
+          reference: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          is_baseline?: boolean
+          key: string
+          kind: Database["public"]["Enums"]["ml_model_kind"]
+          notes?: string | null
+          provider?: string
+          reference?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          is_baseline?: boolean
+          key?: string
+          kind?: Database["public"]["Enums"]["ml_model_kind"]
+          notes?: string | null
+          provider?: string
+          reference?: string | null
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
+      ml_prediction_jobs: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          currency_code: string
+          filters: Json
+          finished_at: string | null
+          granularity: Database["public"]["Enums"]["ml_granularity"]
+          history_days: number | null
+          history_from: string | null
+          history_to: string | null
+          horizon_from: string
+          horizon_to: string
+          id: string
+          location_id: string | null
+          metrics: Json | null
+          observations_used: number | null
+          organization_id: string | null
+          point_of_sale_id: string | null
+          requested_at: string
+          requested_by: string | null
+          saved: boolean
+          selected_model_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["ml_job_status"]
+          status_message: string | null
+          target_key: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          currency_code?: string
+          filters?: Json
+          finished_at?: string | null
+          granularity?: Database["public"]["Enums"]["ml_granularity"]
+          history_days?: number | null
+          history_from?: string | null
+          history_to?: string | null
+          horizon_from: string
+          horizon_to: string
+          id?: string
+          location_id?: string | null
+          metrics?: Json | null
+          observations_used?: number | null
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          saved?: boolean
+          selected_model_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ml_job_status"]
+          status_message?: string | null
+          target_key: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          currency_code?: string
+          filters?: Json
+          finished_at?: string | null
+          granularity?: Database["public"]["Enums"]["ml_granularity"]
+          history_days?: number | null
+          history_from?: string | null
+          history_to?: string | null
+          horizon_from?: string
+          horizon_to?: string
+          id?: string
+          location_id?: string | null
+          metrics?: Json | null
+          observations_used?: number | null
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          requested_at?: string
+          requested_by?: string | null
+          saved?: boolean
+          selected_model_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["ml_job_status"]
+          status_message?: string | null
+          target_key?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_prediction_jobs_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_jobs_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_jobs_selected_model_id_fkey"
+            columns: ["selected_model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_jobs_target_key_fkey"
+            columns: ["target_key"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_targets"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
+      ml_prediction_targets: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          display_name_pt: string | null
+          family: Database["public"]["Enums"]["ml_target_family"]
+          id: string
+          is_active: boolean
+          key: string
+          min_history_days: number
+          min_observations: number
+          sort_order: number
+          supports_product_detail: boolean
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          display_name_pt?: string | null
+          family: Database["public"]["Enums"]["ml_target_family"]
+          id?: string
+          is_active?: boolean
+          key: string
+          min_history_days?: number
+          min_observations?: number
+          sort_order?: number
+          supports_product_detail?: boolean
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          display_name_pt?: string | null
+          family?: Database["public"]["Enums"]["ml_target_family"]
+          id?: string
+          is_active?: boolean
+          key?: string
+          min_history_days?: number
+          min_observations?: number
+          sort_order?: number
+          supports_product_detail?: boolean
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ml_predictions: {
+        Row: {
+          actual_value: number | null
+          category_id: string | null
+          confidence_level: number
+          created_at: string
+          currency_code: string | null
+          id: string
+          is_history: boolean
+          job_id: string
+          location_id: string | null
+          lower_bound: number | null
+          model_id: string | null
+          organization_id: string | null
+          period_end: string
+          period_start: string
+          point_of_sale_id: string | null
+          predicted_value: number | null
+          product_id: string | null
+          target_value: number | null
+          upper_bound: number | null
+        }
+        Insert: {
+          actual_value?: number | null
+          category_id?: string | null
+          confidence_level?: number
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          is_history?: boolean
+          job_id: string
+          location_id?: string | null
+          lower_bound?: number | null
+          model_id?: string | null
+          organization_id?: string | null
+          period_end: string
+          period_start: string
+          point_of_sale_id?: string | null
+          predicted_value?: number | null
+          product_id?: string | null
+          target_value?: number | null
+          upper_bound?: number | null
+        }
+        Update: {
+          actual_value?: number | null
+          category_id?: string | null
+          confidence_level?: number
+          created_at?: string
+          currency_code?: string | null
+          id?: string
+          is_history?: boolean
+          job_id?: string
+          location_id?: string | null
+          lower_bound?: number | null
+          model_id?: string | null
+          organization_id?: string | null
+          period_end?: string
+          period_start?: string
+          point_of_sale_id?: string | null
+          predicted_value?: number | null
+          product_id?: string | null
+          target_value?: number | null
+          upper_bound?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_predictions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_predictions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_recommendations: {
+        Row: {
+          action: Database["public"]["Enums"]["ml_recommendation_action"]
+          confidence: number | null
+          coverage_days: number | null
+          created_at: string
+          currency_code: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decided_quantity: number | null
+          decision: Database["public"]["Enums"]["ml_recommendation_decision"]
+          decision_comment: string | null
+          estimated_margin: number | null
+          forecast_demand: number | null
+          historical_sales: number | null
+          id: string
+          job_id: string
+          location_id: string | null
+          organization_id: string | null
+          overstock_risk: number | null
+          point_of_sale_id: string | null
+          product_id: string | null
+          product_name: string | null
+          reason: string | null
+          recommended_quantity: number | null
+          stock_in_transit: number | null
+          stock_on_hand: number | null
+          stockout_risk: number | null
+          updated_at: string
+        }
+        Insert: {
+          action?: Database["public"]["Enums"]["ml_recommendation_action"]
+          confidence?: number | null
+          coverage_days?: number | null
+          created_at?: string
+          currency_code?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_quantity?: number | null
+          decision?: Database["public"]["Enums"]["ml_recommendation_decision"]
+          decision_comment?: string | null
+          estimated_margin?: number | null
+          forecast_demand?: number | null
+          historical_sales?: number | null
+          id?: string
+          job_id: string
+          location_id?: string | null
+          organization_id?: string | null
+          overstock_risk?: number | null
+          point_of_sale_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          reason?: string | null
+          recommended_quantity?: number | null
+          stock_in_transit?: number | null
+          stock_on_hand?: number | null
+          stockout_risk?: number | null
+          updated_at?: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["ml_recommendation_action"]
+          confidence?: number | null
+          coverage_days?: number | null
+          created_at?: string
+          currency_code?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_quantity?: number | null
+          decision?: Database["public"]["Enums"]["ml_recommendation_decision"]
+          decision_comment?: string | null
+          estimated_margin?: number | null
+          forecast_demand?: number | null
+          historical_sales?: number | null
+          id?: string
+          job_id?: string
+          location_id?: string | null
+          organization_id?: string | null
+          overstock_risk?: number | null
+          point_of_sale_id?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          reason?: string | null
+          recommended_quantity?: number | null
+          stock_in_transit?: number | null
+          stock_on_hand?: number | null
+          stockout_risk?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_recommendations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_recommendations_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_recommendations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_recommendations_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_recommendations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ml_scenarios: {
+        Row: {
+          assumptions: Json
+          base_job_id: string | null
+          compare_job_id: string | null
+          created_at: string
+          created_by: string | null
+          currency_code: string | null
+          description: string | null
+          id: string
+          location_id: string | null
+          name: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assumptions?: Json
+          base_job_id?: string | null
+          compare_job_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          location_id?: string | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assumptions?: Json
+          base_job_id?: string | null
+          compare_job_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency_code?: string | null
+          description?: string | null
+          id?: string
+          location_id?: string | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_scenarios_base_job_id_fkey"
+            columns: ["base_job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_scenarios_compare_job_id_fkey"
+            columns: ["compare_job_id"]
+            isOneToOne: false
+            referencedRelation: "ml_prediction_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_scenarios_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_scenarios_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       operation_checklist_items: {
         Row: {
           created_at: string
@@ -4246,6 +5020,41 @@ export type Database = {
         | "baja_confianza"
         | "error"
       invoice_field_source: "texto" | "xml" | "ocr" | "ia" | "usuario"
+      ml_granularity: "diario" | "semanal" | "mensual"
+      ml_job_status:
+        | "pendiente"
+        | "en_cola"
+        | "preparando_datos"
+        | "entrenando"
+        | "evaluando"
+        | "generando_informe"
+        | "completado"
+        | "datos_insuficientes"
+        | "error"
+        | "cancelado"
+      ml_model_kind:
+        | "series_temporales"
+        | "regresion"
+        | "gradient_boosting"
+        | "baseline"
+        | "clustering"
+        | "anomalias"
+        | "asociacion"
+        | "generativo"
+      ml_recommendation_action:
+        | "aumentar_stock"
+        | "mantener"
+        | "reducir"
+        | "transferir"
+        | "promocion"
+        | "revisar_manual"
+      ml_recommendation_decision:
+        | "pendiente"
+        | "aprobada"
+        | "descartada"
+        | "ajustada"
+        | "reposicion_solicitada"
+      ml_target_family: "ventas" | "costos" | "productos"
       operational_status:
         | "planificado"
         | "preparacion"
@@ -4512,6 +5321,45 @@ export const Constants = {
         "error",
       ],
       invoice_field_source: ["texto", "xml", "ocr", "ia", "usuario"],
+      ml_granularity: ["diario", "semanal", "mensual"],
+      ml_job_status: [
+        "pendiente",
+        "en_cola",
+        "preparando_datos",
+        "entrenando",
+        "evaluando",
+        "generando_informe",
+        "completado",
+        "datos_insuficientes",
+        "error",
+        "cancelado",
+      ],
+      ml_model_kind: [
+        "series_temporales",
+        "regresion",
+        "gradient_boosting",
+        "baseline",
+        "clustering",
+        "anomalias",
+        "asociacion",
+        "generativo",
+      ],
+      ml_recommendation_action: [
+        "aumentar_stock",
+        "mantener",
+        "reducir",
+        "transferir",
+        "promocion",
+        "revisar_manual",
+      ],
+      ml_recommendation_decision: [
+        "pendiente",
+        "aprobada",
+        "descartada",
+        "ajustada",
+        "reposicion_solicitada",
+      ],
+      ml_target_family: ["ventas", "costos", "productos"],
       operational_status: [
         "planificado",
         "preparacion",
