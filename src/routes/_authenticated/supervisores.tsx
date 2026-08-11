@@ -9,20 +9,22 @@ export const Route = createFileRoute("/_authenticated/supervisores")({
   component: SupervisoresLayout,
 });
 
-type MenuItem = { to: string; label: string; exact?: boolean };
+type MenuItem = { to: string; label: string; exact?: boolean; group: string };
 
 export const SUPERVISOR_MENU: MenuItem[] = [
-  { to: "/supervisores", label: "Resumen del parque", exact: true },
-  { to: "/supervisores/operativo", label: "Control operativo" },
-  { to: "/supervisores/puntos-venta", label: "Control de puntos de venta" },
-  { to: "/supervisores/cajas", label: "Control de cajas" },
-  { to: "/supervisores/ventas", label: "Control de ventas" },
-  { to: "/supervisores/inventario", label: "Control de inventario" },
-  { to: "/supervisores/alertas", label: "Alertas e incidentes" },
-  { to: "/supervisores/cierre", label: "Cierre diario" },
-  { to: "/supervisores/predicciones", label: "Predicciones con IA" },
-  { to: "/supervisores/reportes", label: "Reportes" },
+  { to: "/supervisores", label: "Resumen del parque", exact: true, group: "General" },
+  { to: "/supervisores/operativo", label: "Control operativo", group: "Controles" },
+  { to: "/supervisores/puntos-venta", label: "Control de puntos de venta", group: "Controles" },
+  { to: "/supervisores/cajas", label: "Control de cajas", group: "Controles" },
+  { to: "/supervisores/ventas", label: "Control de ventas", group: "Controles" },
+  { to: "/supervisores/inventario", label: "Control de inventario", group: "Controles" },
+  { to: "/supervisores/alertas", label: "Alertas e incidentes", group: "Seguimiento" },
+  { to: "/supervisores/cierre", label: "Cierre diario", group: "Seguimiento" },
+  { to: "/supervisores/predicciones", label: "Predicciones con IA", group: "Análisis" },
+  { to: "/supervisores/reportes", label: "Reportes", group: "Análisis" },
 ];
+
+const GROUPS = ["General", "Controles", "Seguimiento", "Análisis"];
 
 function SupervisoresLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -69,33 +71,59 @@ function SupervisoresLayout() {
         }
       />
 
-      <div className="flex flex-wrap gap-2">
-        {SUPERVISOR_MENU.map((item) => {
-          const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
-          return (
-            <Link
-              key={item.to}
-              to={item.to as never}
-              className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
-                active
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
-              )}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </div>
-
       {!activeLocationId && (
         <p className="rounded-xl border border-dashed border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Elegí un parque para ver la información de supervisión.
         </p>
       )}
 
-      {activeLocation && <Outlet />}
+      {activeLocation && (
+        <div className="grid gap-6 lg:grid-cols-[236px_minmax(0,1fr)]">
+          <aside className="lg:sticky lg:top-4 lg:self-start">
+            <nav aria-label="Secciones de supervisión" className="rounded-xl border border-border bg-card p-2">
+              {GROUPS.map((group) => {
+                const items = SUPERVISOR_MENU.filter((i) => i.group === group);
+                if (items.length === 0) return null;
+                return (
+                  <div key={group} className="mb-2 last:mb-0">
+                    <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      {group}
+                    </p>
+                    <ul className="space-y-0.5">
+                      {items.map((item) => {
+                        const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+                        return (
+                          <li key={item.to}>
+                            <Link
+                              to={item.to as never}
+                              className={cn(
+                                "block rounded-lg px-3 py-2 text-[13px] font-medium transition-colors",
+                                active
+                                  ? "bg-primary text-primary-foreground"
+                                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                              )}
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <section className="min-w-0 space-y-4">
+            <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border pb-3">
+              <h2 className="text-lg font-semibold">{current?.label ?? "Supervisores"}</h2>
+              <span className="text-xs text-muted-foreground">{activeLocation.name}</span>
+            </header>
+            <Outlet />
+          </section>
+        </div>
+      )}
     </div>
   );
 }
