@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 import { StatCard } from "@/components/ftg/StatCard";
+import { SyncDayButton } from "@/components/ftg/sync/SyncDayButton";
+import { useDaySync } from "@/hooks/useDaySync";
 import { EmptyState, Loading, Panel } from "@/components/ftg/supervision/SupervisionShell";
 import { useScope } from "@/hooks/useScope";
 import { useSupervision } from "@/hooks/useSupervision";
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/_authenticated/supervisores/cierre")({
 function CierreDiario() {
   const { activeLocationId, activeLocation } = useScope();
   const { data, isLoading } = useSupervision(activeLocationId);
+  const { pendingCount } = useDaySync();
   if (isLoading || !data) return <Loading />;
   const currency = activeLocation?.currency_code ?? "ARS";
 
@@ -71,6 +74,18 @@ function CierreDiario() {
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+        <div>
+          <p className="text-sm font-medium">Sincronización de la jornada</p>
+          <p className="text-xs text-muted-foreground">
+            {pendingCount > 0
+              ? `${formatNumber(pendingCount)} operaciones locales sin subir. Sincronizá antes de cerrar el día.`
+              : "Todas las operaciones del día están sincronizadas con la base central."}
+          </p>
+        </div>
+        <SyncDayButton size="sm" />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Ventas del día" value={formatMoney(ventas, currency)} />
         <StatCard label="Ingresos por ticket" value={formatMoney(ingresosTicket, currency)} />

@@ -1,4 +1,4 @@
-import { Bell, CloudOff, CloudUpload, HelpCircle, LogOut, Menu, RefreshCw, Wifi } from "lucide-react";
+import { Bell, CloudOff, CloudUpload, HelpCircle, LogOut, Menu, Wifi } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -19,17 +19,18 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/hooks/useI18n";
-import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { useScope } from "@/hooks/useScope";
 import { relativeTime } from "@/lib/ftg/format";
 import { LANGUAGES } from "@/lib/ftg/i18n";
 import { CartDock } from "./CartDock";
+import { SyncDayButton } from "@/components/ftg/sync/SyncDayButton";
+import { useDaySync } from "@/hooks/useDaySync";
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { profile, roles, user, signOut } = useAuth();
   const { locations, activeLocationId, setActiveLocation, online, lastSyncAt } =
     useScope();
-  const { pendingCount, syncing, sync } = useOfflineQueue();
+  const { pendingCount } = useDaySync();
   const { t, tRole, language, setLanguage } = useI18n();
 
   const initials = (profile?.full_name || user?.email || "?").slice(0, 2).toUpperCase();
@@ -67,17 +68,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         </span>
 
         {pendingCount > 0 ? (
-          <Button
-            variant="ghost"
-            className="h-9 gap-1.5 rounded-full bg-warning/15 px-3 text-xs font-medium text-warning hover:bg-warning/25"
-            onClick={() => void sync()}
-            disabled={syncing}
-          >
-            <RefreshCw className={syncing ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
-            {syncing
-              ? t("top.syncing")
-              : `${pendingCount} ${pendingCount === 1 ? t("top.pendingOne") : t("top.pendingMany")}`}
-          </Button>
+          <SyncDayButton size="sm" variant="secondary" className="rounded-full" />
         ) : (
           <span className="hidden items-center gap-1.5 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground sm:flex">
             <CloudUpload className="h-3.5 w-3.5" />

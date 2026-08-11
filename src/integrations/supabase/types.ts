@@ -480,6 +480,7 @@ export type Database = {
           difference_amount: number | null
           expected_amount: number | null
           id: string
+          idempotency_key: string | null
           location_id: string
           notes: string | null
           opened_at: string
@@ -500,6 +501,7 @@ export type Database = {
           difference_amount?: number | null
           expected_amount?: number | null
           id?: string
+          idempotency_key?: string | null
           location_id: string
           notes?: string | null
           opened_at?: string
@@ -520,6 +522,7 @@ export type Database = {
           difference_amount?: number | null
           expected_amount?: number | null
           id?: string
+          idempotency_key?: string | null
           location_id?: string
           notes?: string | null
           opened_at?: string
@@ -1445,6 +1448,7 @@ export type Database = {
           document_number: string | null
           due_on: string | null
           id: string
+          idempotency_key: string | null
           issued_on: string
           kind: Database["public"]["Enums"]["finance_doc_kind"]
           location_id: string | null
@@ -1467,6 +1471,7 @@ export type Database = {
           document_number?: string | null
           due_on?: string | null
           id?: string
+          idempotency_key?: string | null
           issued_on?: string
           kind: Database["public"]["Enums"]["finance_doc_kind"]
           location_id?: string | null
@@ -1489,6 +1494,7 @@ export type Database = {
           document_number?: string | null
           due_on?: string | null
           id?: string
+          idempotency_key?: string | null
           issued_on?: string
           kind?: Database["public"]["Enums"]["finance_doc_kind"]
           location_id?: string | null
@@ -3129,6 +3135,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          idempotency_key: string | null
           location_id: string
           operation_day_id: string | null
           organization_id: string
@@ -3147,6 +3154,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           location_id: string
           operation_day_id?: string | null
           organization_id: string
@@ -3165,6 +3173,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          idempotency_key?: string | null
           location_id?: string
           operation_day_id?: string | null
           organization_id?: string
@@ -3543,6 +3552,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           id: string
+          idempotency_key: string | null
           location_id: string | null
           signed_at: string
           updated_at: string
@@ -3556,6 +3566,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           signed_at?: string
           updated_at?: string
@@ -3569,6 +3580,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           signed_at?: string
           updated_at?: string
@@ -3592,6 +3604,7 @@ export type Database = {
           event_id: string | null
           has_consent: boolean
           id: string
+          idempotency_key: string | null
           image_url: string
           location_id: string
           notes: string | null
@@ -3610,6 +3623,7 @@ export type Database = {
           event_id?: string | null
           has_consent?: boolean
           id?: string
+          idempotency_key?: string | null
           image_url: string
           location_id: string
           notes?: string | null
@@ -3628,6 +3642,7 @@ export type Database = {
           event_id?: string | null
           has_consent?: boolean
           id?: string
+          idempotency_key?: string | null
           image_url?: string
           location_id?: string
           notes?: string | null
@@ -4404,6 +4419,7 @@ export type Database = {
           created_at: string
           currency_code: string
           id: string
+          idempotency_key: string | null
           location_id: string | null
           method_name: string
           payment_method_id: string | null
@@ -4418,6 +4434,7 @@ export type Database = {
           created_at?: string
           currency_code: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           method_name: string
           payment_method_id?: string | null
@@ -4432,6 +4449,7 @@ export type Database = {
           created_at?: string
           currency_code?: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           method_name?: string
           payment_method_id?: string | null
@@ -4741,6 +4759,7 @@ export type Database = {
           created_by: string | null
           device_id: string | null
           id: string
+          idempotency_key: string | null
           kind: Database["public"]["Enums"]["stock_movement_kind"]
           location_id: string
           organization_id: string
@@ -4757,6 +4776,7 @@ export type Database = {
           created_by?: string | null
           device_id?: string | null
           id?: string
+          idempotency_key?: string | null
           kind: Database["public"]["Enums"]["stock_movement_kind"]
           location_id: string
           organization_id: string
@@ -4773,6 +4793,7 @@ export type Database = {
           created_by?: string | null
           device_id?: string | null
           id?: string
+          idempotency_key?: string | null
           kind?: Database["public"]["Enums"]["stock_movement_kind"]
           location_id?: string
           organization_id?: string
@@ -4892,6 +4913,278 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_batch_items: {
+        Row: {
+          attempts: number
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          error_code: string | null
+          error_message: string | null
+          id: string
+          idempotency_key: string
+          local_created_at: string | null
+          local_sequence: number | null
+          server_confirmed_at: string | null
+          sync_batch_id: string
+          sync_status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key: string
+          local_created_at?: string | null
+          local_sequence?: number | null
+          server_confirmed_at?: string | null
+          sync_batch_id: string
+          sync_status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string
+          local_created_at?: string | null
+          local_sequence?: number | null
+          server_confirmed_at?: string | null
+          sync_batch_id?: string
+          sync_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_batch_items_sync_batch_id_fkey"
+            columns: ["sync_batch_id"]
+            isOneToOne: false
+            referencedRelation: "sync_batches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_batches: {
+        Row: {
+          business_date: string
+          cash_session_id: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string | null
+          device_id: string | null
+          device_identifier: string | null
+          first_sequence: number | null
+          id: string
+          integrity_hash: string | null
+          last_sequence: number | null
+          location_id: string | null
+          operation_count: number
+          organization_id: string | null
+          point_of_sale_id: string | null
+          started_at: string | null
+          status: string
+          summary: Json
+          totals_by_currency: Json
+        }
+        Insert: {
+          business_date?: string
+          cash_session_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_identifier?: string | null
+          first_sequence?: number | null
+          id?: string
+          integrity_hash?: string | null
+          last_sequence?: number | null
+          location_id?: string | null
+          operation_count?: number
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json
+          totals_by_currency?: Json
+        }
+        Update: {
+          business_date?: string
+          cash_session_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          device_id?: string | null
+          device_identifier?: string | null
+          first_sequence?: number | null
+          id?: string
+          integrity_hash?: string | null
+          last_sequence?: number | null
+          location_id?: string | null
+          operation_count?: number
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          started_at?: string | null
+          status?: string
+          summary?: Json
+          totals_by_currency?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_batches_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_batches_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "sync_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_batches_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_batches_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_batches_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_conflicts: {
+        Row: {
+          conflict_type: string
+          created_at: string
+          id: string
+          local_version: Json | null
+          resolution_notes: string | null
+          resolution_status: string
+          resolved_at: string | null
+          resolved_by: string | null
+          server_version: Json | null
+          sync_batch_item_id: string | null
+        }
+        Insert: {
+          conflict_type: string
+          created_at?: string
+          id?: string
+          local_version?: Json | null
+          resolution_notes?: string | null
+          resolution_status?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          server_version?: Json | null
+          sync_batch_item_id?: string | null
+        }
+        Update: {
+          conflict_type?: string
+          created_at?: string
+          id?: string
+          local_version?: Json | null
+          resolution_notes?: string | null
+          resolution_status?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          server_version?: Json | null
+          sync_batch_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_conflicts_sync_batch_item_id_fkey"
+            columns: ["sync_batch_item_id"]
+            isOneToOne: false
+            referencedRelation: "sync_batch_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sync_devices: {
+        Row: {
+          active: boolean
+          created_at: string
+          device_identifier: string
+          id: string
+          last_seen_at: string | null
+          last_sync_at: string | null
+          location_id: string | null
+          name: string | null
+          organization_id: string | null
+          point_of_sale_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          device_identifier: string
+          id?: string
+          last_seen_at?: string | null
+          last_sync_at?: string | null
+          location_id?: string | null
+          name?: string | null
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          device_identifier?: string
+          id?: string
+          last_seen_at?: string | null
+          last_sync_at?: string | null
+          location_id?: string | null
+          name?: string | null
+          organization_id?: string | null
+          point_of_sale_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_devices_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_devices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_devices_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
             referencedColumns: ["id"]
           },
         ]
