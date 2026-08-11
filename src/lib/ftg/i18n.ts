@@ -14,7 +14,7 @@ const es: Dict = {
   "nav.pos": "Punto de venta",
   "nav.fotografias": "Fotografías",
   "nav.operaciones": "Operaciones",
-  "nav.supervisores": "Supervisores",
+  "nav.supervisores": "Supervisores (Ex Ges-Pro)",
   "nav.inventario": "Inventario",
   "nav.administracion": "Administración",
   "nav.clientes": "Clientes",
