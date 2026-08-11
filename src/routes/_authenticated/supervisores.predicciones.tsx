@@ -8,7 +8,6 @@ import {
   Area,
   CartesianGrid,
   ComposedChart,
-  defs,
   Legend,
   Line,
   ResponsiveContainer,
