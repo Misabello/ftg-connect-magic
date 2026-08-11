@@ -550,10 +550,12 @@ export function PosWorkspace({
   const mercadoPagoMethodId =
     methods.find((m) => m.code === "QR_MP")?.id ?? methods.find((m) => m.kind === "qr")?.id ?? null;
   const checkoutHint = !session
-    ? "Abrí la caja para poder cobrar."
+    ? online
+      ? `Al cobrar se abrirá la caja de ${activePos?.name ?? "este puesto"} y la venta quedará asentada ahí.`
+      : "Sin conexión: abrí la caja mientras tengas señal para poder cobrar."
     : missingPhotoCode
       ? "Completá el código de foto en los productos que lo requieren."
-      : null;
+      : `La venta se registra en ${activePos?.name ?? "este punto de venta"}.`;
 
   return (
     <div className="space-y-6">
@@ -629,7 +631,7 @@ export function PosWorkspace({
                           </p>
                         </div>
                         <div className="flex shrink-0 gap-1.5">
-                          <Button size="sm" onClick={() => addMagicItemToCart(item)} disabled={!session}>
+                          <Button size="sm" onClick={() => addMagicItemToCart(item)}>
                             <Send className="mr-1.5 h-3.5 w-3.5" /> Al carrito
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => removeMagicItem(item.id)}>
@@ -654,7 +656,7 @@ export function PosWorkspace({
               activeCategory={category}
               onCategoryChange={setCategory}
               onSelect={addProduct}
-              disabled={!session}
+              disabled={!activePos}
             />
 
             <CartPanel
@@ -677,7 +679,7 @@ export function PosWorkspace({
               }
               onClear={() => setLines([])}
               onCheckout={() => setCheckoutOpen(true)}
-              canCheckout={lines.length > 0 && !!session && !missingPhotoCode}
+              canCheckout={lines.length > 0 && !missingPhotoCode && (!!session || online)}
               checkoutHint={checkoutHint}
             />
           </div>
