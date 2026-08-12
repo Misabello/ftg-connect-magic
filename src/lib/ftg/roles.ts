@@ -80,13 +80,10 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
 };
 
 export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
-  const result = new Set<ModuleKey>(["inicio"]);
-  for (const role of roles) {
-    const mods = ROLE_MODULES[role];
-    if (mods === "*") return new Set<ModuleKey>(ALL_MODULES);
-    mods.forEach((m) => result.add(m));
-  }
-  return result;
+  // Etapa transitoria: todos los módulos quedan visibles para cualquier usuario
+  // autenticado hasta que se definan los permisos por rol.
+  void roles;
+  return new Set<ModuleKey>(ALL_MODULES);
 }
 /** Roles principales de la plataforma (Etapa 1). */
 export const CORE_ROLES: AppRole[] = ["admin", "management", "supervisor", "executive", "seller"];
