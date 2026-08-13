@@ -20,13 +20,16 @@ import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedInventarioRouteImport } from './routes/_authenticated/inventario'
 import { Route as AuthenticatedOperacionesRouteImport } from './routes/_authenticated/operaciones'
 import { Route as AuthenticatedPosRouteImport } from './routes/_authenticated/pos'
+import { Route as AuthenticatedProveedoresRouteImport } from './routes/_authenticated/proveedores'
 import { Route as AuthenticatedReportesRouteImport } from './routes/_authenticated/reportes'
 import { Route as AuthenticatedSincronizacionRouteImport } from './routes/_authenticated/sincronizacion'
 import { Route as AuthenticatedSupervisoresRouteImport } from './routes/_authenticated/supervisores'
 import { Route as AuthenticatedAdministracionIndexRouteImport } from './routes/_authenticated/administracion.index'
 import { Route as AuthenticatedAdministracionCobrarRouteImport } from './routes/_authenticated/administracion.cobrar'
 import { Route as AuthenticatedAdministracionEeccRouteImport } from './routes/_authenticated/administracion.eecc'
+import { Route as AuthenticatedAdministracionMinutasRouteImport } from './routes/_authenticated/administracion.minutas'
 import { Route as AuthenticatedAdministracionPagarRouteImport } from './routes/_authenticated/administracion.pagar'
+import { Route as AuthenticatedAdministracionPlanDeCuentasRouteImport } from './routes/_authenticated/administracion.plan-de-cuentas'
 import { Route as AuthenticatedAdministracionReportesRouteImport } from './routes/_authenticated/administracion.reportes'
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
 import { Route as AuthenticatedConfiguracionAuditoriaRouteImport } from './routes/_authenticated/configuracion.auditoria'
@@ -46,8 +49,10 @@ import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './rou
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
 import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
+import { Route as AuthenticatedAdministracionAsientosNuevoRouteImport } from './routes/_authenticated/administracion.asientos.nuevo'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
 import { Route as AuthenticatedAdministracionEeccDiarioRouteImport } from './routes/_authenticated/administracion.eecc.diario'
+import { Route as AuthenticatedAdministracionEeccFlujoFondosRouteImport } from './routes/_authenticated/administracion.eecc.flujo-fondos'
 import { Route as AuthenticatedAdministracionEeccMayorRouteImport } from './routes/_authenticated/administracion.eecc.mayor'
 import { Route as AuthenticatedAdministracionEeccResultadosRouteImport } from './routes/_authenticated/administracion.eecc.resultados'
 import { Route as AuthenticatedAdministracionEeccSituacionRouteImport } from './routes/_authenticated/administracion.eecc.situacion'
@@ -117,6 +122,12 @@ const AuthenticatedPosRoute = AuthenticatedPosRouteImport.update({
   path: '/pos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProveedoresRoute =
+  AuthenticatedProveedoresRouteImport.update({
+    id: '/proveedores',
+    path: '/proveedores',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReportesRoute = AuthenticatedReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -152,10 +163,22 @@ const AuthenticatedAdministracionEeccRoute =
     path: '/eecc',
     getParentRoute: () => AuthenticatedAdministracionRoute,
   } as any)
+const AuthenticatedAdministracionMinutasRoute =
+  AuthenticatedAdministracionMinutasRouteImport.update({
+    id: '/minutas',
+    path: '/minutas',
+    getParentRoute: () => AuthenticatedAdministracionRoute,
+  } as any)
 const AuthenticatedAdministracionPagarRoute =
   AuthenticatedAdministracionPagarRouteImport.update({
     id: '/pagar',
     path: '/pagar',
+    getParentRoute: () => AuthenticatedAdministracionRoute,
+  } as any)
+const AuthenticatedAdministracionPlanDeCuentasRoute =
+  AuthenticatedAdministracionPlanDeCuentasRouteImport.update({
+    id: '/plan-de-cuentas',
+    path: '/plan-de-cuentas',
     getParentRoute: () => AuthenticatedAdministracionRoute,
   } as any)
 const AuthenticatedAdministracionReportesRoute =
@@ -271,6 +294,12 @@ const AuthenticatedSupervisoresVentasRoute =
     path: '/ventas',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
+const AuthenticatedAdministracionAsientosNuevoRoute =
+  AuthenticatedAdministracionAsientosNuevoRouteImport.update({
+    id: '/asientos/nuevo',
+    path: '/asientos/nuevo',
+    getParentRoute: () => AuthenticatedAdministracionRoute,
+  } as any)
 const AuthenticatedAdministracionEeccIndexRoute =
   AuthenticatedAdministracionEeccIndexRouteImport.update({
     id: '/',
@@ -281,6 +310,12 @@ const AuthenticatedAdministracionEeccDiarioRoute =
   AuthenticatedAdministracionEeccDiarioRouteImport.update({
     id: '/diario',
     path: '/diario',
+    getParentRoute: () => AuthenticatedAdministracionEeccRoute,
+  } as any)
+const AuthenticatedAdministracionEeccFlujoFondosRoute =
+  AuthenticatedAdministracionEeccFlujoFondosRouteImport.update({
+    id: '/flujo-fondos',
+    path: '/flujo-fondos',
     getParentRoute: () => AuthenticatedAdministracionEeccRoute,
   } as any)
 const AuthenticatedAdministracionEeccMayorRoute =
@@ -354,12 +389,15 @@ export interface FileRoutesByFullPath {
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
+  '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
   '/supervisores': typeof AuthenticatedSupervisoresRouteWithChildren
   '/administracion/cobrar': typeof AuthenticatedAdministracionCobrarRoute
   '/administracion/eecc': typeof AuthenticatedAdministracionEeccRouteWithChildren
+  '/administracion/minutas': typeof AuthenticatedAdministracionMinutasRoute
   '/administracion/pagar': typeof AuthenticatedAdministracionPagarRoute
+  '/administracion/plan-de-cuentas': typeof AuthenticatedAdministracionPlanDeCuentasRoute
   '/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
@@ -380,7 +418,9 @@ export interface FileRoutesByFullPath {
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
@@ -402,10 +442,13 @@ export interface FileRoutesByTo {
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
   '/pos': typeof AuthenticatedPosRoute
+  '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
   '/administracion/cobrar': typeof AuthenticatedAdministracionCobrarRoute
+  '/administracion/minutas': typeof AuthenticatedAdministracionMinutasRoute
   '/administracion/pagar': typeof AuthenticatedAdministracionPagarRoute
+  '/administracion/plan-de-cuentas': typeof AuthenticatedAdministracionPlanDeCuentasRoute
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
@@ -425,7 +468,9 @@ export interface FileRoutesByTo {
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
+  '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
@@ -451,12 +496,15 @@ export interface FileRoutesById {
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
   '/_authenticated/pos': typeof AuthenticatedPosRoute
+  '/_authenticated/proveedores': typeof AuthenticatedProveedoresRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/sincronizacion': typeof AuthenticatedSincronizacionRoute
   '/_authenticated/supervisores': typeof AuthenticatedSupervisoresRouteWithChildren
   '/_authenticated/administracion/cobrar': typeof AuthenticatedAdministracionCobrarRoute
   '/_authenticated/administracion/eecc': typeof AuthenticatedAdministracionEeccRouteWithChildren
+  '/_authenticated/administracion/minutas': typeof AuthenticatedAdministracionMinutasRoute
   '/_authenticated/administracion/pagar': typeof AuthenticatedAdministracionPagarRoute
+  '/_authenticated/administracion/plan-de-cuentas': typeof AuthenticatedAdministracionPlanDeCuentasRoute
   '/_authenticated/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/_authenticated/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
@@ -477,7 +525,9 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
+  '/_authenticated/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
   '/_authenticated/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
+  '/_authenticated/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/_authenticated/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/_authenticated/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/_authenticated/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
@@ -503,12 +553,15 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/operaciones'
     | '/pos'
+    | '/proveedores'
     | '/reportes'
     | '/sincronizacion'
     | '/supervisores'
     | '/administracion/cobrar'
     | '/administracion/eecc'
+    | '/administracion/minutas'
     | '/administracion/pagar'
+    | '/administracion/plan-de-cuentas'
     | '/administracion/reportes'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
@@ -529,7 +582,9 @@ export interface FileRouteTypes {
     | '/configuracion/'
     | '/sedes/'
     | '/supervisores/'
+    | '/administracion/asientos/nuevo'
     | '/administracion/eecc/diario'
+    | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
@@ -551,10 +606,13 @@ export interface FileRouteTypes {
     | '/inventario'
     | '/operaciones'
     | '/pos'
+    | '/proveedores'
     | '/reportes'
     | '/sincronizacion'
     | '/administracion/cobrar'
+    | '/administracion/minutas'
     | '/administracion/pagar'
+    | '/administracion/plan-de-cuentas'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
     | '/configuracion/parametros'
@@ -574,7 +632,9 @@ export interface FileRouteTypes {
     | '/configuracion'
     | '/sedes'
     | '/supervisores'
+    | '/administracion/asientos/nuevo'
     | '/administracion/eecc/diario'
+    | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
@@ -599,12 +659,15 @@ export interface FileRouteTypes {
     | '/_authenticated/inventario'
     | '/_authenticated/operaciones'
     | '/_authenticated/pos'
+    | '/_authenticated/proveedores'
     | '/_authenticated/reportes'
     | '/_authenticated/sincronizacion'
     | '/_authenticated/supervisores'
     | '/_authenticated/administracion/cobrar'
     | '/_authenticated/administracion/eecc'
+    | '/_authenticated/administracion/minutas'
     | '/_authenticated/administracion/pagar'
+    | '/_authenticated/administracion/plan-de-cuentas'
     | '/_authenticated/administracion/reportes'
     | '/_authenticated/configuracion/auditoria'
     | '/_authenticated/configuracion/empleados'
@@ -625,7 +688,9 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
+    | '/_authenticated/administracion/asientos/nuevo'
     | '/_authenticated/administracion/eecc/diario'
+    | '/_authenticated/administracion/eecc/flujo-fondos'
     | '/_authenticated/administracion/eecc/mayor'
     | '/_authenticated/administracion/eecc/resultados'
     | '/_authenticated/administracion/eecc/situacion'
@@ -726,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/proveedores': {
+      id: '/_authenticated/proveedores'
+      path: '/proveedores'
+      fullPath: '/proveedores'
+      preLoaderRoute: typeof AuthenticatedProveedoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reportes': {
       id: '/_authenticated/reportes'
       path: '/reportes'
@@ -768,11 +840,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionEeccRouteImport
       parentRoute: typeof AuthenticatedAdministracionRoute
     }
+    '/_authenticated/administracion/minutas': {
+      id: '/_authenticated/administracion/minutas'
+      path: '/minutas'
+      fullPath: '/administracion/minutas'
+      preLoaderRoute: typeof AuthenticatedAdministracionMinutasRouteImport
+      parentRoute: typeof AuthenticatedAdministracionRoute
+    }
     '/_authenticated/administracion/pagar': {
       id: '/_authenticated/administracion/pagar'
       path: '/pagar'
       fullPath: '/administracion/pagar'
       preLoaderRoute: typeof AuthenticatedAdministracionPagarRouteImport
+      parentRoute: typeof AuthenticatedAdministracionRoute
+    }
+    '/_authenticated/administracion/plan-de-cuentas': {
+      id: '/_authenticated/administracion/plan-de-cuentas'
+      path: '/plan-de-cuentas'
+      fullPath: '/administracion/plan-de-cuentas'
+      preLoaderRoute: typeof AuthenticatedAdministracionPlanDeCuentasRouteImport
       parentRoute: typeof AuthenticatedAdministracionRoute
     }
     '/_authenticated/administracion/reportes': {
@@ -908,6 +994,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupervisoresVentasRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
+    '/_authenticated/administracion/asientos/nuevo': {
+      id: '/_authenticated/administracion/asientos/nuevo'
+      path: '/asientos/nuevo'
+      fullPath: '/administracion/asientos/nuevo'
+      preLoaderRoute: typeof AuthenticatedAdministracionAsientosNuevoRouteImport
+      parentRoute: typeof AuthenticatedAdministracionRoute
+    }
     '/_authenticated/administracion/eecc/': {
       id: '/_authenticated/administracion/eecc/'
       path: '/'
@@ -920,6 +1013,13 @@ declare module '@tanstack/react-router' {
       path: '/diario'
       fullPath: '/administracion/eecc/diario'
       preLoaderRoute: typeof AuthenticatedAdministracionEeccDiarioRouteImport
+      parentRoute: typeof AuthenticatedAdministracionEeccRoute
+    }
+    '/_authenticated/administracion/eecc/flujo-fondos': {
+      id: '/_authenticated/administracion/eecc/flujo-fondos'
+      path: '/flujo-fondos'
+      fullPath: '/administracion/eecc/flujo-fondos'
+      preLoaderRoute: typeof AuthenticatedAdministracionEeccFlujoFondosRouteImport
       parentRoute: typeof AuthenticatedAdministracionEeccRoute
     }
     '/_authenticated/administracion/eecc/mayor': {
@@ -997,6 +1097,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdministracionEeccRouteChildren {
   AuthenticatedAdministracionEeccDiarioRoute: typeof AuthenticatedAdministracionEeccDiarioRoute
+  AuthenticatedAdministracionEeccFlujoFondosRoute: typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   AuthenticatedAdministracionEeccMayorRoute: typeof AuthenticatedAdministracionEeccMayorRoute
   AuthenticatedAdministracionEeccResultadosRoute: typeof AuthenticatedAdministracionEeccResultadosRoute
   AuthenticatedAdministracionEeccSituacionRoute: typeof AuthenticatedAdministracionEeccSituacionRoute
@@ -1007,6 +1108,8 @@ const AuthenticatedAdministracionEeccRouteChildren: AuthenticatedAdministracionE
   {
     AuthenticatedAdministracionEeccDiarioRoute:
       AuthenticatedAdministracionEeccDiarioRoute,
+    AuthenticatedAdministracionEeccFlujoFondosRoute:
+      AuthenticatedAdministracionEeccFlujoFondosRoute,
     AuthenticatedAdministracionEeccMayorRoute:
       AuthenticatedAdministracionEeccMayorRoute,
     AuthenticatedAdministracionEeccResultadosRoute:
@@ -1046,9 +1149,12 @@ const AuthenticatedAdministracionReportesRouteWithChildren =
 interface AuthenticatedAdministracionRouteChildren {
   AuthenticatedAdministracionCobrarRoute: typeof AuthenticatedAdministracionCobrarRoute
   AuthenticatedAdministracionEeccRoute: typeof AuthenticatedAdministracionEeccRouteWithChildren
+  AuthenticatedAdministracionMinutasRoute: typeof AuthenticatedAdministracionMinutasRoute
   AuthenticatedAdministracionPagarRoute: typeof AuthenticatedAdministracionPagarRoute
+  AuthenticatedAdministracionPlanDeCuentasRoute: typeof AuthenticatedAdministracionPlanDeCuentasRoute
   AuthenticatedAdministracionReportesRoute: typeof AuthenticatedAdministracionReportesRouteWithChildren
   AuthenticatedAdministracionIndexRoute: typeof AuthenticatedAdministracionIndexRoute
+  AuthenticatedAdministracionAsientosNuevoRoute: typeof AuthenticatedAdministracionAsientosNuevoRoute
 }
 
 const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRouteChildren =
@@ -1057,12 +1163,18 @@ const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRoute
       AuthenticatedAdministracionCobrarRoute,
     AuthenticatedAdministracionEeccRoute:
       AuthenticatedAdministracionEeccRouteWithChildren,
+    AuthenticatedAdministracionMinutasRoute:
+      AuthenticatedAdministracionMinutasRoute,
     AuthenticatedAdministracionPagarRoute:
       AuthenticatedAdministracionPagarRoute,
+    AuthenticatedAdministracionPlanDeCuentasRoute:
+      AuthenticatedAdministracionPlanDeCuentasRoute,
     AuthenticatedAdministracionReportesRoute:
       AuthenticatedAdministracionReportesRouteWithChildren,
     AuthenticatedAdministracionIndexRoute:
       AuthenticatedAdministracionIndexRoute,
+    AuthenticatedAdministracionAsientosNuevoRoute:
+      AuthenticatedAdministracionAsientosNuevoRoute,
   }
 
 const AuthenticatedAdministracionRouteWithChildren =
@@ -1148,6 +1260,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
   AuthenticatedPosRoute: typeof AuthenticatedPosRoute
+  AuthenticatedProveedoresRoute: typeof AuthenticatedProveedoresRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedSincronizacionRoute: typeof AuthenticatedSincronizacionRoute
   AuthenticatedSupervisoresRoute: typeof AuthenticatedSupervisoresRouteWithChildren
@@ -1166,6 +1279,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
   AuthenticatedPosRoute: AuthenticatedPosRoute,
+  AuthenticatedProveedoresRoute: AuthenticatedProveedoresRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedSincronizacionRoute: AuthenticatedSincronizacionRoute,
   AuthenticatedSupervisoresRoute: AuthenticatedSupervisoresRouteWithChildren,

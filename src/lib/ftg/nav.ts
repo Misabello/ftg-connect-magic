@@ -10,6 +10,9 @@ export const ADMIN_SUBNAV: SubNavItem[] = [
   { to: "/administracion", label: "Resumen", exact: true, group: "General" },
   { to: "/administracion/cobrar", label: "Ctas a Cobrar", group: "General" },
   { to: "/administracion/pagar", label: "Ctas a Pagar", group: "General" },
+  { to: "/administracion/minutas", label: "Minutas", group: "General" },
+  { to: "/administracion/asientos/nuevo", label: "Cargar asientos", group: "Contabilidad" },
+  { to: "/administracion/plan-de-cuentas", label: "Plan de cuentas", group: "Contabilidad" },
   { to: "/administracion/reportes", label: "Sedes y puntos de venta", exact: true, group: "Reportes" },
   { to: "/administracion/reportes/facturas", label: "Facturas automatizadas", group: "Reportes" },
   { to: "/administracion/reportes/cajas", label: "Arqueos y cajas", group: "Reportes" },
@@ -18,6 +21,7 @@ export const ADMIN_SUBNAV: SubNavItem[] = [
   { to: "/administracion/eecc/situacion", label: "Situación patrimonial", group: "EECC" },
   { to: "/administracion/eecc/diario", label: "Libro diario", group: "EECC" },
   { to: "/administracion/eecc/mayor", label: "Libro mayor", group: "EECC" },
+  { to: "/administracion/eecc/flujo-fondos", label: "Flujo de fondos", group: "EECC" },
 ];
 
 export const SUPERVISOR_SUBNAV: SubNavItem[] = [
