@@ -162,6 +162,7 @@ export const approveMemo = createServerFn({ method: "POST" })
 
     if (data.auto_post === false) return { id: memo.id, status: "aprobada", journal_entry_id: memo.journal_entry_id };
 
+    const { postMemoInternal } = await import("@/lib/ftg/memos.server");
     return await postMemoInternal({
       memoId: memo.id,
       userId,
@@ -187,6 +188,7 @@ export const postMemo = createServerFn({ method: "POST" })
     if (roleError) throw new Error(roleError.message);
     if (!isAdmin) throw new Error("Solo un perfil administrativo o contable puede postear minutas.");
 
+    const { postMemoInternal } = await import("@/lib/ftg/memos.server");
     return await postMemoInternal({
       memoId: data.memo_id,
       userId,
@@ -212,13 +214,13 @@ export const cancelMemo = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: memo, error } = await supabaseAdmin
       .from("treasury_memos")
-      .update({ status: "anulada" })
+      .update({ status: "anulada", cancel_reason: data.reason ?? null })
       .eq("id", data.memo_id)
-      .eq("status", "pendiente")
+      .in("status", ["pendiente", "aprobada"])
       .select("id, organization_id, location_id, amount")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!memo) throw new Error("Solo se pueden anular minutas pendientes.");
+    if (!memo) throw new Error("Solo se pueden anular minutas pendientes o aprobadas (sin postear).");
 
     await supabaseAdmin.from("audit_logs").insert({
       user_id: userId,
