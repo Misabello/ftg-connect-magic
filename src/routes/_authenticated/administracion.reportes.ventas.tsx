@@ -25,7 +25,7 @@ function SalesReport() {
       let q = supabase
         .from("sales")
         .select(
-          "id, created_at, sale_number, total, currency_code, status, locations(name), points_of_sale(name), sale_payments(payment_kind)",
+          "id, created_at, sale_number, total, currency_code, status, locations(name), points_of_sale(name), sale_payments(method_name)",
         )
         .gte("created_at", periodStart(days))
         .order("created_at", { ascending: false })
@@ -45,7 +45,7 @@ function SalesReport() {
         Sede: s.locations?.name ?? "—",
         "Punto de venta": s.points_of_sale?.name ?? "—",
         "Medio de pago":
-          (s.sale_payments ?? []).map((p: { payment_kind: string }) => p.payment_kind).join(", ") || "—",
+          (s.sale_payments ?? []).map((p) => p.method_name).filter(Boolean).join(", ") || "—",
         Total: formatMoney(Number(s.total ?? 0), s.currency_code ?? "ARS"),
         Estado: s.status === "anulada" ? "Anulada" : "Completada",
       })),

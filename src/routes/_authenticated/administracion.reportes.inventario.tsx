@@ -34,7 +34,7 @@ function StockReport() {
     queryFn: async () => {
       let q = supabase
         .from("stock_movements")
-        .select("id, created_at, kind, quantity, reason, reference, products(name, sku), locations(name)")
+        .select("id, created_at, kind, quantity, reason, reference, products(name, sku), locations!stock_movements_location_id_fkey(name)")
         .gte("created_at", periodStart(days))
         .order("created_at", { ascending: false })
         .limit(MAX_REPORT_ROWS);
