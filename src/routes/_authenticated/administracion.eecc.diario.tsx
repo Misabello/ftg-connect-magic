@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 
 import { PeriodSelect } from "@/components/ftg/admin/PeriodSelect";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useScope } from "@/hooks/useScope";
 import { useLedgerLines, type LedgerLine } from "@/lib/ftg/eecc";
@@ -13,6 +16,7 @@ export const Route = createFileRoute("/_authenticated/administracion/eecc/diario
 
 function LibroDiario() {
   const [days, setDays] = useState("30");
+  const [source, setSource] = useState<"todos" | "manual" | "automatico">("todos");
   const { activeLocation, activeLocationId } = useScope();
   const currency = activeLocation?.currency_code ?? "ARS";
   const { data, isLoading } = useLedgerLines(days, activeLocationId);
@@ -32,8 +36,17 @@ function LibroDiario() {
       current.lines.push(line);
       map.set(e.id, current);
     }
-    return [...map.values()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 120);
-  }, [data]);
+    return [...map.values()]
+      .filter((e) =>
+        source === "todos"
+          ? true
+          : source === "manual"
+            ? e.source === "manual" || e.source === "minuta"
+            : e.source !== "manual" && e.source !== "minuta",
+      )
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 120);
+  }, [data, source]);
 
   return (
     <section className="space-y-4">
@@ -42,7 +55,21 @@ function LibroDiario() {
           <h2 className="text-base font-semibold">Libro diario</h2>
           <p className="text-xs text-muted-foreground">Asientos cronológicos con sus partidas.</p>
         </div>
-        <PeriodSelect value={days} onChange={setDays} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Tabs value={source} onValueChange={(v) => setSource(v as typeof source)}>
+            <TabsList>
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+              <TabsTrigger value="manual">Manuales</TabsTrigger>
+              <TabsTrigger value="automatico">Automáticos</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <PeriodSelect value={days} onChange={setDays} />
+          <Button asChild size="sm">
+            <Link to="/administracion/asientos/nuevo">
+              <Plus className="mr-1.5 h-4 w-4" /> Cargar asiento
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {entries.length === 0 && (
@@ -56,7 +83,7 @@ function LibroDiario() {
           <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-4 text-sm">
             <p className="font-medium">{entry.description}</p>
             <p className="text-xs text-muted-foreground">
-              {entry.date} · {entry.source}
+              {entry.date} · {entry.source === "manual" ? "Asiento manual" : entry.source === "minuta" ? "Minuta" : entry.source}
             </p>
           </div>
           <Table>
