@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShoppingCart,
   Store,
+  Truck,
   Users,
   Wallet,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const ITEMS: Item[] = [
   { key: "inventario", to: "/inventario", icon: Boxes },
   { key: "administracion", to: "/administracion", icon: Wallet },
   { key: "clientes", to: "/clientes", icon: Users },
+  { key: "proveedores", to: "/proveedores", icon: Truck },
   { key: "reportes", to: "/reportes", icon: BarChart3 },
   { key: "configuracion", to: "/configuracion", icon: Settings },
 ];
