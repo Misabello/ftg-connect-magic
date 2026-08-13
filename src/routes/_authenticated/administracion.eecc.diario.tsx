@@ -3,11 +3,12 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
 import { PeriodSelect } from "@/components/ftg/admin/PeriodSelect";
+import { ExportMenu } from "@/components/ftg/admin/ExportMenu";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useScope } from "@/hooks/useScope";
-import { useLedgerLines, type LedgerLine } from "@/lib/ftg/eecc";
+import { PERIOD_OPTIONS, useLedgerLines, type LedgerLine } from "@/lib/ftg/eecc";
 import { formatMoney } from "@/lib/ftg/format";
 
 export const Route = createFileRoute("/_authenticated/administracion/eecc/diario")({
@@ -48,6 +49,23 @@ function LibroDiario() {
       .slice(0, 120);
   }, [data, source]);
 
+  const periodLabel = PERIOD_OPTIONS.find((o) => o.value === days)?.label ?? `Últimos ${days} días`;
+  const sourceLabel = source === "todos" ? "Todos los orígenes" : source === "manual" ? "Manuales" : "Automáticos";
+  const exportHeaders = ["Fecha", "Asiento", "Origen", "Cuenta", "Descripción cuenta", "Debe", "Haber", "Moneda"];
+  const exportRows = () =>
+    entries.flatMap((entry) =>
+      entry.lines.map((l) => ({
+        Fecha: entry.date,
+        Asiento: entry.description,
+        Origen: entry.source === "manual" ? "Asiento manual" : entry.source === "minuta" ? "Minuta" : entry.source,
+        Cuenta: `${l.account?.code ?? ""} ${l.account?.name ?? ""}`.trim(),
+        "Descripción cuenta": l.description ?? "",
+        Debe: Number(l.debit ?? 0).toFixed(2),
+        Haber: Number(l.credit ?? 0).toFixed(2),
+        Moneda: entry.currency ?? currency,
+      })),
+    );
+
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -64,6 +82,15 @@ function LibroDiario() {
             </TabsList>
           </Tabs>
           <PeriodSelect value={days} onChange={setDays} />
+          <ExportMenu
+            filename={`libro-diario-${days}d`}
+            title="Libro diario"
+            subtitle={`${periodLabel} · ${sourceLabel}${activeLocation?.name ? ` · ${activeLocation.name}` : ""}`}
+            headers={exportHeaders}
+            rightAlign={["Debe", "Haber"]}
+            getRows={exportRows}
+            disabled={isLoading}
+          />
           <Button asChild size="sm">
             <Link to="/administracion/asientos/nuevo">
               <Plus className="mr-1.5 h-4 w-4" /> Cargar asiento
