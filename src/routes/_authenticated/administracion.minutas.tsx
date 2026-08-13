@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2, Plus, XCircle } from "lucide-react";
+import { BookCheck, CheckCircle2, Loader2, Plus, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
