@@ -60,6 +60,7 @@ import { Route as AuthenticatedAdministracionEeccSituacionRouteImport } from './
 import { Route as AuthenticatedAdministracionReportesIndexRouteImport } from './routes/_authenticated/administracion.reportes.index'
 import { Route as AuthenticatedAdministracionReportesCajasRouteImport } from './routes/_authenticated/administracion.reportes.cajas'
 import { Route as AuthenticatedAdministracionReportesFacturasRouteImport } from './routes/_authenticated/administracion.reportes.facturas'
+import { Route as AuthenticatedAdministracionReportesVentasRouteImport } from './routes/_authenticated/administracion.reportes.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
@@ -361,6 +362,12 @@ const AuthenticatedAdministracionReportesFacturasRoute =
     path: '/facturas',
     getParentRoute: () => AuthenticatedAdministracionReportesRoute,
   } as any)
+const AuthenticatedAdministracionReportesVentasRoute =
+  AuthenticatedAdministracionReportesVentasRouteImport.update({
+    id: '/ventas',
+    path: '/ventas',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
 const AuthenticatedSedesLocationIdIndexRoute =
   AuthenticatedSedesLocationIdIndexRouteImport.update({
     id: '/sedes/$locationId/',
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -485,6 +493,7 @@ export interface FileRoutesByTo {
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/administracion/eecc': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -543,6 +552,7 @@ export interface FileRoutesById {
   '/_authenticated/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/_authenticated/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
   '/_authenticated/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/_authenticated/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/_authenticated/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -601,6 +611,7 @@ export interface FileRouteTypes {
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
     | '/administracion/reportes/facturas'
+    | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/administracion/eecc/'
@@ -652,6 +663,7 @@ export interface FileRouteTypes {
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
     | '/administracion/reportes/facturas'
+    | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/administracion/eecc'
@@ -709,6 +721,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administracion/eecc/situacion'
     | '/_authenticated/administracion/reportes/cajas'
     | '/_authenticated/administracion/reportes/facturas'
+    | '/_authenticated/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/_authenticated/administracion/eecc/'
@@ -1084,6 +1097,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionReportesFacturasRouteImport
       parentRoute: typeof AuthenticatedAdministracionReportesRoute
     }
+    '/_authenticated/administracion/reportes/ventas': {
+      id: '/_authenticated/administracion/reportes/ventas'
+      path: '/ventas'
+      fullPath: '/administracion/reportes/ventas'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesVentasRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
     '/_authenticated/sedes/$locationId/': {
       id: '/_authenticated/sedes/$locationId/'
       path: '/sedes/$locationId'
@@ -1151,6 +1171,7 @@ const AuthenticatedAdministracionEeccRouteWithChildren =
 interface AuthenticatedAdministracionReportesRouteChildren {
   AuthenticatedAdministracionReportesCajasRoute: typeof AuthenticatedAdministracionReportesCajasRoute
   AuthenticatedAdministracionReportesFacturasRoute: typeof AuthenticatedAdministracionReportesFacturasRoute
+  AuthenticatedAdministracionReportesVentasRoute: typeof AuthenticatedAdministracionReportesVentasRoute
   AuthenticatedAdministracionReportesIndexRoute: typeof AuthenticatedAdministracionReportesIndexRoute
 }
 
@@ -1160,6 +1181,8 @@ const AuthenticatedAdministracionReportesRouteChildren: AuthenticatedAdministrac
       AuthenticatedAdministracionReportesCajasRoute,
     AuthenticatedAdministracionReportesFacturasRoute:
       AuthenticatedAdministracionReportesFacturasRoute,
+    AuthenticatedAdministracionReportesVentasRoute:
+      AuthenticatedAdministracionReportesVentasRoute,
     AuthenticatedAdministracionReportesIndexRoute:
       AuthenticatedAdministracionReportesIndexRoute,
   }
