@@ -55,7 +55,7 @@ export const PARTY_KIND_LABEL: Record<SupplierPartyKind, string> = {
 };
 
 export type MemoType = "nota_contable" | "movimiento_fondos";
-export type MemoStatus = "pendiente" | "conciliada" | "anulada";
+export type MemoStatus = "pendiente" | "aprobada" | "conciliada" | "anulada";
 
 export const MEMO_TYPE_LABEL: Record<MemoType, string> = {
   nota_contable: "Nota contable",
@@ -64,15 +64,22 @@ export const MEMO_TYPE_LABEL: Record<MemoType, string> = {
 
 export const MEMO_STATUS_LABEL: Record<MemoStatus, string> = {
   pendiente: "Pendiente",
+  aprobada: "Aprobada · a postear",
   conciliada: "Conciliada",
   anulada: "Anulada",
 };
 
 export const MEMO_STATUS_TONE: Record<MemoStatus, string> = {
   pendiente: "bg-warning/15 text-warning",
+  aprobada: "bg-primary/10 text-primary",
   conciliada: "bg-success/10 text-success",
   anulada: "bg-muted text-muted-foreground line-through",
 };
+
+/** Cuenta contable por defecto según el tipo de fondo de la caja. */
+export function accountForFundKind(fundKind: string | null | undefined) {
+  return fundKind === "efectivo" ? "1.1.1" : "1.1.2";
+}
 
 export function round2(value: number) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
