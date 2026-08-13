@@ -31,8 +31,13 @@ function FlujoDeFondos() {
     queryKey: ["flujo-fondos", days, bucket, activeLocationId],
     queryFn: async () => {
       const [flow, opening] = await Promise.all([
-        supabase.rpc("cash_flow_summary", { _from: from, _to: to, _loc: activeLocationId ?? undefined, _bucket: bucket }),
-        supabase.rpc("cash_flow_opening", { _from: from, _loc: activeLocationId ?? undefined }),
+        supabase.rpc("cash_flow_summary", {
+          _from: from,
+          _to: to,
+          _bucket: bucket,
+          ...(activeLocationId ? { _loc: activeLocationId } : {}),
+        }),
+        supabase.rpc("cash_flow_opening", { _from: from, ...(activeLocationId ? { _loc: activeLocationId } : {}) }),
       ]);
       if (flow.error) throw flow.error;
       return {

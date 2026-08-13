@@ -71,13 +71,11 @@ export const postManualEntry = createServerFn({ method: "POST" })
 
     const { data: entryId, error } = await supabaseAdmin.rpc("post_journal_entry", {
       _org: organizationId,
-      _loc: data.location_id ?? undefined,
-      _pos: data.point_of_sale_id ?? undefined,
-      _session: undefined,
+      ...(data.location_id ? { _loc: data.location_id } : {}),
+      ...(data.point_of_sale_id ? { _pos: data.point_of_sale_id } : {}),
       _date: data.entry_date,
       _description: data.description,
       _source_type: data.source_type || "manual",
-      _source_id: undefined,
       _currency: data.currency_code,
       _lines: data.lines.map((l) => ({
         account_code: l.account_code,
@@ -160,9 +158,7 @@ export const approveMemo = createServerFn({ method: "POST" })
     if (!entryId) {
       const { data: created, error } = await supabaseAdmin.rpc("post_journal_entry", {
         _org: memo.organization_id,
-        _loc: memo.location_id ?? undefined,
-        _pos: undefined,
-        _session: undefined,
+        ...(memo.location_id ? { _loc: memo.location_id } : {}),
         _date: new Date(memo.created_at).toISOString().slice(0, 10),
         _description: `Minuta · ${memo.description}`,
         _source_type: "minuta",
