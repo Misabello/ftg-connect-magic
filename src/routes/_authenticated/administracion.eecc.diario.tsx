@@ -62,7 +62,7 @@ function LibroDiario() {
         "Descripción cuenta": l.description ?? "",
         Debe: Number(l.debit ?? 0).toFixed(2),
         Haber: Number(l.credit ?? 0).toFixed(2),
-        Moneda: entry.currency ?? currency,
+        Moneda: currency,
       })),
     );
 
