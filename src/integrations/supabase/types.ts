@@ -5440,6 +5440,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_finance: { Args: { _user_id: string }; Returns: boolean }
       can_manage_users: { Args: { _user_id: string }; Returns: boolean }
       cash_flow_opening: {
         Args: { _from: string; _loc?: string }
@@ -5454,6 +5455,13 @@ export type Database = {
           outflow: number
           source_name: string
         }[]
+      }
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
       }
       has_role: {
         Args: {
