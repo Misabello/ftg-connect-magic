@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
 import { CameraCaptureDialog } from "@/components/ftg/CameraCaptureDialog";
+import { ExportMenu } from "@/components/ftg/admin/ExportMenu";
+import { PeriodSelect } from "@/components/ftg/admin/PeriodSelect";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +25,7 @@ import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/ftg/format";
+import { PERIOD_OPTIONS, periodStart } from "@/lib/ftg/eecc";
 import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
 import { readTicket } from "@/lib/ftg/ocr.functions";
 import {
@@ -72,6 +75,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
   const [payAmount, setPayAmount] = useState("");
   const categories: FinanceDocCategory[] = kind === "cobrar" ? RECEIVABLE_CATEGORIES : PAYABLE_CATEGORIES;
   const [categoryFilter, setCategoryFilter] = useState<"todas" | FinanceDocCategory>("todas");
+  const [days, setDays] = useState("90");
   const [draft, setDraft] = useState({
     concept: "",
     counterparty: "",
@@ -112,9 +116,14 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
 
   const docs = data?.docs ?? [];
   const currency = activeLocation?.currency_code ?? "ARS";
+  const from = periodStart(days);
   const rows = docs.filter(
-    (d) => d.kind === tab && (categoryFilter === "todas" || d.document_category === categoryFilter),
+    (d) =>
+      d.kind === tab &&
+      (categoryFilter === "todas" || d.document_category === categoryFilter) &&
+      (!d.issued_on || d.issued_on >= from),
   );
+  const periodLabel = PERIOD_OPTIONS.find((o) => o.value === days)?.label ?? `Últimos ${days} días`;
   // Para organismos estatales solo se ofrecen los terceros marcados como tales.
   const supplierOptions = (data?.suppliers ?? []).filter((s) =>
     draft.document_category === "organismo_estatal" ? s.party_kind === "organismo_estatal" : true,
@@ -376,7 +385,49 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <PeriodSelect value={days} onChange={setDays} />
+        <ExportMenu
+          filename={tab === "cobrar" ? `cuentas-a-cobrar-${days}d` : `cuentas-a-pagar-${days}d`}
+          title={tab === "cobrar" ? "Cuentas a cobrar" : "Cuentas a pagar"}
+          subtitle={`${periodLabel} · ${
+            categoryFilter === "todas" ? "Todas las categorías" : DOC_CATEGORY_LABEL[categoryFilter]
+          }${activeLocation?.name ? ` · ${activeLocation.name}` : ""}`}
+          headers={[
+            "Emisión",
+            "Vencimiento",
+            "Concepto",
+            tab === "cobrar" ? "Cliente" : "Proveedor",
+            "Comprobante",
+            "Categoría",
+            "Centro de costo",
+            "Importe",
+            "Pagado",
+            "Saldo",
+            "Moneda",
+            "Estado",
+          ]}
+          rightAlign={["Importe", "Pagado", "Saldo"]}
+          getRows={() =>
+            rows.map((d) => ({
+              Emisión: d.issued_on ?? "",
+              Vencimiento: d.due_on ?? "",
+              Concepto: d.concept ?? "",
+              [tab === "cobrar" ? "Cliente" : "Proveedor"]:
+                (d as { customers?: { name?: string } }).customers?.name ??
+                (d as { suppliers?: { name?: string } }).suppliers?.name ??
+                "",
+              Comprobante: d.document_number ?? "",
+              Categoría: DOC_CATEGORY_LABEL[d.document_category as FinanceDocCategory] ?? "",
+              "Centro de costo": d.cost_center ?? "",
+              Importe: Number(d.amount ?? 0).toFixed(2),
+              Pagado: Number(d.paid_amount ?? 0).toFixed(2),
+              Saldo: balanceOf({ amount: Number(d.amount), paid_amount: Number(d.paid_amount) }).toFixed(2),
+              Moneda: d.currency_code ?? currency,
+              Estado: FINANCE_STATUS_LABEL[d.status as FinanceDocStatus] ?? d.status,
+            }))
+          }
+        />
         <Button onClick={() => setOpen(true)}>
           <Plus className="mr-1.5 h-4 w-4" /> Nuevo documento
         </Button>

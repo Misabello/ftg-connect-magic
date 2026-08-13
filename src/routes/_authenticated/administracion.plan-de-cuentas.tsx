@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Loader2, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { ExportMenu } from "@/components/ftg/admin/ExportMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +53,8 @@ function PlanDeCuentas() {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("todas");
+  const [statusFilter, setStatusFilter] = useState("todas");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["plan-de-cuentas"],
@@ -74,10 +77,13 @@ function PlanDeCuentas() {
   const accounts = data?.accounts ?? [];
   const visible = useMemo(
     () =>
-      accounts.filter((a) =>
-        search.trim() === "" ? true : `${a.code} ${a.name}`.toLowerCase().includes(search.toLowerCase()),
+      accounts.filter(
+        (a) =>
+          (search.trim() === "" ? true : `${a.code} ${a.name}`.toLowerCase().includes(search.toLowerCase())) &&
+          (typeFilter === "todas" || a.account_type === typeFilter) &&
+          (statusFilter === "todas" || (statusFilter === "activas" ? a.is_active : !a.is_active)),
       ),
-    [accounts, search],
+    [accounts, search, typeFilter, statusFilter],
   );
 
   const save = useMutation({
@@ -139,12 +145,58 @@ function PlanDeCuentas() {
             Alta y edición de cuentas contables. Las cuentas con movimientos solo se dan de baja lógicamente.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por código o nombre"
             className="max-w-xs"
+          />
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas las categorías</SelectItem>
+              {ACCOUNT_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todos</SelectItem>
+              <SelectItem value="activas">Activas</SelectItem>
+              <SelectItem value="inactivas">Inactivas</SelectItem>
+            </SelectContent>
+          </Select>
+          <ExportMenu
+            filename="plan-de-cuentas"
+            title="Plan de cuentas"
+            subtitle={`${
+              typeFilter === "todas"
+                ? "Todas las categorías"
+                : (ACCOUNT_TYPES.find((t) => t.value === typeFilter)?.label ?? typeFilter)
+            } · ${statusFilter === "todas" ? "Activas e inactivas" : statusFilter === "activas" ? "Solo activas" : "Solo inactivas"}`}
+            headers={["Código", "Nombre", "Tipo", "Saldo normal", "Movimientos", "Estado", "Orden"]}
+            rightAlign={["Orden"]}
+            disabled={isLoading}
+            getRows={() =>
+              visible.map((a) => ({
+                Código: a.code,
+                Nombre: a.name,
+                Tipo: ACCOUNT_TYPE_LABEL[a.account_type] ?? a.account_type,
+                "Saldo normal": a.normal_side === "credito" || a.normal_side === "credit" ? "Acreedora" : "Deudora",
+                Movimientos: data?.usedIds.has(a.id) ? "Con movimientos" : "Sin movimientos",
+                Estado: a.is_active ? "Activa" : "Inactiva",
+                Orden: a.sort_order ?? 0,
+              }))
+            }
           />
           <Button
             onClick={() => {
