@@ -84,7 +84,7 @@ export const postManualEntry = createServerFn({ method: "POST" })
         description: l.description ?? null,
       })),
       _created_by: userId,
-    });
+    } as never);
     if (error) throw new Error(error.message);
     if (!entryId) throw new Error("No se pudo registrar el asiento.");
 
@@ -169,7 +169,7 @@ export const approveMemo = createServerFn({ method: "POST" })
           { account_code: creditCode, debit: 0, credit: amount, description: memo.description },
         ],
         _created_by: userId,
-      });
+      } as never);
       if (error) throw new Error(error.message);
       entryId = (created as string) ?? null;
       if (entryId) {
