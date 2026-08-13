@@ -43,6 +43,7 @@ export type ModuleKey =
   | "inventario"
   | "administracion"
   | "clientes"
+  | "proveedores"
   | "reportes"
   | "configuracion";
 
@@ -56,6 +57,7 @@ export const ALL_MODULES: ModuleKey[] = [
   "inventario",
   "administracion",
   "clientes",
+  "proveedores",
   "reportes",
   "configuracion",
 ];
@@ -69,7 +71,7 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
   seller: "*",
   superadmin: "*",
   direccion: "*",
-  administracion: ["inicio", "sedes", "administracion", "clientes", "reportes", "inventario", "configuracion"],
+  administracion: ["inicio", "sedes", "administracion", "clientes", "proveedores", "reportes", "inventario", "configuracion"],
   operaciones: ["inicio", "sedes", "operaciones", "supervisores", "inventario", "reportes", "fotografias"],
   encargado_sede: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "inventario", "reportes"],
   supervisor: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "reportes"],

@@ -1445,6 +1445,7 @@ export type Database = {
           created_by: string | null
           currency_code: string
           customer_id: string | null
+          document_category: Database["public"]["Enums"]["finance_doc_category"]
           document_number: string | null
           due_on: string | null
           id: string
@@ -1468,6 +1469,7 @@ export type Database = {
           created_by?: string | null
           currency_code: string
           customer_id?: string | null
+          document_category?: Database["public"]["Enums"]["finance_doc_category"]
           document_number?: string | null
           due_on?: string | null
           id?: string
@@ -1491,6 +1493,7 @@ export type Database = {
           created_by?: string | null
           currency_code?: string
           customer_id?: string | null
+          document_category?: Database["public"]["Enums"]["finance_doc_category"]
           document_number?: string | null
           due_on?: string | null
           id?: string
@@ -1990,6 +1993,7 @@ export type Database = {
           description: string
           entry_date: string
           id: string
+          idempotency_key: string | null
           location_id: string | null
           organization_id: string
           point_of_sale_id: string | null
@@ -2004,6 +2008,7 @@ export type Database = {
           description: string
           entry_date?: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           organization_id: string
           point_of_sale_id?: string | null
@@ -2018,6 +2023,7 @@ export type Database = {
           description?: string
           entry_date?: string
           id?: string
+          idempotency_key?: string | null
           location_id?: string | null
           organization_id?: string
           point_of_sale_id?: string | null
@@ -4874,6 +4880,7 @@ export type Database = {
           legal_name: string | null
           name: string
           organization_id: string
+          party_kind: Database["public"]["Enums"]["supplier_party_kind"]
           phone: string | null
           tax_id: string | null
           updated_at: string
@@ -4888,6 +4895,7 @@ export type Database = {
           legal_name?: string | null
           name: string
           organization_id: string
+          party_kind?: Database["public"]["Enums"]["supplier_party_kind"]
           phone?: string | null
           tax_id?: string | null
           updated_at?: string
@@ -4902,6 +4910,7 @@ export type Database = {
           legal_name?: string | null
           name?: string
           organization_id?: string
+          party_kind?: Database["public"]["Enums"]["supplier_party_kind"]
           phone?: string | null
           tax_id?: string | null
           updated_at?: string
@@ -5195,6 +5204,102 @@ export type Database = {
           },
         ]
       }
+      treasury_memos: {
+        Row: {
+          amount: number
+          cash_source_from_id: string | null
+          cash_source_to_id: string | null
+          created_at: string
+          created_by: string | null
+          credit_account_code: string | null
+          currency_code: string
+          debit_account_code: string | null
+          description: string
+          id: string
+          idempotency_key: string | null
+          journal_entry_id: string | null
+          location_id: string | null
+          memo_type: string
+          organization_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          cash_source_from_id?: string | null
+          cash_source_to_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_account_code?: string | null
+          currency_code?: string
+          debit_account_code?: string | null
+          description: string
+          id?: string
+          idempotency_key?: string | null
+          journal_entry_id?: string | null
+          location_id?: string | null
+          memo_type: string
+          organization_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cash_source_from_id?: string | null
+          cash_source_to_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          credit_account_code?: string | null
+          currency_code?: string
+          debit_account_code?: string | null
+          description?: string
+          id?: string
+          idempotency_key?: string | null
+          journal_entry_id?: string | null
+          location_id?: string | null
+          memo_type?: string
+          organization_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treasury_memos_cash_source_from_id_fkey"
+            columns: ["cash_source_from_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treasury_memos_cash_source_to_id_fkey"
+            columns: ["cash_source_to_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treasury_memos_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treasury_memos_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treasury_memos_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_by: string | null
@@ -5336,6 +5441,20 @@ export type Database = {
     }
     Functions: {
       can_manage_users: { Args: { _user_id: string }; Returns: boolean }
+      cash_flow_opening: {
+        Args: { _from: string; _loc?: string }
+        Returns: number
+      }
+      cash_flow_summary: {
+        Args: { _bucket?: string; _from: string; _loc?: string; _to: string }
+        Returns: {
+          bucket: string
+          currency_code: string
+          inflow: number
+          outflow: number
+          source_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -5417,6 +5536,13 @@ export type Database = {
         | "suspendido"
         | "baja_programada"
         | "desvinculado"
+      finance_doc_category:
+        | "proveedor"
+        | "servicio"
+        | "gasto"
+        | "cliente_servicio"
+        | "organismo_estatal"
+        | "otro"
       finance_doc_kind: "cobrar" | "pagar"
       finance_doc_status:
         | "pendiente"
@@ -5533,6 +5659,7 @@ export type Database = {
         | "venta"
         | "merma"
         | "devolucion"
+      supplier_party_kind: "proveedor" | "organismo_estatal" | "otro"
       user_account_status:
         | "invitado"
         | "activo"
@@ -5714,6 +5841,14 @@ export const Constants = {
         "baja_programada",
         "desvinculado",
       ],
+      finance_doc_category: [
+        "proveedor",
+        "servicio",
+        "gasto",
+        "cliente_servicio",
+        "organismo_estatal",
+        "otro",
+      ],
       finance_doc_kind: ["cobrar", "pagar"],
       finance_doc_status: [
         "pendiente",
@@ -5837,6 +5972,7 @@ export const Constants = {
         "merma",
         "devolucion",
       ],
+      supplier_party_kind: ["proveedor", "organismo_estatal", "otro"],
       user_account_status: [
         "invitado",
         "activo",

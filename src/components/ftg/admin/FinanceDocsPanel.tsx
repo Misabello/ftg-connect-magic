@@ -26,6 +26,12 @@ import { formatMoney } from "@/lib/ftg/format";
 import { buildInvoiceMessage, mailtoLink } from "@/lib/ftg/share";
 import { readTicket } from "@/lib/ftg/ocr.functions";
 import {
+  DOC_CATEGORY_LABEL,
+  PAYABLE_CATEGORIES,
+  RECEIVABLE_CATEGORIES,
+  type FinanceDocCategory,
+} from "@/lib/ftg/accounting";
+import {
   AGING_ORDER,
   FINANCE_STATUS_LABEL,
   FINANCE_STATUS_TONE,
@@ -64,6 +70,8 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [payAmount, setPayAmount] = useState("");
+  const categories: FinanceDocCategory[] = kind === "cobrar" ? RECEIVABLE_CATEGORIES : PAYABLE_CATEGORIES;
+  const [categoryFilter, setCategoryFilter] = useState<"todas" | FinanceDocCategory>("todas");
   const [draft, setDraft] = useState({
     concept: "",
     counterparty: "",
@@ -71,6 +79,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
     amount: "",
     due_on: "",
     cost_center: "",
+    document_category: (kind === "cobrar" ? "cliente_servicio" : "proveedor") as FinanceDocCategory,
   });
 
   const { data } = useQuery({
@@ -80,11 +89,11 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         supabase
           .from("finance_documents")
           .select(
-            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, customer_id, supplier_id, location_id, organization_id, customers(name, email), suppliers(name)",
+            "id, kind, status, concept, document_number, amount, paid_amount, currency_code, issued_on, due_on, cost_center, document_category, customer_id, supplier_id, location_id, organization_id, customers(name, email), suppliers(name)",
           )
           .order("due_on", { ascending: true }),
         supabase.from("customers").select("id, name, email, organization_id").order("name"),
-        supabase.from("suppliers").select("id, name, organization_id").order("name"),
+        supabase.from("suppliers").select("id, name, organization_id, party_kind, is_active").order("name"),
         supabase
           .from("cash_sessions")
           .select("id, status, currency_code, opening_amount, expected_amount, counted_amount, difference_amount, opened_at, closed_at, point_of_sale_id, points_of_sale(name)")
@@ -103,7 +112,13 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
 
   const docs = data?.docs ?? [];
   const currency = activeLocation?.currency_code ?? "ARS";
-  const rows = docs.filter((d) => d.kind === tab);
+  const rows = docs.filter(
+    (d) => d.kind === tab && (categoryFilter === "todas" || d.document_category === categoryFilter),
+  );
+  // Para organismos estatales solo se ofrecen los terceros marcados como tales.
+  const supplierOptions = (data?.suppliers ?? []).filter((s) =>
+    draft.document_category === "organismo_estatal" ? s.party_kind === "organismo_estatal" : true,
+  );
 
   const totals = useMemo(() => {
     const sum = (kind: FinanceDocKind) =>
@@ -159,6 +174,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         concept: draft.concept,
         document_number: draft.document_number || null,
         cost_center: draft.cost_center || null,
+        document_category: draft.document_category,
         currency_code: currency,
         amount,
         due_on: draft.due_on || null,
@@ -182,7 +198,15 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         });
       }
       setOpen(false);
-      setDraft({ concept: "", counterparty: "", document_number: "", amount: "", due_on: "", cost_center: "" });
+      setDraft({
+        concept: "",
+        counterparty: "",
+        document_number: "",
+        amount: "",
+        due_on: "",
+        cost_center: "",
+        document_category: (tab === "cobrar" ? "cliente_servicio" : "proveedor") as FinanceDocCategory,
+      });
       clearDocFile();
       queryClient.invalidateQueries({ queryKey: ["administracion"] });
     },
@@ -385,6 +409,27 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
         </div>
       )}
 
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-muted-foreground">Categoría:</span>
+        <Button
+          size="sm"
+          variant={categoryFilter === "todas" ? "default" : "outline"}
+          onClick={() => setCategoryFilter("todas")}
+        >
+          Todas
+        </Button>
+        {categories.map((c) => (
+          <Button
+            key={c}
+            size="sm"
+            variant={categoryFilter === c ? "default" : "outline"}
+            onClick={() => setCategoryFilter(c)}
+          >
+            {DOC_CATEGORY_LABEL[c]}
+          </Button>
+        ))}
+      </div>
+
       <section className="surface-card overflow-hidden">
         <Table>
           <TableHeader>
@@ -392,6 +437,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
               <TableHead>Concepto</TableHead>
               <TableHead>{tab === "cobrar" ? "Cliente" : "Proveedor"}</TableHead>
               <TableHead>Vencimiento</TableHead>
+              <TableHead>Categoría</TableHead>
               <TableHead>Centro de costo</TableHead>
               <TableHead className="text-right">Importe</TableHead>
               <TableHead className="text-right">Saldo</TableHead>
@@ -402,7 +448,7 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={9} className="py-8 text-center text-sm text-muted-foreground">
                   No hay documentos cargados.
                 </TableCell>
               </TableRow>
@@ -424,6 +470,9 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
                         {days < 0 ? `vencido hace ${Math.abs(days)} d` : `en ${days} d`}
                       </span>
                     )}
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {DOC_CATEGORY_LABEL[d.document_category as FinanceDocCategory] ?? "—"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">{d.cost_center ?? "—"}</TableCell>
                   <TableCell className="text-right">{formatMoney(Number(d.amount), d.currency_code)}</TableCell>
@@ -546,13 +595,31 @@ export function FinanceDocsPanel({ kind }: { kind: FinanceDocKind }) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>{tab === "cobrar" ? "Cliente" : "Proveedor"}</Label>
+              <Label>Categoría del comprobante</Label>
+              <Select
+                value={draft.document_category}
+                onValueChange={(v) => setDraft((p) => ({ ...p, document_category: v as FinanceDocCategory, counterparty: "" }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {DOC_CATEGORY_LABEL[c]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>{tab === "cobrar" ? "Cliente" : draft.document_category === "organismo_estatal" ? "Organismo" : "Proveedor"}</Label>
               <Select value={draft.counterparty} onValueChange={(v) => setDraft((p) => ({ ...p, counterparty: v }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Elegí una contraparte" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(tab === "cobrar" ? data?.customers ?? [] : data?.suppliers ?? []).map((p) => (
+                  {(tab === "cobrar" ? data?.customers ?? [] : supplierOptions).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}
                     </SelectItem>
