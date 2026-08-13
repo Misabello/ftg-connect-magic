@@ -22,6 +22,7 @@ export const ADMIN_SUBNAV: SubNavItem[] = [
   { to: "/administracion/eecc/diario", label: "Libro diario", group: "EECC" },
   { to: "/administracion/eecc/mayor", label: "Libro mayor", group: "EECC" },
   { to: "/administracion/eecc/flujo-fondos", label: "Flujo de fondos", group: "EECC" },
+  { to: "/administracion/eecc/conciliacion", label: "Conciliación de fondos", group: "EECC" },
 ];
 
 export const SUPERVISOR_SUBNAV: SubNavItem[] = [

@@ -51,6 +51,7 @@ import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedAdministracionAsientosNuevoRouteImport } from './routes/_authenticated/administracion.asientos.nuevo'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
+import { Route as AuthenticatedAdministracionEeccConciliacionRouteImport } from './routes/_authenticated/administracion.eecc.conciliacion'
 import { Route as AuthenticatedAdministracionEeccDiarioRouteImport } from './routes/_authenticated/administracion.eecc.diario'
 import { Route as AuthenticatedAdministracionEeccFlujoFondosRouteImport } from './routes/_authenticated/administracion.eecc.flujo-fondos'
 import { Route as AuthenticatedAdministracionEeccMayorRouteImport } from './routes/_authenticated/administracion.eecc.mayor'
@@ -306,6 +307,12 @@ const AuthenticatedAdministracionEeccIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdministracionEeccRoute,
   } as any)
+const AuthenticatedAdministracionEeccConciliacionRoute =
+  AuthenticatedAdministracionEeccConciliacionRouteImport.update({
+    id: '/conciliacion',
+    path: '/conciliacion',
+    getParentRoute: () => AuthenticatedAdministracionEeccRoute,
+  } as any)
 const AuthenticatedAdministracionEeccDiarioRoute =
   AuthenticatedAdministracionEeccDiarioRouteImport.update({
     id: '/diario',
@@ -419,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
@@ -469,6 +477,7 @@ export interface FileRoutesByTo {
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
@@ -526,6 +535,7 @@ export interface FileRoutesById {
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/_authenticated/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/_authenticated/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/_authenticated/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/_authenticated/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/_authenticated/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
@@ -583,6 +593,7 @@ export interface FileRouteTypes {
     | '/sedes/'
     | '/supervisores/'
     | '/administracion/asientos/nuevo'
+    | '/administracion/eecc/conciliacion'
     | '/administracion/eecc/diario'
     | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
@@ -633,6 +644,7 @@ export interface FileRouteTypes {
     | '/sedes'
     | '/supervisores'
     | '/administracion/asientos/nuevo'
+    | '/administracion/eecc/conciliacion'
     | '/administracion/eecc/diario'
     | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
@@ -689,6 +701,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
     | '/_authenticated/administracion/asientos/nuevo'
+    | '/_authenticated/administracion/eecc/conciliacion'
     | '/_authenticated/administracion/eecc/diario'
     | '/_authenticated/administracion/eecc/flujo-fondos'
     | '/_authenticated/administracion/eecc/mayor'
@@ -1008,6 +1021,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionEeccIndexRouteImport
       parentRoute: typeof AuthenticatedAdministracionEeccRoute
     }
+    '/_authenticated/administracion/eecc/conciliacion': {
+      id: '/_authenticated/administracion/eecc/conciliacion'
+      path: '/conciliacion'
+      fullPath: '/administracion/eecc/conciliacion'
+      preLoaderRoute: typeof AuthenticatedAdministracionEeccConciliacionRouteImport
+      parentRoute: typeof AuthenticatedAdministracionEeccRoute
+    }
     '/_authenticated/administracion/eecc/diario': {
       id: '/_authenticated/administracion/eecc/diario'
       path: '/diario'
@@ -1096,6 +1116,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdministracionEeccRouteChildren {
+  AuthenticatedAdministracionEeccConciliacionRoute: typeof AuthenticatedAdministracionEeccConciliacionRoute
   AuthenticatedAdministracionEeccDiarioRoute: typeof AuthenticatedAdministracionEeccDiarioRoute
   AuthenticatedAdministracionEeccFlujoFondosRoute: typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   AuthenticatedAdministracionEeccMayorRoute: typeof AuthenticatedAdministracionEeccMayorRoute
@@ -1106,6 +1127,8 @@ interface AuthenticatedAdministracionEeccRouteChildren {
 
 const AuthenticatedAdministracionEeccRouteChildren: AuthenticatedAdministracionEeccRouteChildren =
   {
+    AuthenticatedAdministracionEeccConciliacionRoute:
+      AuthenticatedAdministracionEeccConciliacionRoute,
     AuthenticatedAdministracionEeccDiarioRoute:
       AuthenticatedAdministracionEeccDiarioRoute,
     AuthenticatedAdministracionEeccFlujoFondosRoute:

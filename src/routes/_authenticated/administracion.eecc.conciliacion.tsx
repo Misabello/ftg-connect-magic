@@ -138,9 +138,11 @@ function ConciliacionFlujo() {
               </TableRow>
             )}
             {!isLoading && visible.length === 0 && (
-              <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
-                Todo conciliado: no hay diferencias entre fondos y asientos en el período.
-              </TableCell>
+              <TableRow>
+                <TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
+                  Todo conciliado: no hay diferencias entre fondos y asientos en el período.
+                </TableCell>
+              </TableRow>
             )}
             {visible.slice(0, 300).map((r) => (
               <TableRow key={r.key}>
