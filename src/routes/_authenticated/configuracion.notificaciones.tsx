@@ -36,6 +36,15 @@ function NotificacionesPos() {
   const { locations } = useScope();
   const [form, setForm] = useState({ full_name: "", email: "", role_label: "", location_id: "all", point_of_sale_id: "all" });
 
+  const { data: organizationId } = useQuery({
+    queryKey: ["notif-org-id"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("organizations").select("id").limit(1).maybeSingle();
+      if (error) throw error;
+      return data?.id ?? null;
+    },
+  });
+
   const { data: posList = [] } = useQuery({
     queryKey: ["pos-notif-pos", form.location_id],
     queryFn: async () => {
@@ -62,10 +71,12 @@ function NotificacionesPos() {
   const create = useMutation({
     mutationFn: async () => {
       if (!form.email.trim()) throw new Error("Ingresá un email de destino.");
+      if (!organizationId) throw new Error("No pudimos identificar la organización.");
       const { error } = await supabase.from("pos_notification_recipients").insert({
         full_name: form.full_name.trim() || form.email.trim(),
         email: form.email.trim().toLowerCase(),
         role_label: form.role_label.trim() || null,
+        organization_id: organizationId,
         location_id: form.location_id === "all" ? null : form.location_id,
         point_of_sale_id: form.point_of_sale_id === "all" ? null : form.point_of_sale_id,
       });
