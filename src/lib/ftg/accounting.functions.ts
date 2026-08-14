@@ -112,17 +112,11 @@ export const postManualEntry = createServerFn({ method: "POST" })
     return { id: entryId as string, duplicated: false, debit, credit };
   });
 
-/** Aprueba una minuta pendiente (paso 1 del circuito: revisión administrativa). */
+/** Aprueba una minuta: postea el asiento (nota contable o movimiento de fondos) y la concilia. */
 export const approveMemo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) =>
-    z
-      .object({
-        memo_id: z.string().uuid(),
-        idempotency_key: z.string().min(8).max(80).optional(),
-        auto_post: z.boolean().optional(),
-      })
-      .parse(data),
+    z.object({ memo_id: z.string().uuid(), idempotency_key: z.string().min(8).max(80) }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -138,66 +132,72 @@ export const approveMemo = createServerFn({ method: "POST" })
       .maybeSingle();
     if (memoError) throw new Error(memoError.message);
     if (!memo) throw new Error("La minuta no existe.");
-    if (memo.status === "anulada") throw new Error("La minuta está anulada.");
-    if (memo.status === "conciliada") throw new Error("La minuta ya fue conciliada.");
+    if (memo.status !== "pendiente") throw new Error("La minuta ya fue procesada.");
 
-    if (memo.status === "pendiente") {
-      const { error: approveError } = await supabaseAdmin
-        .from("treasury_memos")
-        .update({ status: "aprobada", approved_by: userId, approved_at: new Date().toISOString() })
-        .eq("id", memo.id)
-        .eq("status", "pendiente");
-      if (approveError) throw new Error(approveError.message);
+    const amount = Number(memo.amount);
+    if (!Number.isFinite(amount) || amount <= 0) throw new Error("La minuta no tiene un importe válido.");
 
-      await supabaseAdmin.from("audit_logs").insert({
-        user_id: userId,
-        action: "minuta_aprobada",
-        entity: "treasury_memos",
-        entity_id: memo.id,
-        organization_id: memo.organization_id,
-        location_id: memo.location_id,
-        details: { amount: Number(memo.amount), memo_type: memo.memo_type },
-      });
+    let debitCode = memo.debit_account_code;
+    let creditCode = memo.credit_account_code;
+    if (memo.memo_type === "movimiento_fondos") {
+      debitCode = debitCode ?? "1.1.1";
+      creditCode = creditCode ?? "1.1.2";
+    }
+    if (!debitCode || !creditCode) throw new Error("Indicá la cuenta del debe y la del haber antes de postear.");
+
+    let entryId: string | null = memo.journal_entry_id;
+    if (!entryId) {
+      const existing = await supabaseAdmin
+        .from("journal_entries")
+        .select("id")
+        .eq("idempotency_key", data.idempotency_key)
+        .maybeSingle();
+      entryId = existing.data?.id ?? null;
     }
 
-    if (data.auto_post === false) return { id: memo.id, status: "aprobada", journal_entry_id: memo.journal_entry_id };
+    if (!entryId) {
+      const { data: created, error } = await supabaseAdmin.rpc("post_journal_entry", {
+        _org: memo.organization_id,
+        ...(memo.location_id ? { _loc: memo.location_id } : {}),
+        _date: new Date(memo.created_at).toISOString().slice(0, 10),
+        _description: `Minuta · ${memo.description}`,
+        _source_type: "minuta",
+        _source_id: memo.id,
+        _currency: memo.currency_code,
+        _lines: [
+          { account_code: debitCode, debit: amount, credit: 0, description: memo.description },
+          { account_code: creditCode, debit: 0, credit: amount, description: memo.description },
+        ],
+        _created_by: userId,
+      } as never);
+      if (error) throw new Error(error.message);
+      entryId = (created as string) ?? null;
+      if (entryId) {
+        await supabaseAdmin
+          .from("journal_entries")
+          .update({ idempotency_key: data.idempotency_key })
+          .eq("id", entryId);
+      }
+    }
 
-    const { postMemoInternal } = await import("@/lib/ftg/memos.server");
-    return await postMemoInternal({
-      memoId: memo.id,
-      userId,
-      idempotencyKey: data.idempotency_key ?? memo.idempotency_key ?? `memo-${memo.id}`,
+    const { error: updateError } = await supabaseAdmin
+      .from("treasury_memos")
+      .update({ status: "conciliada", journal_entry_id: entryId })
+      .eq("id", memo.id);
+    if (updateError) throw new Error(updateError.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      user_id: userId,
+      action: "minuta_conciliada",
+      entity: "treasury_memos",
+      entity_id: memo.id,
+      organization_id: memo.organization_id,
+      location_id: memo.location_id,
+      details: { amount, memo_type: memo.memo_type, journal_entry_id: entryId, debitCode, creditCode },
     });
+
+    return { id: memo.id, journal_entry_id: entryId };
   });
-
-/** Postea el asiento de una minuta aprobada y la deja conciliada. */
-export const postMemo = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) =>
-    z
-      .object({
-        memo_id: z.string().uuid(),
-        idempotency_key: z.string().min(8).max(80).optional(),
-        reconciliation_note: z.string().trim().max(240).optional(),
-      })
-      .parse(data),
-  )
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin, error: roleError } = await supabase.rpc("is_admin", { _user_id: userId });
-    if (roleError) throw new Error(roleError.message);
-    if (!isAdmin) throw new Error("Solo un perfil administrativo o contable puede postear minutas.");
-
-    const { postMemoInternal } = await import("@/lib/ftg/memos.server");
-    return await postMemoInternal({
-      memoId: data.memo_id,
-      userId,
-      idempotencyKey: data.idempotency_key,
-      note: data.reconciliation_note ?? null,
-      requireApproved: true,
-    });
-  });
-
 
 /** Anula una minuta pendiente dejando registro en auditoría. */
 export const cancelMemo = createServerFn({ method: "POST" })
@@ -214,13 +214,13 @@ export const cancelMemo = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: memo, error } = await supabaseAdmin
       .from("treasury_memos")
-      .update({ status: "anulada", cancel_reason: data.reason ?? null })
+      .update({ status: "anulada" })
       .eq("id", data.memo_id)
-      .in("status", ["pendiente", "aprobada"])
+      .eq("status", "pendiente")
       .select("id, organization_id, location_id, amount")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!memo) throw new Error("Solo se pueden anular minutas pendientes o aprobadas (sin postear).");
+    if (!memo) throw new Error("Solo se pueden anular minutas pendientes.");
 
     await supabaseAdmin.from("audit_logs").insert({
       user_id: userId,

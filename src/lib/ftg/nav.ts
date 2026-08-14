@@ -13,21 +13,15 @@ export const ADMIN_SUBNAV: SubNavItem[] = [
   { to: "/administracion/minutas", label: "Minutas", group: "General" },
   { to: "/administracion/asientos/nuevo", label: "Cargar asientos", group: "Contabilidad" },
   { to: "/administracion/plan-de-cuentas", label: "Plan de cuentas", group: "Contabilidad" },
-  { to: "/administracion/reportes", label: "Reportes disponibles", exact: true, group: "Reportes" },
-  { to: "/administracion/reportes/ventas", label: "Ventas", group: "Reportes" },
-  { to: "/administracion/reportes/cajas", label: "Cajas y arqueos", group: "Reportes" },
-  { to: "/administracion/reportes/pagar", label: "Ctas a pagar (histórico)", group: "Reportes" },
-  { to: "/administracion/reportes/cobrar", label: "Ctas a cobrar (histórico)", group: "Reportes" },
-  { to: "/administracion/reportes/comprobantes", label: "Facturas procesadas", group: "Reportes" },
-  { to: "/administracion/reportes/inventario", label: "Inventario y stock", group: "Reportes" },
+  { to: "/administracion/reportes", label: "Sedes y puntos de venta", exact: true, group: "Reportes" },
   { to: "/administracion/reportes/facturas", label: "Facturas automatizadas", group: "Reportes" },
+  { to: "/administracion/reportes/cajas", label: "Arqueos y cajas", group: "Reportes" },
   { to: "/administracion/eecc", label: "Sumas y saldos", exact: true, group: "EECC" },
   { to: "/administracion/eecc/resultados", label: "Estado de resultados", group: "EECC" },
   { to: "/administracion/eecc/situacion", label: "Situación patrimonial", group: "EECC" },
   { to: "/administracion/eecc/diario", label: "Libro diario", group: "EECC" },
   { to: "/administracion/eecc/mayor", label: "Libro mayor", group: "EECC" },
   { to: "/administracion/eecc/flujo-fondos", label: "Flujo de fondos", group: "EECC" },
-  { to: "/administracion/eecc/conciliacion", label: "Conciliación de fondos", group: "EECC" },
 ];
 
 export const SUPERVISOR_SUBNAV: SubNavItem[] = [

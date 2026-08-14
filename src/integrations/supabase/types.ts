@@ -5207,9 +5207,6 @@ export type Database = {
       treasury_memos: {
         Row: {
           amount: number
-          approved_at: string | null
-          approved_by: string | null
-          cancel_reason: string | null
           cash_source_from_id: string | null
           cash_source_to_id: string | null
           created_at: string
@@ -5224,17 +5221,11 @@ export type Database = {
           location_id: string | null
           memo_type: string
           organization_id: string
-          posted_at: string | null
-          reconciled_at: string | null
-          reconciliation_note: string | null
           status: string
           updated_at: string
         }
         Insert: {
           amount?: number
-          approved_at?: string | null
-          approved_by?: string | null
-          cancel_reason?: string | null
           cash_source_from_id?: string | null
           cash_source_to_id?: string | null
           created_at?: string
@@ -5249,17 +5240,11 @@ export type Database = {
           location_id?: string | null
           memo_type: string
           organization_id: string
-          posted_at?: string | null
-          reconciled_at?: string | null
-          reconciliation_note?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           amount?: number
-          approved_at?: string | null
-          approved_by?: string | null
-          cancel_reason?: string | null
           cash_source_from_id?: string | null
           cash_source_to_id?: string | null
           created_at?: string
@@ -5274,9 +5259,6 @@ export type Database = {
           location_id?: string | null
           memo_type?: string
           organization_id?: string
-          posted_at?: string | null
-          reconciled_at?: string | null
-          reconciliation_note?: string | null
           status?: string
           updated_at?: string
         }
@@ -5458,7 +5440,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_access_finance: { Args: { _user_id: string }; Returns: boolean }
       can_manage_users: { Args: { _user_id: string }; Returns: boolean }
       cash_flow_opening: {
         Args: { _from: string; _loc?: string }
@@ -5473,13 +5454,6 @@ export type Database = {
           outflow: number
           source_name: string
         }[]
-      }
-      has_any_role: {
-        Args: {
-          _roles: Database["public"]["Enums"]["app_role"][]
-          _user_id: string
-        }
-        Returns: boolean
       }
       has_role: {
         Args: {
