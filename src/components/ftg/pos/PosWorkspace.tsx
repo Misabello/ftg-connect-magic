@@ -14,10 +14,11 @@ import {
   type PaymentDraft,
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
-import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
+import { ReceiptShareDialog, type SaleAssignment } from "@/components/ftg/pos/ReceiptShareDialog";
 import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
 import { PosTicketsPanel } from "@/components/ftg/pos/PosTicketsPanel";
 import { CashSourcesPanel } from "@/components/ftg/pos/CashSourcesPanel";
+import { CashCloseSummaryDialog } from "@/components/ftg/pos/CashCloseSummaryDialog";
 import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useServerFn } from "@tanstack/react-start";
+import { closeCashSession } from "@/lib/ftg/pos-close.functions";
+import type { CloseSummary } from "@/lib/ftg/pos-close";
 import { useDaySync } from "@/hooks/useDaySync";
 import { SyncDayButton } from "@/components/ftg/sync/SyncDayButton";
 import { useScope } from "@/hooks/useScope";
@@ -90,6 +94,10 @@ export function PosWorkspace({
   const [ticketOpen, setTicketOpen] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
   const [lastContact, setLastContact] = useState({ email: "", phone: "" });
+  const [closeSummary, setCloseSummary] = useState<CloseSummary | null>(null);
+  const [lastAssignment, setLastAssignment] = useState<SaleAssignment | null>(null);
+  const [closeSummaryOpen, setCloseSummaryOpen] = useState(false);
+  const runCloseSession = useServerFn(closeCashSession);
 
   useEffect(() => {
     const refresh = () => setMagicItems(listMagicItems());
@@ -339,22 +347,14 @@ export function PosWorkspace({
   const closeSession = useMutation({
     mutationFn: async ({ counted, notes }: { counted: number; notes: string }) => {
       if (!session) throw new Error("No hay caja abierta");
-      const { error } = await supabase
-        .from("cash_sessions")
-        .update({
-          status: "cerrada",
-          closed_at: new Date().toISOString(),
-          closed_by: user?.id ?? null,
-          expected_amount: expectedCash,
-          counted_amount: counted,
-          difference_amount: Math.round((counted - expectedCash) * 100) / 100,
-          notes: notes || null,
-        })
-        .eq("id", session.id);
-      if (error) throw error;
+      return (await runCloseSession({
+        data: { cash_session_id: session.id, counted_amount: counted, notes: notes || undefined },
+      })) as CloseSummary;
     },
-    onSuccess: () => {
-      toast.success("Caja cerrada con arqueo registrado");
+    onSuccess: (summary) => {
+      toast.success("Caja cerrada con arqueo y ajuste contable", { description: summary.journalNote });
+      setCloseSummary(summary);
+      setCloseSummaryOpen(true);
       queryClient.invalidateQueries({ queryKey: ["cash-session"] });
       queryClient.invalidateQueries({ queryKey: ["session-sales"] });
     },
@@ -479,7 +479,7 @@ export function PosWorkspace({
             audit: auditPayload,
           },
         });
-        return { sale_number: saleNumber, queued: true };
+        return { sale_number: saleNumber, queued: true, sale_id: null as string | null };
       };
 
       if (!online) return await queueLocally();
@@ -504,7 +504,7 @@ export function PosWorkspace({
 
         await supabase.from("audit_logs").insert({ ...auditPayload, entity_id: sale.id });
 
-        return { sale_number: sale.sale_number, queued: false };
+        return { sale_number: sale.sale_number, queued: false, sale_id: sale.id as string | null };
       } catch (error) {
         if (!navigator.onLine) return await queueLocally();
         throw error;
@@ -559,6 +559,22 @@ export function PosWorkspace({
       setLastContact({
         email: variables.customer.email || lastContact.email,
         phone: variables.customer.phone || lastContact.phone,
+      });
+      setLastAssignment({
+        saleId: sale.sale_id,
+        queued: sale.queued,
+        posName: activePos?.name ?? "Punto de venta",
+        posCode: activePos?.code ?? "",
+        locationName: activeLocation?.name ?? null,
+        payments: variables.payments.map((p) => ({
+          method: methods.find((m) => m.id === p.methodId)?.name ?? "Sin especificar",
+          amount: p.amount,
+        })),
+        items: soldLines.map((l) => ({
+          name: l.name,
+          quantity: l.quantity,
+          total: lineGross(l),
+        })),
       });
       setShareOpen(true);
       setLines([]);
@@ -828,6 +844,16 @@ export function PosWorkspace({
         receipt={lastReceipt}
         defaultEmail={lastContact.email}
         defaultPhone={lastContact.phone}
+        assignment={lastAssignment}
+        currency={currency}
+        locale={locale}
+      />
+
+      <CashCloseSummaryDialog
+        open={closeSummaryOpen}
+        onOpenChange={setCloseSummaryOpen}
+        summary={closeSummary}
+        locale={locale}
       />
     </div>
   );

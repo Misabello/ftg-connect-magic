@@ -61,7 +61,7 @@ export function SimpleFilter({
   );
 }
 
-function ExportSheetButton({
+export function ExportSheetButton({
   title,
   headers,
   getRows,

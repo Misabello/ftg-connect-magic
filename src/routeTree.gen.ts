@@ -34,10 +34,13 @@ import { Route as AuthenticatedAdministracionReportesRouteImport } from './route
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
 import { Route as AuthenticatedConfiguracionAuditoriaRouteImport } from './routes/_authenticated/configuracion.auditoria'
 import { Route as AuthenticatedConfiguracionEmpleadosRouteImport } from './routes/_authenticated/configuracion.empleados'
+import { Route as AuthenticatedConfiguracionNotificacionesRouteImport } from './routes/_authenticated/configuracion.notificaciones'
 import { Route as AuthenticatedConfiguracionParametrosRouteImport } from './routes/_authenticated/configuracion.parametros'
 import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_authenticated/configuracion.roles'
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
+import { Route as AuthenticatedPosIndexRouteImport } from './routes/_authenticated/pos.index'
+import { Route as AuthenticatedPosDetalleRouteImport } from './routes/_authenticated/pos.detalle'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
 import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
@@ -49,6 +52,7 @@ import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './rou
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
 import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
+import { Route as AuthenticatedAdministracionAsientosIndexRouteImport } from './routes/_authenticated/administracion.asientos.index'
 import { Route as AuthenticatedAdministracionAsientosNuevoRouteImport } from './routes/_authenticated/administracion.asientos.nuevo'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
 import { Route as AuthenticatedAdministracionEeccConciliacionRouteImport } from './routes/_authenticated/administracion.eecc.conciliacion'
@@ -211,6 +215,12 @@ const AuthenticatedConfiguracionEmpleadosRoute =
     path: '/empleados',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
+const AuthenticatedConfiguracionNotificacionesRoute =
+  AuthenticatedConfiguracionNotificacionesRouteImport.update({
+    id: '/notificaciones',
+    path: '/notificaciones',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
 const AuthenticatedConfiguracionParametrosRoute =
   AuthenticatedConfiguracionParametrosRouteImport.update({
     id: '/parametros',
@@ -235,6 +245,16 @@ const AuthenticatedConfiguracionVacacionesRoute =
     path: '/vacaciones',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
+const AuthenticatedPosIndexRoute = AuthenticatedPosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedPosRoute,
+} as any)
+const AuthenticatedPosDetalleRoute = AuthenticatedPosDetalleRouteImport.update({
+  id: '/detalle',
+  path: '/detalle',
+  getParentRoute: () => AuthenticatedPosRoute,
+} as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
   path: '/sedes/',
@@ -299,6 +319,12 @@ const AuthenticatedSupervisoresVentasRoute =
     id: '/ventas',
     path: '/ventas',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
+  } as any)
+const AuthenticatedAdministracionAsientosIndexRoute =
+  AuthenticatedAdministracionAsientosIndexRouteImport.update({
+    id: '/asientos/',
+    path: '/asientos/',
+    getParentRoute: () => AuthenticatedAdministracionRoute,
   } as any)
 const AuthenticatedAdministracionAsientosNuevoRoute =
   AuthenticatedAdministracionAsientosNuevoRouteImport.update({
@@ -430,7 +456,7 @@ export interface FileRoutesByFullPath {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
-  '/pos': typeof AuthenticatedPosRoute
+  '/pos': typeof AuthenticatedPosRouteWithChildren
   '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -443,10 +469,12 @@ export interface FileRoutesByFullPath {
   '/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -458,6 +486,7 @@ export interface FileRoutesByFullPath {
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/administracion/': typeof AuthenticatedAdministracionIndexRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
+  '/pos/': typeof AuthenticatedPosIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -476,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/administracion/asientos/': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
   '/administracion/reportes/': typeof AuthenticatedAdministracionReportesIndexRoute
   '/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -489,7 +519,6 @@ export interface FileRoutesByTo {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
-  '/pos': typeof AuthenticatedPosRoute
   '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -499,10 +528,12 @@ export interface FileRoutesByTo {
   '/administracion/plan-de-cuentas': typeof AuthenticatedAdministracionPlanDeCuentasRoute
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -514,6 +545,7 @@ export interface FileRoutesByTo {
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/administracion': typeof AuthenticatedAdministracionIndexRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
+  '/pos': typeof AuthenticatedPosIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -532,6 +564,7 @@ export interface FileRoutesByTo {
   '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/administracion/asientos': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/administracion/eecc': typeof AuthenticatedAdministracionEeccIndexRoute
   '/administracion/reportes': typeof AuthenticatedAdministracionReportesIndexRoute
   '/sedes/$locationId': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -549,7 +582,7 @@ export interface FileRoutesById {
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
-  '/_authenticated/pos': typeof AuthenticatedPosRoute
+  '/_authenticated/pos': typeof AuthenticatedPosRouteWithChildren
   '/_authenticated/proveedores': typeof AuthenticatedProveedoresRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -562,10 +595,12 @@ export interface FileRoutesById {
   '/_authenticated/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/_authenticated/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/_authenticated/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/_authenticated/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/_authenticated/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/_authenticated/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/_authenticated/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -577,6 +612,7 @@ export interface FileRoutesById {
   '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/administracion/': typeof AuthenticatedAdministracionIndexRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
+  '/_authenticated/pos/': typeof AuthenticatedPosIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/_authenticated/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -595,6 +631,7 @@ export interface FileRoutesById {
   '/_authenticated/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/_authenticated/administracion/asientos/': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/_authenticated/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
   '/_authenticated/administracion/reportes/': typeof AuthenticatedAdministracionReportesIndexRoute
   '/_authenticated/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -625,10 +662,12 @@ export interface FileRouteTypes {
     | '/administracion/reportes'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
+    | '/configuracion/notificaciones'
     | '/configuracion/parametros'
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/pos/detalle'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
     | '/supervisores/cierre'
@@ -640,6 +679,7 @@ export interface FileRouteTypes {
     | '/supervisores/ventas'
     | '/administracion/'
     | '/configuracion/'
+    | '/pos/'
     | '/sedes/'
     | '/supervisores/'
     | '/administracion/asientos/nuevo'
@@ -658,6 +698,7 @@ export interface FileRouteTypes {
     | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/administracion/asientos/'
     | '/administracion/eecc/'
     | '/administracion/reportes/'
     | '/sedes/$locationId/'
@@ -671,7 +712,6 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/inventario'
     | '/operaciones'
-    | '/pos'
     | '/proveedores'
     | '/reportes'
     | '/sincronizacion'
@@ -681,10 +721,12 @@ export interface FileRouteTypes {
     | '/administracion/plan-de-cuentas'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
+    | '/configuracion/notificaciones'
     | '/configuracion/parametros'
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/pos/detalle'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
     | '/supervisores/cierre'
@@ -696,6 +738,7 @@ export interface FileRouteTypes {
     | '/supervisores/ventas'
     | '/administracion'
     | '/configuracion'
+    | '/pos'
     | '/sedes'
     | '/supervisores'
     | '/administracion/asientos/nuevo'
@@ -714,6 +757,7 @@ export interface FileRouteTypes {
     | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/administracion/asientos'
     | '/administracion/eecc'
     | '/administracion/reportes'
     | '/sedes/$locationId'
@@ -743,10 +787,12 @@ export interface FileRouteTypes {
     | '/_authenticated/administracion/reportes'
     | '/_authenticated/configuracion/auditoria'
     | '/_authenticated/configuracion/empleados'
+    | '/_authenticated/configuracion/notificaciones'
     | '/_authenticated/configuracion/parametros'
     | '/_authenticated/configuracion/roles'
     | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/vacaciones'
+    | '/_authenticated/pos/detalle'
     | '/_authenticated/supervisores/alertas'
     | '/_authenticated/supervisores/cajas'
     | '/_authenticated/supervisores/cierre'
@@ -758,6 +804,7 @@ export interface FileRouteTypes {
     | '/_authenticated/supervisores/ventas'
     | '/_authenticated/administracion/'
     | '/_authenticated/configuracion/'
+    | '/_authenticated/pos/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
     | '/_authenticated/administracion/asientos/nuevo'
@@ -776,6 +823,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/_authenticated/administracion/asientos/'
     | '/_authenticated/administracion/eecc/'
     | '/_authenticated/administracion/reportes/'
     | '/_authenticated/sedes/$locationId/'
@@ -967,6 +1015,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracionEmpleadosRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
     }
+    '/_authenticated/configuracion/notificaciones': {
+      id: '/_authenticated/configuracion/notificaciones'
+      path: '/notificaciones'
+      fullPath: '/configuracion/notificaciones'
+      preLoaderRoute: typeof AuthenticatedConfiguracionNotificacionesRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
     '/_authenticated/configuracion/parametros': {
       id: '/_authenticated/configuracion/parametros'
       path: '/parametros'
@@ -994,6 +1049,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/configuracion/vacaciones'
       preLoaderRoute: typeof AuthenticatedConfiguracionVacacionesRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/pos/': {
+      id: '/_authenticated/pos/'
+      path: '/'
+      fullPath: '/pos/'
+      preLoaderRoute: typeof AuthenticatedPosIndexRouteImport
+      parentRoute: typeof AuthenticatedPosRoute
+    }
+    '/_authenticated/pos/detalle': {
+      id: '/_authenticated/pos/detalle'
+      path: '/detalle'
+      fullPath: '/pos/detalle'
+      preLoaderRoute: typeof AuthenticatedPosDetalleRouteImport
+      parentRoute: typeof AuthenticatedPosRoute
     }
     '/_authenticated/sedes/': {
       id: '/_authenticated/sedes/'
@@ -1071,6 +1140,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/supervisores/ventas'
       preLoaderRoute: typeof AuthenticatedSupervisoresVentasRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
+    }
+    '/_authenticated/administracion/asientos/': {
+      id: '/_authenticated/administracion/asientos/'
+      path: '/asientos'
+      fullPath: '/administracion/asientos/'
+      preLoaderRoute: typeof AuthenticatedAdministracionAsientosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdministracionRoute
     }
     '/_authenticated/administracion/asientos/nuevo': {
       id: '/_authenticated/administracion/asientos/nuevo'
@@ -1293,6 +1369,7 @@ interface AuthenticatedAdministracionRouteChildren {
   AuthenticatedAdministracionReportesRoute: typeof AuthenticatedAdministracionReportesRouteWithChildren
   AuthenticatedAdministracionIndexRoute: typeof AuthenticatedAdministracionIndexRoute
   AuthenticatedAdministracionAsientosNuevoRoute: typeof AuthenticatedAdministracionAsientosNuevoRoute
+  AuthenticatedAdministracionAsientosIndexRoute: typeof AuthenticatedAdministracionAsientosIndexRoute
 }
 
 const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRouteChildren =
@@ -1313,6 +1390,8 @@ const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRoute
       AuthenticatedAdministracionIndexRoute,
     AuthenticatedAdministracionAsientosNuevoRoute:
       AuthenticatedAdministracionAsientosNuevoRoute,
+    AuthenticatedAdministracionAsientosIndexRoute:
+      AuthenticatedAdministracionAsientosIndexRoute,
   }
 
 const AuthenticatedAdministracionRouteWithChildren =
@@ -1323,6 +1402,7 @@ const AuthenticatedAdministracionRouteWithChildren =
 interface AuthenticatedConfiguracionRouteChildren {
   AuthenticatedConfiguracionAuditoriaRoute: typeof AuthenticatedConfiguracionAuditoriaRoute
   AuthenticatedConfiguracionEmpleadosRoute: typeof AuthenticatedConfiguracionEmpleadosRoute
+  AuthenticatedConfiguracionNotificacionesRoute: typeof AuthenticatedConfiguracionNotificacionesRoute
   AuthenticatedConfiguracionParametrosRoute: typeof AuthenticatedConfiguracionParametrosRoute
   AuthenticatedConfiguracionRolesRoute: typeof AuthenticatedConfiguracionRolesRoute
   AuthenticatedConfiguracionUsuariosRoute: typeof AuthenticatedConfiguracionUsuariosRoute
@@ -1336,6 +1416,8 @@ const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteCh
       AuthenticatedConfiguracionAuditoriaRoute,
     AuthenticatedConfiguracionEmpleadosRoute:
       AuthenticatedConfiguracionEmpleadosRoute,
+    AuthenticatedConfiguracionNotificacionesRoute:
+      AuthenticatedConfiguracionNotificacionesRoute,
     AuthenticatedConfiguracionParametrosRoute:
       AuthenticatedConfiguracionParametrosRoute,
     AuthenticatedConfiguracionRolesRoute: AuthenticatedConfiguracionRolesRoute,
@@ -1350,6 +1432,19 @@ const AuthenticatedConfiguracionRouteWithChildren =
   AuthenticatedConfiguracionRoute._addFileChildren(
     AuthenticatedConfiguracionRouteChildren,
   )
+
+interface AuthenticatedPosRouteChildren {
+  AuthenticatedPosDetalleRoute: typeof AuthenticatedPosDetalleRoute
+  AuthenticatedPosIndexRoute: typeof AuthenticatedPosIndexRoute
+}
+
+const AuthenticatedPosRouteChildren: AuthenticatedPosRouteChildren = {
+  AuthenticatedPosDetalleRoute: AuthenticatedPosDetalleRoute,
+  AuthenticatedPosIndexRoute: AuthenticatedPosIndexRoute,
+}
+
+const AuthenticatedPosRouteWithChildren =
+  AuthenticatedPosRoute._addFileChildren(AuthenticatedPosRouteChildren)
 
 interface AuthenticatedSupervisoresRouteChildren {
   AuthenticatedSupervisoresAlertasRoute: typeof AuthenticatedSupervisoresAlertasRoute
@@ -1397,7 +1492,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
-  AuthenticatedPosRoute: typeof AuthenticatedPosRoute
+  AuthenticatedPosRoute: typeof AuthenticatedPosRouteWithChildren
   AuthenticatedProveedoresRoute: typeof AuthenticatedProveedoresRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedSincronizacionRoute: typeof AuthenticatedSincronizacionRoute
@@ -1416,7 +1511,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
-  AuthenticatedPosRoute: AuthenticatedPosRoute,
+  AuthenticatedPosRoute: AuthenticatedPosRouteWithChildren,
   AuthenticatedProveedoresRoute: AuthenticatedProveedoresRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedSincronizacionRoute: AuthenticatedSincronizacionRoute,

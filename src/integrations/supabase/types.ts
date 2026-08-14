@@ -3772,6 +3772,169 @@ export type Database = {
           },
         ]
       }
+      pos_close_notifications: {
+        Row: {
+          body: string
+          cash_session_id: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          items: Json
+          journal_entry_id: string | null
+          location_id: string | null
+          organization_id: string
+          point_of_sale_id: string | null
+          recipients: Json
+          sender_email: string
+          status: string
+          subject: string
+          totals: Json
+        }
+        Insert: {
+          body: string
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          items?: Json
+          journal_entry_id?: string | null
+          location_id?: string | null
+          organization_id: string
+          point_of_sale_id?: string | null
+          recipients?: Json
+          sender_email: string
+          status?: string
+          subject: string
+          totals?: Json
+        }
+        Update: {
+          body?: string
+          cash_session_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          items?: Json
+          journal_entry_id?: string | null
+          location_id?: string | null
+          organization_id?: string
+          point_of_sale_id?: string | null
+          recipients?: Json
+          sender_email?: string
+          status?: string
+          subject?: string
+          totals?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_close_notifications_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_close_notifications_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_close_notifications_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_close_notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_close_notifications_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pos_notification_recipients: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          location_id: string | null
+          organization_id: string
+          phone: string | null
+          point_of_sale_id: string | null
+          role_label: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          full_name: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          organization_id: string
+          phone?: string | null
+          point_of_sale_id?: string | null
+          role_label?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          location_id?: string | null
+          organization_id?: string
+          phone?: string | null
+          point_of_sale_id?: string | null
+          role_label?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pos_notification_recipients_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_notification_recipients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pos_notification_recipients_point_of_sale_id_fkey"
+            columns: ["point_of_sale_id"]
+            isOneToOne: false
+            referencedRelation: "points_of_sale"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pos_tickets: {
         Row: {
           amount: number
