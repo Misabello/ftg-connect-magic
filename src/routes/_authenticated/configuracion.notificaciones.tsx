@@ -34,7 +34,14 @@ const HEADERS = ["Nombre", "Email", "Rol", "Sede", "Punto de venta", "Estado"];
 function NotificacionesPos() {
   const queryClient = useQueryClient();
   const { locations } = useScope();
-  const [form, setForm] = useState({ full_name: "", email: "", role_label: "", location_id: "all", point_of_sale_id: "all" });
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    role_label: "",
+    location_id: "all",
+    point_of_sale_id: "all",
+  });
 
   const { data: organizationId } = useQuery({
     queryKey: ["notif-org-id"],
@@ -71,7 +78,7 @@ function NotificacionesPos() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("pos_notification_recipients")
-        .select("id, full_name, email, role_label, is_active, location_id, point_of_sale_id")
+        .select("id, full_name, email, phone, role_label, is_active, location_id, point_of_sale_id")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -85,6 +92,7 @@ function NotificacionesPos() {
       const { error } = await supabase.from("pos_notification_recipients").insert({
         full_name: form.full_name.trim() || form.email.trim(),
         email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim() || null,
         role_label: form.role_label.trim() || null,
         organization_id: organizationId,
         location_id: form.location_id === "all" ? null : form.location_id,
@@ -94,7 +102,7 @@ function NotificacionesPos() {
     },
     onSuccess: () => {
       toast.success("Destinatario agregado");
-      setForm({ full_name: "", email: "", role_label: "", location_id: "all", point_of_sale_id: "all" });
+      setForm({ full_name: "", email: "", phone: "", role_label: "", location_id: "all", point_of_sale_id: "all" });
       queryClient.invalidateQueries({ queryKey: ["pos-notification-recipients"] });
     },
     onError: (e: Error) => toast.error("No pudimos guardar el destinatario", { description: e.message }),
@@ -166,6 +174,14 @@ function NotificacionesPos() {
             <Input value={form.role_label} onChange={(e) => setForm({ ...form, role_label: e.target.value })} />
           </div>
           <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">WhatsApp (con código de país)</Label>
+            <Input
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              placeholder="5492235550000"
+            />
+          </div>
+          <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Sede</Label>
             <Select
               value={form.location_id}
@@ -234,7 +250,10 @@ function NotificacionesPos() {
             {recipients.map((r) => (
               <TableRow key={r.id}>
                 <TableCell className="font-medium">{r.full_name}</TableCell>
-                <TableCell>{r.email}</TableCell>
+                <TableCell>
+                  <span>{r.email}</span>
+                  {r.phone ? <span className="block text-xs text-muted-foreground">{r.phone}</span> : null}
+                </TableCell>
                 <TableCell>{r.role_label ?? "—"}</TableCell>
                 <TableCell>{locName(r.location_id)}</TableCell>
                 <TableCell>{posName(r.point_of_sale_id)}</TableCell>
