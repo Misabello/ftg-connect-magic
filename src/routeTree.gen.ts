@@ -38,6 +38,7 @@ import { Route as AuthenticatedConfiguracionParametrosRouteImport } from './rout
 import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_authenticated/configuracion.roles'
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
+import { Route as AuthenticatedPosIndexRouteImport } from './routes/_authenticated/pos.index'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
 import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
@@ -235,6 +236,11 @@ const AuthenticatedConfiguracionVacacionesRoute =
     path: '/vacaciones',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
+const AuthenticatedPosIndexRoute = AuthenticatedPosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedPosRoute,
+} as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
   id: '/sedes/',
   path: '/sedes/',
@@ -430,7 +436,7 @@ export interface FileRoutesByFullPath {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
-  '/pos': typeof AuthenticatedPosRoute
+  '/pos': typeof AuthenticatedPosRouteWithChildren
   '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -458,6 +464,7 @@ export interface FileRoutesByFullPath {
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/administracion/': typeof AuthenticatedAdministracionIndexRoute
   '/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
+  '/pos/': typeof AuthenticatedPosIndexRoute
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -489,7 +496,6 @@ export interface FileRoutesByTo {
   '/inicio': typeof AuthenticatedInicioRoute
   '/inventario': typeof AuthenticatedInventarioRoute
   '/operaciones': typeof AuthenticatedOperacionesRoute
-  '/pos': typeof AuthenticatedPosRoute
   '/proveedores': typeof AuthenticatedProveedoresRoute
   '/reportes': typeof AuthenticatedReportesRoute
   '/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -514,6 +520,7 @@ export interface FileRoutesByTo {
   '/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/administracion': typeof AuthenticatedAdministracionIndexRoute
   '/configuracion': typeof AuthenticatedConfiguracionIndexRoute
+  '/pos': typeof AuthenticatedPosIndexRoute
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -549,7 +556,7 @@ export interface FileRoutesById {
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/inventario': typeof AuthenticatedInventarioRoute
   '/_authenticated/operaciones': typeof AuthenticatedOperacionesRoute
-  '/_authenticated/pos': typeof AuthenticatedPosRoute
+  '/_authenticated/pos': typeof AuthenticatedPosRouteWithChildren
   '/_authenticated/proveedores': typeof AuthenticatedProveedoresRoute
   '/_authenticated/reportes': typeof AuthenticatedReportesRoute
   '/_authenticated/sincronizacion': typeof AuthenticatedSincronizacionRoute
@@ -577,6 +584,7 @@ export interface FileRoutesById {
   '/_authenticated/supervisores/ventas': typeof AuthenticatedSupervisoresVentasRoute
   '/_authenticated/administracion/': typeof AuthenticatedAdministracionIndexRoute
   '/_authenticated/configuracion/': typeof AuthenticatedConfiguracionIndexRoute
+  '/_authenticated/pos/': typeof AuthenticatedPosIndexRoute
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/_authenticated/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
@@ -640,6 +648,7 @@ export interface FileRouteTypes {
     | '/supervisores/ventas'
     | '/administracion/'
     | '/configuracion/'
+    | '/pos/'
     | '/sedes/'
     | '/supervisores/'
     | '/administracion/asientos/nuevo'
@@ -671,7 +680,6 @@ export interface FileRouteTypes {
     | '/inicio'
     | '/inventario'
     | '/operaciones'
-    | '/pos'
     | '/proveedores'
     | '/reportes'
     | '/sincronizacion'
@@ -696,6 +704,7 @@ export interface FileRouteTypes {
     | '/supervisores/ventas'
     | '/administracion'
     | '/configuracion'
+    | '/pos'
     | '/sedes'
     | '/supervisores'
     | '/administracion/asientos/nuevo'
@@ -758,6 +767,7 @@ export interface FileRouteTypes {
     | '/_authenticated/supervisores/ventas'
     | '/_authenticated/administracion/'
     | '/_authenticated/configuracion/'
+    | '/_authenticated/pos/'
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
     | '/_authenticated/administracion/asientos/nuevo'
@@ -994,6 +1004,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/configuracion/vacaciones'
       preLoaderRoute: typeof AuthenticatedConfiguracionVacacionesRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/pos/': {
+      id: '/_authenticated/pos/'
+      path: '/'
+      fullPath: '/pos/'
+      preLoaderRoute: typeof AuthenticatedPosIndexRouteImport
+      parentRoute: typeof AuthenticatedPosRoute
     }
     '/_authenticated/sedes/': {
       id: '/_authenticated/sedes/'
@@ -1351,6 +1368,17 @@ const AuthenticatedConfiguracionRouteWithChildren =
     AuthenticatedConfiguracionRouteChildren,
   )
 
+interface AuthenticatedPosRouteChildren {
+  AuthenticatedPosIndexRoute: typeof AuthenticatedPosIndexRoute
+}
+
+const AuthenticatedPosRouteChildren: AuthenticatedPosRouteChildren = {
+  AuthenticatedPosIndexRoute: AuthenticatedPosIndexRoute,
+}
+
+const AuthenticatedPosRouteWithChildren =
+  AuthenticatedPosRoute._addFileChildren(AuthenticatedPosRouteChildren)
+
 interface AuthenticatedSupervisoresRouteChildren {
   AuthenticatedSupervisoresAlertasRoute: typeof AuthenticatedSupervisoresAlertasRoute
   AuthenticatedSupervisoresCajasRoute: typeof AuthenticatedSupervisoresCajasRoute
@@ -1397,7 +1425,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedInventarioRoute: typeof AuthenticatedInventarioRoute
   AuthenticatedOperacionesRoute: typeof AuthenticatedOperacionesRoute
-  AuthenticatedPosRoute: typeof AuthenticatedPosRoute
+  AuthenticatedPosRoute: typeof AuthenticatedPosRouteWithChildren
   AuthenticatedProveedoresRoute: typeof AuthenticatedProveedoresRoute
   AuthenticatedReportesRoute: typeof AuthenticatedReportesRoute
   AuthenticatedSincronizacionRoute: typeof AuthenticatedSincronizacionRoute
@@ -1416,7 +1444,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedInventarioRoute: AuthenticatedInventarioRoute,
   AuthenticatedOperacionesRoute: AuthenticatedOperacionesRoute,
-  AuthenticatedPosRoute: AuthenticatedPosRoute,
+  AuthenticatedPosRoute: AuthenticatedPosRouteWithChildren,
   AuthenticatedProveedoresRoute: AuthenticatedProveedoresRoute,
   AuthenticatedReportesRoute: AuthenticatedReportesRoute,
   AuthenticatedSincronizacionRoute: AuthenticatedSincronizacionRoute,

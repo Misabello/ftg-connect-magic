@@ -25,7 +25,7 @@ function PosLayout() {
           Inicio
         </Link>
         <span className="mx-1.5">/</span>
-        <Link to="/pos" className="hover:text-foreground">
+        <Link to="/pos" search={{ cobrar: undefined }} className="hover:text-foreground">
           Punto de venta
         </Link>
         {current && current.to !== "/pos" && (
