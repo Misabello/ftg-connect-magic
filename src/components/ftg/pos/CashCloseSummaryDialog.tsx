@@ -119,13 +119,24 @@ export function CashCloseSummaryDialog({
           <Button
             disabled={summary.recipients.length === 0}
             onClick={() => {
-              window.location.href = mailtoLink(
-                summary.recipients.map((r) => r.email).join(","),
-                summary.subject,
-                summary.body,
-              );
+              const to = summary.recipients.map((r) => r.email).join(",");
+              const link = mailtoLink(to, summary.subject, summary.body);
+              try {
+                const win = window.open(link, "_self");
+                if (!win) window.location.href = link;
+              } catch {
+                window.location.href = link;
+              }
+              void navigator.clipboard?.writeText(summary.body).catch(() => undefined);
+              toast.success("Notificación preparada", {
+                description: `Destinatarios: ${to}. Copiamos el resumen por si tu cliente de correo no se abre.`,
+              });
               if (summary.notificationId) {
-                void markSent({ data: { notification_id: summary.notificationId } }).catch(() => undefined);
+                void markSent({ data: { notification_id: summary.notificationId } })
+                  .then(() => onOpenChange(false))
+                  .catch((e: Error) => toast.error("No pudimos registrar el envío", { description: e.message }));
+              } else {
+                onOpenChange(false);
               }
             }}
           >
