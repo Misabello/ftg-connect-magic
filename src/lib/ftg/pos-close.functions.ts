@@ -161,7 +161,7 @@ export const closeCashSession = createServerFn({ method: "POST" })
 
     const recipientsRes = await supabaseAdmin
       .from("pos_notification_recipients")
-      .select("full_name, email, point_of_sale_id, location_id")
+      .select("full_name, email, phone, point_of_sale_id, location_id")
       .eq("organization_id", session.organization_id)
       .eq("is_active", true);
     const recipients = (recipientsRes.data ?? [])
@@ -170,7 +170,7 @@ export const closeCashSession = createServerFn({ method: "POST" })
           (!r.point_of_sale_id || r.point_of_sale_id === session.point_of_sale_id) &&
           (!r.location_id || r.location_id === session.location_id),
       )
-      .map((r) => ({ full_name: r.full_name, email: r.email }));
+      .map((r) => ({ full_name: r.full_name, email: r.email, phone: r.phone ?? null }));
 
     const { subject, body } = buildCloseEmail({
       posName: posRes.data?.name ?? "Punto de venta",
