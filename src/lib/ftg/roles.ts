@@ -102,14 +102,9 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
 };
 
 export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
-  const allowed = new Set<ModuleKey>(["inicio"]);
-  for (const role of roles) {
-    const mods = ROLE_MODULES[role];
-    if (!mods) continue;
-    if (mods === "*") return new Set<ModuleKey>(ALL_MODULES);
-    for (const m of mods) allowed.add(m);
-  }
-  return allowed;
+  // Acceso abierto temporal: todos los usuarios autenticados ven todos los módulos.
+  void roles;
+  return new Set<ModuleKey>(ALL_MODULES);
 }
 
 /** Prefijo de ruta → módulo, del más específico al más general. */
