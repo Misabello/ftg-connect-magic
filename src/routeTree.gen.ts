@@ -39,6 +39,7 @@ import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_a
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
 import { Route as AuthenticatedConfiguracionVacacionesRouteImport } from './routes/_authenticated/configuracion.vacaciones'
 import { Route as AuthenticatedPosIndexRouteImport } from './routes/_authenticated/pos.index'
+import { Route as AuthenticatedPosDetalleRouteImport } from './routes/_authenticated/pos.detalle'
 import { Route as AuthenticatedSedesIndexRouteImport } from './routes/_authenticated/sedes.index'
 import { Route as AuthenticatedSupervisoresIndexRouteImport } from './routes/_authenticated/supervisores.index'
 import { Route as AuthenticatedSupervisoresAlertasRouteImport } from './routes/_authenticated/supervisores.alertas'
@@ -239,6 +240,11 @@ const AuthenticatedConfiguracionVacacionesRoute =
 const AuthenticatedPosIndexRoute = AuthenticatedPosIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedPosRoute,
+} as any)
+const AuthenticatedPosDetalleRoute = AuthenticatedPosDetalleRouteImport.update({
+  id: '/detalle',
+  path: '/detalle',
   getParentRoute: () => AuthenticatedPosRoute,
 } as any)
 const AuthenticatedSedesIndexRoute = AuthenticatedSedesIndexRouteImport.update({
@@ -453,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -509,6 +516,7 @@ export interface FileRoutesByTo {
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -573,6 +581,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
   '/_authenticated/configuracion/vacaciones': typeof AuthenticatedConfiguracionVacacionesRoute
+  '/_authenticated/pos/detalle': typeof AuthenticatedPosDetalleRoute
   '/_authenticated/supervisores/alertas': typeof AuthenticatedSupervisoresAlertasRoute
   '/_authenticated/supervisores/cajas': typeof AuthenticatedSupervisoresCajasRoute
   '/_authenticated/supervisores/cierre': typeof AuthenticatedSupervisoresCierreRoute
@@ -637,6 +646,7 @@ export interface FileRouteTypes {
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/pos/detalle'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
     | '/supervisores/cierre'
@@ -693,6 +703,7 @@ export interface FileRouteTypes {
     | '/configuracion/roles'
     | '/configuracion/usuarios'
     | '/configuracion/vacaciones'
+    | '/pos/detalle'
     | '/supervisores/alertas'
     | '/supervisores/cajas'
     | '/supervisores/cierre'
@@ -756,6 +767,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracion/roles'
     | '/_authenticated/configuracion/usuarios'
     | '/_authenticated/configuracion/vacaciones'
+    | '/_authenticated/pos/detalle'
     | '/_authenticated/supervisores/alertas'
     | '/_authenticated/supervisores/cajas'
     | '/_authenticated/supervisores/cierre'
@@ -1010,6 +1022,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/pos/'
       preLoaderRoute: typeof AuthenticatedPosIndexRouteImport
+      parentRoute: typeof AuthenticatedPosRoute
+    }
+    '/_authenticated/pos/detalle': {
+      id: '/_authenticated/pos/detalle'
+      path: '/detalle'
+      fullPath: '/pos/detalle'
+      preLoaderRoute: typeof AuthenticatedPosDetalleRouteImport
       parentRoute: typeof AuthenticatedPosRoute
     }
     '/_authenticated/sedes/': {
@@ -1369,10 +1388,12 @@ const AuthenticatedConfiguracionRouteWithChildren =
   )
 
 interface AuthenticatedPosRouteChildren {
+  AuthenticatedPosDetalleRoute: typeof AuthenticatedPosDetalleRoute
   AuthenticatedPosIndexRoute: typeof AuthenticatedPosIndexRoute
 }
 
 const AuthenticatedPosRouteChildren: AuthenticatedPosRouteChildren = {
+  AuthenticatedPosDetalleRoute: AuthenticatedPosDetalleRoute,
   AuthenticatedPosIndexRoute: AuthenticatedPosIndexRoute,
 }
 
