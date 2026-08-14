@@ -45,6 +45,15 @@ export const SUPERVISOR_SUBNAV: SubNavItem[] = [
 
 export const CONFIG_SUBNAV: SubNavItem[] = [
   { to: "/configuracion/usuarios", label: "Usuarios" },
+];
+
+export const POS_SUBNAV: SubNavItem[] = [
+  { to: "/pos", label: "Vender y cobrar", exact: true },
+  { to: "/pos/detalle", label: "Detalle de lo vendido" },
+];
+
+const CONFIG_SUBNAV_ITEMS: SubNavItem[] = [
+  { to: "/configuracion/usuarios", label: "Usuarios" },
   { to: "/configuracion/roles", label: "Roles y permisos" },
   { to: "/configuracion/empleados", label: "Empleados" },
   { to: "/configuracion/vacaciones", label: "Vacaciones y licencias" },
