@@ -101,15 +101,14 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
   auditor: ["inicio", "reportes", "administracion", "operaciones", "supervisores"],
 };
 
-export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
-  const allowed = new Set<ModuleKey>(["inicio"]);
-  for (const role of roles) {
-    const mods = ROLE_MODULES[role];
-    if (!mods) continue;
-    if (mods === "*") return new Set<ModuleKey>(ALL_MODULES);
-    for (const m of mods) allowed.add(m);
-  }
-  return allowed;
+/**
+ * Visibilidad de menús: por decisión del proyecto, todos los módulos quedan
+ * abiertos para cualquier usuario autenticado hasta terminar de definir los
+ * roles. La seguridad real sigue aplicándose en el backend (RLS + chequeos de
+ * rol en las funciones de servidor), no en el menú.
+ */
+export function modulesForRoles(_roles: AppRole[]): Set<ModuleKey> {
+  return new Set<ModuleKey>(ALL_MODULES);
 }
 
 /** Prefijo de ruta → módulo, del más específico al más general. */
