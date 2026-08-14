@@ -844,6 +844,16 @@ export function PosWorkspace({
         receipt={lastReceipt}
         defaultEmail={lastContact.email}
         defaultPhone={lastContact.phone}
+        assignment={lastAssignment}
+        currency={currency}
+        locale={locale}
+      />
+
+      <CashCloseSummaryDialog
+        open={closeSummaryOpen}
+        onOpenChange={setCloseSummaryOpen}
+        summary={closeSummary}
+        locale={locale}
       />
     </div>
   );
