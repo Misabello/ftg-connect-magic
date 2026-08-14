@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 
 import { Logo } from "@/components/ftg/Logo";
-import { useAuth } from "@/hooks/useAuth";
 import { useI18n } from "@/hooks/useI18n";
 import { useScope } from "@/hooks/useScope";
 import { cn } from "@/lib/utils";
@@ -42,7 +41,6 @@ const ITEMS: Item[] = [
 ];
 
 export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
-  const { can } = useAuth();
   const { locations } = useScope();
   const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -65,7 +63,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <Logo />
       </div>
       <ul className="flex-1 space-y-1 overflow-y-auto p-3">
-        {ITEMS.filter((item) => can(item.key)).map((item) => {
+        {ITEMS.map((item) => {
           const active = pathname.startsWith(item.to);
           const subnav = SECTION_SUBNAV[item.key];
           const activeSub = active && subnav ? findSubNavItem(subnav, pathname, search) : undefined;
@@ -140,8 +138,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
 
-        {can("sedes") && (
-          <li className="pt-3">
+        <li className="pt-3">
             <Link
               to="/sedes"
               onClick={onNavigate}
@@ -193,8 +190,7 @@ export function AppSidebar({ onNavigate }: { onNavigate?: () => void }) {
                 </li>
               ))}
             </ul>
-          </li>
-        )}
+        </li>
       </ul>
       <div className="border-t border-sidebar-border px-5 py-3 text-[11px] text-sidebar-foreground/50">
         {t("nav.footer")}
