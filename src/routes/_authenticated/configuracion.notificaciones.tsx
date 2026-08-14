@@ -39,6 +39,16 @@ function NotificacionesPos() {
   const { data: organizationId } = useQuery({
     queryKey: ["notif-org-id"],
     queryFn: async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (uid) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .eq("id", uid)
+          .maybeSingle();
+        if (profile?.organization_id) return profile.organization_id;
+      }
       const { data, error } = await supabase.from("organizations").select("id").limit(1).maybeSingle();
       if (error) throw error;
       return data?.id ?? null;
