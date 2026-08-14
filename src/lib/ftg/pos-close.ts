@@ -23,7 +23,7 @@ export type CloseSummary = {
   journalNote: string;
   subject: string;
   body: string;
-  recipients: { full_name: string; email: string }[];
+  recipients: { full_name: string; email: string; phone?: string | null }[];
   notificationId: string | null;
 };
 
