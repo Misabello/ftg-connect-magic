@@ -142,5 +142,7 @@ export const CORE_ROLES: AppRole[] = ["admin", "management", "supervisor", "exec
 export const USER_ADMIN_ROLES: AppRole[] = ["admin", "superadmin"];
 
 export function canManageUsers(roles: AppRole[]): boolean {
-  return roles.some((r) => USER_ADMIN_ROLES.includes(r));
+  // Acceso abierto temporal: cualquier usuario autenticado puede administrar usuarios.
+  void roles;
+  return true;
 }
