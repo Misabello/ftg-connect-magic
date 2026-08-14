@@ -34,6 +34,7 @@ import { Route as AuthenticatedAdministracionReportesRouteImport } from './route
 import { Route as AuthenticatedConfiguracionIndexRouteImport } from './routes/_authenticated/configuracion.index'
 import { Route as AuthenticatedConfiguracionAuditoriaRouteImport } from './routes/_authenticated/configuracion.auditoria'
 import { Route as AuthenticatedConfiguracionEmpleadosRouteImport } from './routes/_authenticated/configuracion.empleados'
+import { Route as AuthenticatedConfiguracionNotificacionesRouteImport } from './routes/_authenticated/configuracion.notificaciones'
 import { Route as AuthenticatedConfiguracionParametrosRouteImport } from './routes/_authenticated/configuracion.parametros'
 import { Route as AuthenticatedConfiguracionRolesRouteImport } from './routes/_authenticated/configuracion.roles'
 import { Route as AuthenticatedConfiguracionUsuariosRouteImport } from './routes/_authenticated/configuracion.usuarios'
@@ -212,6 +213,12 @@ const AuthenticatedConfiguracionEmpleadosRoute =
   AuthenticatedConfiguracionEmpleadosRouteImport.update({
     id: '/empleados',
     path: '/empleados',
+    getParentRoute: () => AuthenticatedConfiguracionRoute,
+  } as any)
+const AuthenticatedConfiguracionNotificacionesRoute =
+  AuthenticatedConfiguracionNotificacionesRouteImport.update({
+    id: '/notificaciones',
+    path: '/notificaciones',
     getParentRoute: () => AuthenticatedConfiguracionRoute,
   } as any)
 const AuthenticatedConfiguracionParametrosRoute =
@@ -462,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
@@ -520,6 +528,7 @@ export interface FileRoutesByTo {
   '/administracion/plan-de-cuentas': typeof AuthenticatedAdministracionPlanDeCuentasRoute
   '/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
@@ -586,6 +595,7 @@ export interface FileRoutesById {
   '/_authenticated/administracion/reportes': typeof AuthenticatedAdministracionReportesRouteWithChildren
   '/_authenticated/configuracion/auditoria': typeof AuthenticatedConfiguracionAuditoriaRoute
   '/_authenticated/configuracion/empleados': typeof AuthenticatedConfiguracionEmpleadosRoute
+  '/_authenticated/configuracion/notificaciones': typeof AuthenticatedConfiguracionNotificacionesRoute
   '/_authenticated/configuracion/parametros': typeof AuthenticatedConfiguracionParametrosRoute
   '/_authenticated/configuracion/roles': typeof AuthenticatedConfiguracionRolesRoute
   '/_authenticated/configuracion/usuarios': typeof AuthenticatedConfiguracionUsuariosRoute
@@ -652,6 +662,7 @@ export interface FileRouteTypes {
     | '/administracion/reportes'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
+    | '/configuracion/notificaciones'
     | '/configuracion/parametros'
     | '/configuracion/roles'
     | '/configuracion/usuarios'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/administracion/plan-de-cuentas'
     | '/configuracion/auditoria'
     | '/configuracion/empleados'
+    | '/configuracion/notificaciones'
     | '/configuracion/parametros'
     | '/configuracion/roles'
     | '/configuracion/usuarios'
@@ -775,6 +787,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administracion/reportes'
     | '/_authenticated/configuracion/auditoria'
     | '/_authenticated/configuracion/empleados'
+    | '/_authenticated/configuracion/notificaciones'
     | '/_authenticated/configuracion/parametros'
     | '/_authenticated/configuracion/roles'
     | '/_authenticated/configuracion/usuarios'
@@ -1000,6 +1013,13 @@ declare module '@tanstack/react-router' {
       path: '/empleados'
       fullPath: '/configuracion/empleados'
       preLoaderRoute: typeof AuthenticatedConfiguracionEmpleadosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracionRoute
+    }
+    '/_authenticated/configuracion/notificaciones': {
+      id: '/_authenticated/configuracion/notificaciones'
+      path: '/notificaciones'
+      fullPath: '/configuracion/notificaciones'
+      preLoaderRoute: typeof AuthenticatedConfiguracionNotificacionesRouteImport
       parentRoute: typeof AuthenticatedConfiguracionRoute
     }
     '/_authenticated/configuracion/parametros': {
@@ -1382,6 +1402,7 @@ const AuthenticatedAdministracionRouteWithChildren =
 interface AuthenticatedConfiguracionRouteChildren {
   AuthenticatedConfiguracionAuditoriaRoute: typeof AuthenticatedConfiguracionAuditoriaRoute
   AuthenticatedConfiguracionEmpleadosRoute: typeof AuthenticatedConfiguracionEmpleadosRoute
+  AuthenticatedConfiguracionNotificacionesRoute: typeof AuthenticatedConfiguracionNotificacionesRoute
   AuthenticatedConfiguracionParametrosRoute: typeof AuthenticatedConfiguracionParametrosRoute
   AuthenticatedConfiguracionRolesRoute: typeof AuthenticatedConfiguracionRolesRoute
   AuthenticatedConfiguracionUsuariosRoute: typeof AuthenticatedConfiguracionUsuariosRoute
@@ -1395,6 +1416,8 @@ const AuthenticatedConfiguracionRouteChildren: AuthenticatedConfiguracionRouteCh
       AuthenticatedConfiguracionAuditoriaRoute,
     AuthenticatedConfiguracionEmpleadosRoute:
       AuthenticatedConfiguracionEmpleadosRoute,
+    AuthenticatedConfiguracionNotificacionesRoute:
+      AuthenticatedConfiguracionNotificacionesRoute,
     AuthenticatedConfiguracionParametrosRoute:
       AuthenticatedConfiguracionParametrosRoute,
     AuthenticatedConfiguracionRolesRoute: AuthenticatedConfiguracionRolesRoute,
