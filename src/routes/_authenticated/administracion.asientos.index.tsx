@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 
-import { PageHeader } from "@/components/ftg/PageHeader";
 import { ExportMenu } from "@/components/ftg/admin/ExportMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,11 +62,11 @@ function AsientosIndex() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Asientos contables"
-        description="Últimos 30 asientos del libro diario, incluidos los cierres de caja de cada punto de venta."
-        actions={
-          <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          Últimos 30 asientos del libro diario, incluidos los cierres de caja de cada punto de venta.
+        </p>
+        <div className="flex items-center gap-2">
             <ExportMenu
               filename="ftg-asientos-contables"
               title="Asientos contables"
@@ -81,9 +80,8 @@ function AsientosIndex() {
                 <Plus className="mr-1.5 h-4 w-4" /> Crear asiento
               </Link>
             </Button>
-          </div>
-        }
-      />
+        </div>
+      </div>
 
       <div className="surface-card overflow-hidden">
         <Table>
