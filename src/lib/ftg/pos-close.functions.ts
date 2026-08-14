@@ -45,13 +45,14 @@ export const closeCashSession = createServerFn({ method: "POST" })
       supabaseAdmin
         .from("sales")
         .select(
-          "id, total, status, sale_items(description, quantity, line_total), sale_payments(amount, method_name, payment_method_id)",
+          "id, total, tax_total, status, sale_items(description, quantity, line_total), sale_payments(amount, method_name, payment_method_id)",
         )
         .eq("cash_session_id", session.id),
     ]);
 
     const sales = (salesRes.data ?? []).filter((s) => s.status === "completada");
     const salesTotal = round2(sales.reduce((acc, s) => acc + Number(s.total), 0));
+    const salesTax = round2(sales.reduce((acc, s) => acc + Number(s.tax_total ?? 0), 0));
 
     const itemMap = new Map<string, { description: string; quantity: number; total: number }>();
     for (const sale of sales) {
@@ -114,16 +115,70 @@ export const closeCashSession = createServerFn({ method: "POST" })
     let journalEntryId: string | null = null;
     let journalNote = "Arqueo sin diferencias: no requiere ajuste contable.";
 
-    const existingEntry = await supabaseAdmin
-      .from("journal_entries")
-      .select("id")
-      .eq("idempotency_key", idempotencyKey)
-      .maybeSingle();
+    const postEntry = async (params: {
+      key: string;
+      description: string;
+      lines: { account_code: string; debit: number; credit: number; description: string }[];
+    }) => {
+      const existing = await supabaseAdmin
+        .from("journal_entries")
+        .select("id")
+        .eq("idempotency_key", params.key)
+        .maybeSingle();
+      if (existing.data?.id) return existing.data.id as string;
+      const { data: newId, error } = await supabaseAdmin.rpc("post_journal_entry", {
+        _org: session.organization_id,
+        ...(session.location_id ? { _loc: session.location_id } : {}),
+        ...(session.point_of_sale_id ? { _pos: session.point_of_sale_id } : {}),
+        _session: session.id,
+        _date: closedOn,
+        _description: params.description,
+        _source_type: "cierre_caja",
+        _source_id: session.id,
+        _currency: session.currency_code ?? "ARS",
+        _lines: params.lines,
+        _created_by: userId,
+      } as never);
+      if (error) throw new Error(error.message);
+      const id = (newId as string | null) ?? null;
+      if (id) {
+        await supabaseAdmin.from("journal_entries").update({ idempotency_key: params.key }).eq("id", id);
+      }
+      return id;
+    };
 
-    if (existingEntry.data?.id) {
-      journalEntryId = existingEntry.data.id;
-      journalNote = "Ajuste contable de cierre ya registrado en el libro diario.";
-    } else if (Math.abs(differenceAmount) >= 0.01) {
+    // Asiento de ventas y cobros del turno (total del día por punto de venta).
+    let salesEntryId: string | null = null;
+    if (salesTotal >= 0.01) {
+      const collectedByMethod = [...methodMap.entries()];
+      const collectedTotal = round2(collectedByMethod.reduce((acc, [, amount]) => acc + amount, 0));
+      const debitLines = collectedByMethod.map(([method, amount]) => ({
+        account_code: /efectivo|dinheiro/i.test(method) ? "1.1.1" : "1.1.2",
+        debit: round2(amount),
+        credit: 0,
+        description: `Cobros ${method}`,
+      }));
+      const pending = round2(salesTotal - collectedTotal);
+      if (pending >= 0.01) {
+        debitLines.push({ account_code: "1.1.3", debit: pending, credit: 0, description: "Ventas a cobrar" });
+      }
+      const netSales = round2(salesTotal - salesTax);
+      const creditLines = [
+        { account_code: "4.1.1", debit: 0, credit: netSales, description: "Ventas del turno" },
+      ];
+      if (salesTax >= 0.01) {
+        creditLines.push({ account_code: "2.1.2", debit: 0, credit: salesTax, description: "IVA débito fiscal" });
+      }
+      if (debitLines.length > 0) {
+        salesEntryId = await postEntry({
+          key: `cierre-caja-ventas-${session.id}`,
+          description: `Cierre de caja ${posRes.data?.name ?? ""} — ventas y cobros del turno`,
+          lines: [...debitLines, ...creditLines],
+        });
+      }
+    }
+
+    if (Math.abs(differenceAmount) >= 0.01) {
       const amount = round2(Math.abs(differenceAmount));
       const surplus = differenceAmount > 0;
       const lines = surplus
@@ -135,28 +190,19 @@ export const closeCashSession = createServerFn({ method: "POST" })
             { account_code: "5.1.1", debit: amount, credit: 0, description: "Faltante de arqueo" },
             { account_code: "1.1.1", debit: 0, credit: amount, description: "Faltante de caja" },
           ];
-      const { data: entryId, error: entryError } = await supabaseAdmin.rpc("post_journal_entry", {
-        _org: session.organization_id,
-        ...(session.location_id ? { _loc: session.location_id } : {}),
-        ...(session.point_of_sale_id ? { _pos: session.point_of_sale_id } : {}),
-        _session: session.id,
-        _date: closedOn,
-        _description: `Cierre de caja ${posRes.data?.name ?? ""} — ${surplus ? "sobrante" : "faltante"} de arqueo`,
-        _source_type: "cierre_caja",
-        _source_id: session.id,
-        _currency: session.currency_code ?? "ARS",
-        _lines: lines,
-        _created_by: userId,
-      } as never);
-      if (entryError) throw new Error(entryError.message);
-      journalEntryId = (entryId as string | null) ?? null;
-      if (journalEntryId) {
-        await supabaseAdmin
-          .from("journal_entries")
-          .update({ idempotency_key: idempotencyKey })
-          .eq("id", journalEntryId);
-      }
+      journalEntryId = await postEntry({
+        key: idempotencyKey,
+        description: `Cierre de caja ${posRes.data?.name ?? ""} — ${surplus ? "sobrante" : "faltante"} de arqueo`,
+        lines,
+      });
       journalNote = `Ajuste contable registrado por ${surplus ? "sobrante" : "faltante"} de ${amount}.`;
+    }
+
+    if (salesEntryId) {
+      journalNote = `Asiento de ventas y cobros del turno registrado (${salesTotal}). ${
+        journalEntryId ? journalNote : "Arqueo sin diferencias."
+      }`;
+      journalEntryId = journalEntryId ?? salesEntryId;
     }
 
     const recipientsRes = await supabaseAdmin

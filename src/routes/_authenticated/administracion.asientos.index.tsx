@@ -29,6 +29,7 @@ const SOURCE_LABEL: Record<string, string> = {
   sale_payment: "Cobro",
   pos_ticket: "Ticket de caja",
   cash_session_close: "Cierre de caja",
+  cierre_caja: "Cierre de caja",
   treasury_memo: "Minuta",
 };
 
