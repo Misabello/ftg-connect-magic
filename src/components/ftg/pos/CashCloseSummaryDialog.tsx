@@ -1,5 +1,5 @@
 import { useServerFn } from "@tanstack/react-start";
-import { Mail, Copy } from "lucide-react";
+import { Mail, Copy, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { ExportSheetButton } from "@/components/ftg/admin/ReportShell";
@@ -15,7 +15,7 @@ import {
 import { formatMoney } from "@/lib/ftg/format";
 import { markCloseNotificationSent } from "@/lib/ftg/pos-close.functions";
 import { CLOSE_SENDER_EMAIL, type CloseSummary } from "@/lib/ftg/pos-close";
-import { mailtoLink } from "@/lib/ftg/share";
+import { mailtoLink, whatsappLink, sanitizePhone } from "@/lib/ftg/share";
 
 const HEADERS = ["Concepto", "Cantidad", "Total"];
 
@@ -34,6 +34,17 @@ export function CashCloseSummaryDialog({
   const markSent = useServerFn(markCloseNotificationSent);
   if (!summary) return null;
   const currency = summary.currency;
+  const phones = summary.recipients.map((r) => sanitizePhone(r.phone)).filter(Boolean);
+
+  const registerSent = () => {
+    if (summary.notificationId) {
+      void markSent({ data: { notification_id: summary.notificationId } })
+        .then(() => onOpenChange(false))
+        .catch((e: Error) => toast.error("No pudimos registrar el envío", { description: e.message }));
+    } else {
+      onOpenChange(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -90,7 +101,9 @@ export function CashCloseSummaryDialog({
             <p className="text-xs font-semibold">Notificación a ({summary.recipients.length})</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {summary.recipients.length > 0
-                ? summary.recipients.map((r) => `${r.full_name} <${r.email}>`).join(", ")
+                ? summary.recipients
+                    .map((r) => `${r.full_name} <${r.email}>${r.phone ? ` · ${r.phone}` : ""}`)
+                    .join(", ")
                 : "Todavía no hay destinatarios configurados en Configuración › Notificaciones / Punto de venta."}
             </p>
           </div>
@@ -116,32 +129,46 @@ export function CashCloseSummaryDialog({
               }
             />
           </div>
-          <Button
-            disabled={summary.recipients.length === 0}
-            onClick={() => {
-              const to = summary.recipients.map((r) => r.email).join(",");
-              const link = mailtoLink(to, summary.subject, summary.body);
-              try {
-                const win = window.open(link, "_self");
-                if (!win) window.location.href = link;
-              } catch {
-                window.location.href = link;
-              }
-              void navigator.clipboard?.writeText(summary.body).catch(() => undefined);
-              toast.success("Notificación preparada", {
-                description: `Destinatarios: ${to}. Copiamos el resumen por si tu cliente de correo no se abre.`,
-              });
-              if (summary.notificationId) {
-                void markSent({ data: { notification_id: summary.notificationId } })
-                  .then(() => onOpenChange(false))
-                  .catch((e: Error) => toast.error("No pudimos registrar el envío", { description: e.message }));
-              } else {
-                onOpenChange(false);
-              }
-            }}
-          >
-            <Mail className="mr-1.5 h-4 w-4" /> Notificar cierre
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={summary.recipients.length === 0}
+              asChild={summary.recipients.length > 0}
+              onClick={() => {
+                void navigator.clipboard?.writeText(summary.body).catch(() => undefined);
+                toast.success("Notificación por email preparada");
+                registerSent();
+              }}
+            >
+              {summary.recipients.length > 0 ? (
+                <a href={mailtoLink(summary.recipients.map((r) => r.email).join(","), summary.subject, summary.body)}>
+                  <Mail className="mr-1.5 h-4 w-4" /> Email
+                </a>
+              ) : (
+                <span>
+                  <Mail className="mr-1.5 h-4 w-4" /> Email
+                </span>
+              )}
+            </Button>
+            <Button
+              disabled={phones.length === 0}
+              asChild={phones.length > 0}
+              onClick={() => {
+                toast.success("Notificación por WhatsApp preparada");
+                registerSent();
+              }}
+            >
+              {phones.length > 0 ? (
+                <a href={whatsappLink(phones[0], summary.body)} target="_blank" rel="noreferrer">
+                  <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+                </a>
+              ) : (
+                <span>
+                  <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
+                </span>
+              )}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
