@@ -53,11 +53,11 @@ export const CONFIG_SUBNAV: SubNavItem[] = [
   { to: "/configuracion/roles", label: "Roles y permisos" },
   { to: "/configuracion/empleados", label: "Empleados" },
   { to: "/configuracion/vacaciones", label: "Vacaciones y licencias" },
-  { to: "/configuracion/notificaciones", label: "Notificaciones / Punto de venta" },
   { to: "/configuracion", label: "Empresas y países", search: { tab: "paises" }, exact: true },
   { to: "/configuracion", label: "Sedes y puntos de venta", search: { tab: "sedes" }, exact: true },
   { to: "/configuracion/parametros", label: "Parámetros administrativos" },
   { to: "/configuracion/auditoria", label: "Auditoría" },
+  { to: "/configuracion/notificaciones", label: "Punto de venta", group: "Notificaciones" },
 ];
 
 export const SECTION_SUBNAV: Record<string, SubNavItem[]> = {
