@@ -62,19 +62,39 @@ export const ALL_MODULES: ModuleKey[] = [
   "configuracion",
 ];
 
-/** Permisos por módulo (Etapa 1). */
+/** Permisos por módulo. */
 export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
-  // Etapa 1: los cinco roles nuevos acceden a todos los módulos operativos.
   admin: "*",
-  management: "*",
-  executive: "*",
-  seller: "*",
+  management: [
+    "inicio",
+    "pos",
+    "sedes",
+    "fotografias",
+    "operaciones",
+    "supervisores",
+    "inventario",
+    "administracion",
+    "clientes",
+    "proveedores",
+    "reportes",
+  ],
+  supervisor: [
+    "inicio",
+    "pos",
+    "sedes",
+    "fotografias",
+    "operaciones",
+    "supervisores",
+    "inventario",
+    "reportes",
+  ],
+  executive: ["inicio", "pos", "fotografias"],
+  seller: ["inicio", "pos", "fotografias", "sedes"],
   superadmin: "*",
   direccion: "*",
   administracion: ["inicio", "sedes", "administracion", "clientes", "proveedores", "reportes", "inventario", "configuracion"],
   operaciones: ["inicio", "sedes", "operaciones", "supervisores", "inventario", "reportes", "fotografias"],
   encargado_sede: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "inventario", "reportes"],
-  supervisor: ["inicio", "pos", "sedes", "fotografias", "operaciones", "supervisores", "reportes"],
   cajero: ["inicio", "pos", "sedes", "fotografias"],
   fotografo: ["inicio", "fotografias"],
   deposito: ["inicio", "inventario"],
@@ -82,10 +102,43 @@ export const ROLE_MODULES: Record<AppRole, ModuleKey[] | "*"> = {
 };
 
 export function modulesForRoles(roles: AppRole[]): Set<ModuleKey> {
-  // Etapa transitoria: todos los módulos quedan visibles para cualquier usuario
-  // autenticado hasta que se definan los permisos por rol.
-  void roles;
-  return new Set<ModuleKey>(ALL_MODULES);
+  const allowed = new Set<ModuleKey>(["inicio"]);
+  for (const role of roles) {
+    const mods = ROLE_MODULES[role];
+    if (!mods) continue;
+    if (mods === "*") return new Set<ModuleKey>(ALL_MODULES);
+    for (const m of mods) allowed.add(m);
+  }
+  return allowed;
+}
+
+/** Prefijo de ruta → módulo, del más específico al más general. */
+const MODULE_PATHS: { prefix: string; module: ModuleKey }[] = [
+  { prefix: "/inicio", module: "inicio" },
+  { prefix: "/pos", module: "pos" },
+  { prefix: "/sedes", module: "sedes" },
+  { prefix: "/fotografias", module: "fotografias" },
+  { prefix: "/operaciones", module: "operaciones" },
+  { prefix: "/supervisores", module: "supervisores" },
+  { prefix: "/inventario", module: "inventario" },
+  { prefix: "/administracion", module: "administracion" },
+  { prefix: "/clientes", module: "clientes" },
+  { prefix: "/proveedores", module: "proveedores" },
+  { prefix: "/reportes", module: "reportes" },
+  { prefix: "/configuracion", module: "configuracion" },
+  { prefix: "/sincronizacion", module: "inicio" },
+];
+
+/** Módulo al que pertenece una URL, o null si la ruta no está restringida. */
+export function moduleForPath(pathname: string): ModuleKey | null {
+  const hit = MODULE_PATHS.find((m) => pathname === m.prefix || pathname.startsWith(`${m.prefix}/`));
+  return hit?.module ?? null;
+}
+
+/** Primera ruta disponible para el usuario (fallback de redirección). */
+export function firstAllowedPath(modules: Set<ModuleKey>): string {
+  const hit = MODULE_PATHS.find((m) => modules.has(m.module));
+  return hit?.prefix ?? "/inicio";
 }
 /** Roles principales de la plataforma (Etapa 1). */
 export const CORE_ROLES: AppRole[] = ["admin", "management", "supervisor", "executive", "seller"];

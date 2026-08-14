@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2, Plus, XCircle } from "lucide-react";
+import { BookCheck, CheckCircle2, Loader2, Plus, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatCard } from "@/components/ftg/StatCard";
@@ -23,7 +23,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
-import { approveMemo, cancelMemo } from "@/lib/ftg/accounting.functions";
+import { approveMemo, cancelMemo, postMemo } from "@/lib/ftg/accounting.functions";
 import {
   MEMO_STATUS_LABEL,
   MEMO_STATUS_TONE,
@@ -64,6 +64,7 @@ function Minutas() {
   const queryClient = useQueryClient();
   const currency = activeLocation?.currency_code ?? "ARS";
   const approve = useServerFn(approveMemo);
+  const post = useServerFn(postMemo);
   const cancel = useServerFn(cancelMemo);
 
   const [filter, setFilter] = useState<"todas" | MemoStatus>("todas");
@@ -78,7 +79,7 @@ function Minutas() {
         supabase
           .from("treasury_memos")
           .select(
-            "id, memo_type, description, amount, currency_code, status, location_id, organization_id, journal_entry_id, cash_source_from_id, cash_source_to_id, debit_account_code, credit_account_code, created_at",
+            "id, memo_type, description, amount, currency_code, status, location_id, organization_id, journal_entry_id, cash_source_from_id, cash_source_to_id, debit_account_code, credit_account_code, created_at, approved_at, reconciled_at, reconciliation_note",
           )
           .order("created_at", { ascending: false })
           .limit(200),
@@ -102,6 +103,7 @@ function Minutas() {
   );
   const sources = (data?.sources ?? []).filter((s) => !activeLocationId || !s.location_id || s.location_id === activeLocationId);
   const pending = (data?.memos ?? []).filter((m) => m.status === "pendiente");
+  const approved = (data?.memos ?? []).filter((m) => m.status === "aprobada");
   const pendingTotal = pending.reduce((acc, m) => acc + Number(m.amount), 0);
 
   const create = useMutation({
@@ -144,14 +146,27 @@ function Minutas() {
     onError: (e: Error) => toast.error("No pudimos guardar la minuta", { description: e.message }),
   });
 
-  async function runApprove(id: string) {
+  async function runApprove(id: string, autoPost: boolean) {
     setBusyId(id);
     try {
-      await approve({ data: { memo_id: id, idempotency_key: `memo-${id}` } });
-      toast.success("Minuta conciliada y posteada");
+      await approve({ data: { memo_id: id, idempotency_key: `memo-${id}`, auto_post: autoPost } });
+      toast.success(autoPost ? "Minuta aprobada, posteada y conciliada" : "Minuta aprobada, lista para postear");
       await queryClient.invalidateQueries({ queryKey: ["minutas"] });
     } catch (e) {
       toast.error("No pudimos aprobar la minuta", { description: (e as Error).message });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function runPost(id: string) {
+    setBusyId(id);
+    try {
+      const res = await post({ data: { memo_id: id, idempotency_key: `memo-${id}` } });
+      toast.success(res.duplicated ? "La minuta ya estaba conciliada" : "Asiento posteado y minuta conciliada");
+      await queryClient.invalidateQueries({ queryKey: ["minutas"] });
+    } catch (e) {
+      toast.error("No pudimos postear la minuta", { description: (e as Error).message });
     } finally {
       setBusyId(null);
     }
@@ -186,8 +201,9 @@ function Minutas() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Minutas pendientes" value={String(pending.length)} tone={pending.length > 0 ? "warning" : "success"} />
+        <StatCard label="Aprobadas sin postear" value={String(approved.length)} tone={approved.length > 0 ? "warning" : "success"} />
         <StatCard label="Importe pendiente" value={formatMoney(pendingTotal, currency)} />
         <StatCard label="Cargadas en total" value={String(data?.memos.length ?? 0)} />
       </div>
@@ -196,6 +212,7 @@ function Minutas() {
         <TabsList>
           <TabsTrigger value="todas">Todas</TabsTrigger>
           <TabsTrigger value="pendiente">Pendientes</TabsTrigger>
+          <TabsTrigger value="aprobada">Aprobadas</TabsTrigger>
           <TabsTrigger value="conciliada">Conciliadas</TabsTrigger>
           <TabsTrigger value="anulada">Anuladas</TabsTrigger>
         </TabsList>
@@ -255,28 +272,45 @@ function Minutas() {
                   </span>
                 </TableCell>
                 <TableCell className="text-right">
-                  {m.status === "pendiente" ? (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="mr-1.5"
-                        disabled={busyId === m.id}
-                        onClick={() => void runApprove(m.id)}
-                      >
+                  {m.status === "pendiente" && (
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      <Button size="sm" variant="secondary" disabled={busyId === m.id} onClick={() => void runApprove(m.id, false)}>
                         {busyId === m.id ? (
                           <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                         ) : (
                           <CheckCircle2 className="mr-1.5 h-4 w-4" />
                         )}
-                        Aprobar y postear
+                        Aprobar
+                      </Button>
+                      <Button size="sm" disabled={busyId === m.id} onClick={() => void runApprove(m.id, true)}>
+                        <BookCheck className="mr-1.5 h-4 w-4" /> Aprobar y postear
                       </Button>
                       <Button size="sm" variant="ghost" disabled={busyId === m.id} onClick={() => void runCancel(m.id)}>
                         <XCircle className="mr-1.5 h-4 w-4" /> Anular
                       </Button>
-                    </>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">{m.journal_entry_id ? "Asiento posteado" : "—"}</span>
+                    </div>
+                  )}
+                  {m.status === "aprobada" && (
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      <Button size="sm" disabled={busyId === m.id} onClick={() => void runPost(m.id)}>
+                        {busyId === m.id ? (
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                        ) : (
+                          <BookCheck className="mr-1.5 h-4 w-4" />
+                        )}
+                        Postear y conciliar
+                      </Button>
+                      <Button size="sm" variant="ghost" disabled={busyId === m.id} onClick={() => void runCancel(m.id)}>
+                        <XCircle className="mr-1.5 h-4 w-4" /> Anular
+                      </Button>
+                    </div>
+                  )}
+                  {(m.status === "conciliada" || m.status === "anulada") && (
+                    <span className="text-xs text-muted-foreground">
+                      {m.journal_entry_id
+                        ? `Asiento posteado${m.reconciled_at ? ` · ${new Date(m.reconciled_at).toLocaleDateString()}` : ""}`
+                        : "—"}
+                    </span>
                   )}
                 </TableCell>
               </TableRow>

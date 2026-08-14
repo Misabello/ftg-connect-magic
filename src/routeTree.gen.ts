@@ -51,6 +51,7 @@ import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
 import { Route as AuthenticatedAdministracionAsientosNuevoRouteImport } from './routes/_authenticated/administracion.asientos.nuevo'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
+import { Route as AuthenticatedAdministracionEeccConciliacionRouteImport } from './routes/_authenticated/administracion.eecc.conciliacion'
 import { Route as AuthenticatedAdministracionEeccDiarioRouteImport } from './routes/_authenticated/administracion.eecc.diario'
 import { Route as AuthenticatedAdministracionEeccFlujoFondosRouteImport } from './routes/_authenticated/administracion.eecc.flujo-fondos'
 import { Route as AuthenticatedAdministracionEeccMayorRouteImport } from './routes/_authenticated/administracion.eecc.mayor'
@@ -58,7 +59,12 @@ import { Route as AuthenticatedAdministracionEeccResultadosRouteImport } from '.
 import { Route as AuthenticatedAdministracionEeccSituacionRouteImport } from './routes/_authenticated/administracion.eecc.situacion'
 import { Route as AuthenticatedAdministracionReportesIndexRouteImport } from './routes/_authenticated/administracion.reportes.index'
 import { Route as AuthenticatedAdministracionReportesCajasRouteImport } from './routes/_authenticated/administracion.reportes.cajas'
+import { Route as AuthenticatedAdministracionReportesCobrarRouteImport } from './routes/_authenticated/administracion.reportes.cobrar'
+import { Route as AuthenticatedAdministracionReportesComprobantesRouteImport } from './routes/_authenticated/administracion.reportes.comprobantes'
 import { Route as AuthenticatedAdministracionReportesFacturasRouteImport } from './routes/_authenticated/administracion.reportes.facturas'
+import { Route as AuthenticatedAdministracionReportesInventarioRouteImport } from './routes/_authenticated/administracion.reportes.inventario'
+import { Route as AuthenticatedAdministracionReportesPagarRouteImport } from './routes/_authenticated/administracion.reportes.pagar'
+import { Route as AuthenticatedAdministracionReportesVentasRouteImport } from './routes/_authenticated/administracion.reportes.ventas'
 import { Route as AuthenticatedSedesLocationIdIndexRouteImport } from './routes/_authenticated/sedes.$locationId.index'
 import { Route as ApiPublicInvoicesIngestRouteImport } from './routes/api/public/invoices/ingest'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
@@ -306,6 +312,12 @@ const AuthenticatedAdministracionEeccIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdministracionEeccRoute,
   } as any)
+const AuthenticatedAdministracionEeccConciliacionRoute =
+  AuthenticatedAdministracionEeccConciliacionRouteImport.update({
+    id: '/conciliacion',
+    path: '/conciliacion',
+    getParentRoute: () => AuthenticatedAdministracionEeccRoute,
+  } as any)
 const AuthenticatedAdministracionEeccDiarioRoute =
   AuthenticatedAdministracionEeccDiarioRouteImport.update({
     id: '/diario',
@@ -348,10 +360,40 @@ const AuthenticatedAdministracionReportesCajasRoute =
     path: '/cajas',
     getParentRoute: () => AuthenticatedAdministracionReportesRoute,
   } as any)
+const AuthenticatedAdministracionReportesCobrarRoute =
+  AuthenticatedAdministracionReportesCobrarRouteImport.update({
+    id: '/cobrar',
+    path: '/cobrar',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
+const AuthenticatedAdministracionReportesComprobantesRoute =
+  AuthenticatedAdministracionReportesComprobantesRouteImport.update({
+    id: '/comprobantes',
+    path: '/comprobantes',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
 const AuthenticatedAdministracionReportesFacturasRoute =
   AuthenticatedAdministracionReportesFacturasRouteImport.update({
     id: '/facturas',
     path: '/facturas',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
+const AuthenticatedAdministracionReportesInventarioRoute =
+  AuthenticatedAdministracionReportesInventarioRouteImport.update({
+    id: '/inventario',
+    path: '/inventario',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
+const AuthenticatedAdministracionReportesPagarRoute =
+  AuthenticatedAdministracionReportesPagarRouteImport.update({
+    id: '/pagar',
+    path: '/pagar',
+    getParentRoute: () => AuthenticatedAdministracionReportesRoute,
+  } as any)
+const AuthenticatedAdministracionReportesVentasRoute =
+  AuthenticatedAdministracionReportesVentasRouteImport.update({
+    id: '/ventas',
+    path: '/ventas',
     getParentRoute: () => AuthenticatedAdministracionReportesRoute,
   } as any)
 const AuthenticatedSedesLocationIdIndexRoute =
@@ -419,13 +461,19 @@ export interface FileRoutesByFullPath {
   '/sedes/': typeof AuthenticatedSedesIndexRoute
   '/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
+  '/administracion/reportes/cobrar': typeof AuthenticatedAdministracionReportesCobrarRoute
+  '/administracion/reportes/comprobantes': typeof AuthenticatedAdministracionReportesComprobantesRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/administracion/reportes/inventario': typeof AuthenticatedAdministracionReportesInventarioRoute
+  '/administracion/reportes/pagar': typeof AuthenticatedAdministracionReportesPagarRoute
+  '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -469,13 +517,19 @@ export interface FileRoutesByTo {
   '/sedes': typeof AuthenticatedSedesIndexRoute
   '/supervisores': typeof AuthenticatedSupervisoresIndexRoute
   '/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
+  '/administracion/reportes/cobrar': typeof AuthenticatedAdministracionReportesCobrarRoute
+  '/administracion/reportes/comprobantes': typeof AuthenticatedAdministracionReportesComprobantesRoute
   '/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/administracion/reportes/inventario': typeof AuthenticatedAdministracionReportesInventarioRoute
+  '/administracion/reportes/pagar': typeof AuthenticatedAdministracionReportesPagarRoute
+  '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/administracion/eecc': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -526,13 +580,19 @@ export interface FileRoutesById {
   '/_authenticated/sedes/': typeof AuthenticatedSedesIndexRoute
   '/_authenticated/supervisores/': typeof AuthenticatedSupervisoresIndexRoute
   '/_authenticated/administracion/asientos/nuevo': typeof AuthenticatedAdministracionAsientosNuevoRoute
+  '/_authenticated/administracion/eecc/conciliacion': typeof AuthenticatedAdministracionEeccConciliacionRoute
   '/_authenticated/administracion/eecc/diario': typeof AuthenticatedAdministracionEeccDiarioRoute
   '/_authenticated/administracion/eecc/flujo-fondos': typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   '/_authenticated/administracion/eecc/mayor': typeof AuthenticatedAdministracionEeccMayorRoute
   '/_authenticated/administracion/eecc/resultados': typeof AuthenticatedAdministracionEeccResultadosRoute
   '/_authenticated/administracion/eecc/situacion': typeof AuthenticatedAdministracionEeccSituacionRoute
   '/_authenticated/administracion/reportes/cajas': typeof AuthenticatedAdministracionReportesCajasRoute
+  '/_authenticated/administracion/reportes/cobrar': typeof AuthenticatedAdministracionReportesCobrarRoute
+  '/_authenticated/administracion/reportes/comprobantes': typeof AuthenticatedAdministracionReportesComprobantesRoute
   '/_authenticated/administracion/reportes/facturas': typeof AuthenticatedAdministracionReportesFacturasRoute
+  '/_authenticated/administracion/reportes/inventario': typeof AuthenticatedAdministracionReportesInventarioRoute
+  '/_authenticated/administracion/reportes/pagar': typeof AuthenticatedAdministracionReportesPagarRoute
+  '/_authenticated/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/_authenticated/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
@@ -583,13 +643,19 @@ export interface FileRouteTypes {
     | '/sedes/'
     | '/supervisores/'
     | '/administracion/asientos/nuevo'
+    | '/administracion/eecc/conciliacion'
     | '/administracion/eecc/diario'
     | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
+    | '/administracion/reportes/cobrar'
+    | '/administracion/reportes/comprobantes'
     | '/administracion/reportes/facturas'
+    | '/administracion/reportes/inventario'
+    | '/administracion/reportes/pagar'
+    | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/administracion/eecc/'
@@ -633,13 +699,19 @@ export interface FileRouteTypes {
     | '/sedes'
     | '/supervisores'
     | '/administracion/asientos/nuevo'
+    | '/administracion/eecc/conciliacion'
     | '/administracion/eecc/diario'
     | '/administracion/eecc/flujo-fondos'
     | '/administracion/eecc/mayor'
     | '/administracion/eecc/resultados'
     | '/administracion/eecc/situacion'
     | '/administracion/reportes/cajas'
+    | '/administracion/reportes/cobrar'
+    | '/administracion/reportes/comprobantes'
     | '/administracion/reportes/facturas'
+    | '/administracion/reportes/inventario'
+    | '/administracion/reportes/pagar'
+    | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/administracion/eecc'
@@ -689,13 +761,19 @@ export interface FileRouteTypes {
     | '/_authenticated/sedes/'
     | '/_authenticated/supervisores/'
     | '/_authenticated/administracion/asientos/nuevo'
+    | '/_authenticated/administracion/eecc/conciliacion'
     | '/_authenticated/administracion/eecc/diario'
     | '/_authenticated/administracion/eecc/flujo-fondos'
     | '/_authenticated/administracion/eecc/mayor'
     | '/_authenticated/administracion/eecc/resultados'
     | '/_authenticated/administracion/eecc/situacion'
     | '/_authenticated/administracion/reportes/cajas'
+    | '/_authenticated/administracion/reportes/cobrar'
+    | '/_authenticated/administracion/reportes/comprobantes'
     | '/_authenticated/administracion/reportes/facturas'
+    | '/_authenticated/administracion/reportes/inventario'
+    | '/_authenticated/administracion/reportes/pagar'
+    | '/_authenticated/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
     | '/_authenticated/administracion/eecc/'
@@ -1008,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionEeccIndexRouteImport
       parentRoute: typeof AuthenticatedAdministracionEeccRoute
     }
+    '/_authenticated/administracion/eecc/conciliacion': {
+      id: '/_authenticated/administracion/eecc/conciliacion'
+      path: '/conciliacion'
+      fullPath: '/administracion/eecc/conciliacion'
+      preLoaderRoute: typeof AuthenticatedAdministracionEeccConciliacionRouteImport
+      parentRoute: typeof AuthenticatedAdministracionEeccRoute
+    }
     '/_authenticated/administracion/eecc/diario': {
       id: '/_authenticated/administracion/eecc/diario'
       path: '/diario'
@@ -1057,11 +1142,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdministracionReportesCajasRouteImport
       parentRoute: typeof AuthenticatedAdministracionReportesRoute
     }
+    '/_authenticated/administracion/reportes/cobrar': {
+      id: '/_authenticated/administracion/reportes/cobrar'
+      path: '/cobrar'
+      fullPath: '/administracion/reportes/cobrar'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesCobrarRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
+    '/_authenticated/administracion/reportes/comprobantes': {
+      id: '/_authenticated/administracion/reportes/comprobantes'
+      path: '/comprobantes'
+      fullPath: '/administracion/reportes/comprobantes'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesComprobantesRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
     '/_authenticated/administracion/reportes/facturas': {
       id: '/_authenticated/administracion/reportes/facturas'
       path: '/facturas'
       fullPath: '/administracion/reportes/facturas'
       preLoaderRoute: typeof AuthenticatedAdministracionReportesFacturasRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
+    '/_authenticated/administracion/reportes/inventario': {
+      id: '/_authenticated/administracion/reportes/inventario'
+      path: '/inventario'
+      fullPath: '/administracion/reportes/inventario'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesInventarioRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
+    '/_authenticated/administracion/reportes/pagar': {
+      id: '/_authenticated/administracion/reportes/pagar'
+      path: '/pagar'
+      fullPath: '/administracion/reportes/pagar'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesPagarRouteImport
+      parentRoute: typeof AuthenticatedAdministracionReportesRoute
+    }
+    '/_authenticated/administracion/reportes/ventas': {
+      id: '/_authenticated/administracion/reportes/ventas'
+      path: '/ventas'
+      fullPath: '/administracion/reportes/ventas'
+      preLoaderRoute: typeof AuthenticatedAdministracionReportesVentasRouteImport
       parentRoute: typeof AuthenticatedAdministracionReportesRoute
     }
     '/_authenticated/sedes/$locationId/': {
@@ -1096,6 +1216,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdministracionEeccRouteChildren {
+  AuthenticatedAdministracionEeccConciliacionRoute: typeof AuthenticatedAdministracionEeccConciliacionRoute
   AuthenticatedAdministracionEeccDiarioRoute: typeof AuthenticatedAdministracionEeccDiarioRoute
   AuthenticatedAdministracionEeccFlujoFondosRoute: typeof AuthenticatedAdministracionEeccFlujoFondosRoute
   AuthenticatedAdministracionEeccMayorRoute: typeof AuthenticatedAdministracionEeccMayorRoute
@@ -1106,6 +1227,8 @@ interface AuthenticatedAdministracionEeccRouteChildren {
 
 const AuthenticatedAdministracionEeccRouteChildren: AuthenticatedAdministracionEeccRouteChildren =
   {
+    AuthenticatedAdministracionEeccConciliacionRoute:
+      AuthenticatedAdministracionEeccConciliacionRoute,
     AuthenticatedAdministracionEeccDiarioRoute:
       AuthenticatedAdministracionEeccDiarioRoute,
     AuthenticatedAdministracionEeccFlujoFondosRoute:
@@ -1127,7 +1250,12 @@ const AuthenticatedAdministracionEeccRouteWithChildren =
 
 interface AuthenticatedAdministracionReportesRouteChildren {
   AuthenticatedAdministracionReportesCajasRoute: typeof AuthenticatedAdministracionReportesCajasRoute
+  AuthenticatedAdministracionReportesCobrarRoute: typeof AuthenticatedAdministracionReportesCobrarRoute
+  AuthenticatedAdministracionReportesComprobantesRoute: typeof AuthenticatedAdministracionReportesComprobantesRoute
   AuthenticatedAdministracionReportesFacturasRoute: typeof AuthenticatedAdministracionReportesFacturasRoute
+  AuthenticatedAdministracionReportesInventarioRoute: typeof AuthenticatedAdministracionReportesInventarioRoute
+  AuthenticatedAdministracionReportesPagarRoute: typeof AuthenticatedAdministracionReportesPagarRoute
+  AuthenticatedAdministracionReportesVentasRoute: typeof AuthenticatedAdministracionReportesVentasRoute
   AuthenticatedAdministracionReportesIndexRoute: typeof AuthenticatedAdministracionReportesIndexRoute
 }
 
@@ -1135,8 +1263,18 @@ const AuthenticatedAdministracionReportesRouteChildren: AuthenticatedAdministrac
   {
     AuthenticatedAdministracionReportesCajasRoute:
       AuthenticatedAdministracionReportesCajasRoute,
+    AuthenticatedAdministracionReportesCobrarRoute:
+      AuthenticatedAdministracionReportesCobrarRoute,
+    AuthenticatedAdministracionReportesComprobantesRoute:
+      AuthenticatedAdministracionReportesComprobantesRoute,
     AuthenticatedAdministracionReportesFacturasRoute:
       AuthenticatedAdministracionReportesFacturasRoute,
+    AuthenticatedAdministracionReportesInventarioRoute:
+      AuthenticatedAdministracionReportesInventarioRoute,
+    AuthenticatedAdministracionReportesPagarRoute:
+      AuthenticatedAdministracionReportesPagarRoute,
+    AuthenticatedAdministracionReportesVentasRoute:
+      AuthenticatedAdministracionReportesVentasRoute,
     AuthenticatedAdministracionReportesIndexRoute:
       AuthenticatedAdministracionReportesIndexRoute,
   }
