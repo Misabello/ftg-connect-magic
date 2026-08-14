@@ -18,6 +18,7 @@ import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
 import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
 import { PosTicketsPanel } from "@/components/ftg/pos/PosTicketsPanel";
 import { CashSourcesPanel } from "@/components/ftg/pos/CashSourcesPanel";
+import { CashCloseSummaryDialog } from "@/components/ftg/pos/CashCloseSummaryDialog";
 import { TicketDialog } from "@/components/ftg/pos/TicketDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useServerFn } from "@tanstack/react-start";
+import { closeCashSession } from "@/lib/ftg/pos-close.functions";
+import type { CloseSummary } from "@/lib/ftg/pos-close";
 import { useDaySync } from "@/hooks/useDaySync";
 import { SyncDayButton } from "@/components/ftg/sync/SyncDayButton";
 import { useScope } from "@/hooks/useScope";
@@ -90,6 +94,9 @@ export function PosWorkspace({
   const [ticketOpen, setTicketOpen] = useState(false);
   const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
   const [lastContact, setLastContact] = useState({ email: "", phone: "" });
+  const [closeSummary, setCloseSummary] = useState<CloseSummary | null>(null);
+  const [closeSummaryOpen, setCloseSummaryOpen] = useState(false);
+  const runCloseSession = useServerFn(closeCashSession);
 
   useEffect(() => {
     const refresh = () => setMagicItems(listMagicItems());
