@@ -1,12 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useRouterState } from "@tanstack/react-router";
 
-import { PosWorkspace } from "@/components/ftg/pos/PosWorkspace";
+import { POS_SUBNAV, findSubNavItem } from "@/lib/ftg/nav";
 
 export const Route = createFileRoute("/_authenticated/pos")({
-  validateSearch: (search: Record<string, unknown>) => {
-    const raw = search["cobrar"];
-    return { cobrar: raw === "1" || raw === 1 || raw === true ? true : undefined };
-  },
   head: () => ({
     meta: [
       { title: "Punto de venta — FTG ONE" },
@@ -15,10 +11,31 @@ export const Route = createFileRoute("/_authenticated/pos")({
       { property: "og:description", content: "Catálogo, carrito, medios de pago combinados y arqueo de caja." },
     ],
   }),
-  component: PosRoute,
+  component: PosLayout,
 });
 
-function PosRoute() {
-  const { cobrar } = Route.useSearch();
-  return <PosWorkspace autoCheckout={!!cobrar} />;
+function PosLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const current = findSubNavItem(POS_SUBNAV, pathname);
+
+  return (
+    <div className="space-y-6">
+      <nav aria-label="Ruta" className="text-xs text-muted-foreground">
+        <Link to="/inicio" className="hover:text-foreground">
+          Inicio
+        </Link>
+        <span className="mx-1.5">/</span>
+        <Link to="/pos" className="hover:text-foreground">
+          Punto de venta
+        </Link>
+        {current && current.to !== "/pos" && (
+          <>
+            <span className="mx-1.5">/</span>
+            <span className="text-foreground">{current.label}</span>
+          </>
+        )}
+      </nav>
+      <Outlet />
+    </div>
+  );
 }
