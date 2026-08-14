@@ -559,6 +559,22 @@ export function PosWorkspace({
         email: variables.customer.email || lastContact.email,
         phone: variables.customer.phone || lastContact.phone,
       });
+      setLastAssignment({
+        saleId: sale.sale_id,
+        queued: sale.queued,
+        posName: activePos?.name ?? "Punto de venta",
+        posCode: activePos?.code ?? "",
+        locationName: activeLocation?.name ?? null,
+        payments: variables.payments.map((p) => ({
+          method: methods.find((m) => m.id === p.methodId)?.name ?? "Sin especificar",
+          amount: p.amount,
+        })),
+        items: soldLines.map((l) => ({
+          name: l.name,
+          quantity: l.quantity,
+          total: lineGross(l),
+        })),
+      });
       setShareOpen(true);
       setLines([]);
       setCheckoutOpen(false);
