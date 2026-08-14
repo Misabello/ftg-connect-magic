@@ -158,7 +158,7 @@ function PosDetalle() {
             title="Detalle de lo vendido"
             subtitle={subtitle}
             headers={HEADERS}
-            rows={rows}
+            getRows={() => rows}
             rightAlign={["Cantidad", "Precio", "Total"]}
           />
           <ExportSheetButton title={`Detalle de lo vendido · ${subtitle}`} headers={HEADERS} getRows={() => rows} />
