@@ -346,22 +346,14 @@ export function PosWorkspace({
   const closeSession = useMutation({
     mutationFn: async ({ counted, notes }: { counted: number; notes: string }) => {
       if (!session) throw new Error("No hay caja abierta");
-      const { error } = await supabase
-        .from("cash_sessions")
-        .update({
-          status: "cerrada",
-          closed_at: new Date().toISOString(),
-          closed_by: user?.id ?? null,
-          expected_amount: expectedCash,
-          counted_amount: counted,
-          difference_amount: Math.round((counted - expectedCash) * 100) / 100,
-          notes: notes || null,
-        })
-        .eq("id", session.id);
-      if (error) throw error;
+      return (await runCloseSession({
+        data: { cash_session_id: session.id, counted_amount: counted, notes: notes || undefined },
+      })) as CloseSummary;
     },
-    onSuccess: () => {
-      toast.success("Caja cerrada con arqueo registrado");
+    onSuccess: (summary) => {
+      toast.success("Caja cerrada con arqueo y ajuste contable", { description: summary.journalNote });
+      setCloseSummary(summary);
+      setCloseSummaryOpen(true);
       queryClient.invalidateQueries({ queryKey: ["cash-session"] });
       queryClient.invalidateQueries({ queryKey: ["session-sales"] });
     },
