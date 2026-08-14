@@ -51,6 +51,7 @@ import { Route as AuthenticatedSupervisoresPrediccionesRouteImport } from './rou
 import { Route as AuthenticatedSupervisoresPuntosVentaRouteImport } from './routes/_authenticated/supervisores.puntos-venta'
 import { Route as AuthenticatedSupervisoresReportesRouteImport } from './routes/_authenticated/supervisores.reportes'
 import { Route as AuthenticatedSupervisoresVentasRouteImport } from './routes/_authenticated/supervisores.ventas'
+import { Route as AuthenticatedAdministracionAsientosIndexRouteImport } from './routes/_authenticated/administracion.asientos.index'
 import { Route as AuthenticatedAdministracionAsientosNuevoRouteImport } from './routes/_authenticated/administracion.asientos.nuevo'
 import { Route as AuthenticatedAdministracionEeccIndexRouteImport } from './routes/_authenticated/administracion.eecc.index'
 import { Route as AuthenticatedAdministracionEeccConciliacionRouteImport } from './routes/_authenticated/administracion.eecc.conciliacion'
@@ -312,6 +313,12 @@ const AuthenticatedSupervisoresVentasRoute =
     path: '/ventas',
     getParentRoute: () => AuthenticatedSupervisoresRoute,
   } as any)
+const AuthenticatedAdministracionAsientosIndexRoute =
+  AuthenticatedAdministracionAsientosIndexRouteImport.update({
+    id: '/asientos/',
+    path: '/asientos/',
+    getParentRoute: () => AuthenticatedAdministracionRoute,
+  } as any)
 const AuthenticatedAdministracionAsientosNuevoRoute =
   AuthenticatedAdministracionAsientosNuevoRouteImport.update({
     id: '/asientos/nuevo',
@@ -490,6 +497,7 @@ export interface FileRoutesByFullPath {
   '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/administracion/asientos/': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
   '/administracion/reportes/': typeof AuthenticatedAdministracionReportesIndexRoute
   '/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -547,6 +555,7 @@ export interface FileRoutesByTo {
   '/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/administracion/asientos': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/administracion/eecc': typeof AuthenticatedAdministracionEeccIndexRoute
   '/administracion/reportes': typeof AuthenticatedAdministracionReportesIndexRoute
   '/sedes/$locationId': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -612,6 +621,7 @@ export interface FileRoutesById {
   '/_authenticated/administracion/reportes/ventas': typeof AuthenticatedAdministracionReportesVentasRoute
   '/api/public/invoices/ingest': typeof ApiPublicInvoicesIngestRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/_authenticated/administracion/asientos/': typeof AuthenticatedAdministracionAsientosIndexRoute
   '/_authenticated/administracion/eecc/': typeof AuthenticatedAdministracionEeccIndexRoute
   '/_authenticated/administracion/reportes/': typeof AuthenticatedAdministracionReportesIndexRoute
   '/_authenticated/sedes/$locationId/': typeof AuthenticatedSedesLocationIdIndexRoute
@@ -677,6 +687,7 @@ export interface FileRouteTypes {
     | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/administracion/asientos/'
     | '/administracion/eecc/'
     | '/administracion/reportes/'
     | '/sedes/$locationId/'
@@ -734,6 +745,7 @@ export interface FileRouteTypes {
     | '/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/administracion/asientos'
     | '/administracion/eecc'
     | '/administracion/reportes'
     | '/sedes/$locationId'
@@ -798,6 +810,7 @@ export interface FileRouteTypes {
     | '/_authenticated/administracion/reportes/ventas'
     | '/api/public/invoices/ingest'
     | '/api/public/webhooks/mercadopago'
+    | '/_authenticated/administracion/asientos/'
     | '/_authenticated/administracion/eecc/'
     | '/_authenticated/administracion/reportes/'
     | '/_authenticated/sedes/$locationId/'
@@ -1108,6 +1121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSupervisoresVentasRouteImport
       parentRoute: typeof AuthenticatedSupervisoresRoute
     }
+    '/_authenticated/administracion/asientos/': {
+      id: '/_authenticated/administracion/asientos/'
+      path: '/asientos'
+      fullPath: '/administracion/asientos/'
+      preLoaderRoute: typeof AuthenticatedAdministracionAsientosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdministracionRoute
+    }
     '/_authenticated/administracion/asientos/nuevo': {
       id: '/_authenticated/administracion/asientos/nuevo'
       path: '/asientos/nuevo'
@@ -1329,6 +1349,7 @@ interface AuthenticatedAdministracionRouteChildren {
   AuthenticatedAdministracionReportesRoute: typeof AuthenticatedAdministracionReportesRouteWithChildren
   AuthenticatedAdministracionIndexRoute: typeof AuthenticatedAdministracionIndexRoute
   AuthenticatedAdministracionAsientosNuevoRoute: typeof AuthenticatedAdministracionAsientosNuevoRoute
+  AuthenticatedAdministracionAsientosIndexRoute: typeof AuthenticatedAdministracionAsientosIndexRoute
 }
 
 const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRouteChildren =
@@ -1349,6 +1370,8 @@ const AuthenticatedAdministracionRouteChildren: AuthenticatedAdministracionRoute
       AuthenticatedAdministracionIndexRoute,
     AuthenticatedAdministracionAsientosNuevoRoute:
       AuthenticatedAdministracionAsientosNuevoRoute,
+    AuthenticatedAdministracionAsientosIndexRoute:
+      AuthenticatedAdministracionAsientosIndexRoute,
   }
 
 const AuthenticatedAdministracionRouteWithChildren =
