@@ -478,7 +478,7 @@ export function PosWorkspace({
             audit: auditPayload,
           },
         });
-        return { sale_number: saleNumber, queued: true };
+        return { sale_number: saleNumber, queued: true, sale_id: null as string | null };
       };
 
       if (!online) return await queueLocally();
@@ -503,7 +503,7 @@ export function PosWorkspace({
 
         await supabase.from("audit_logs").insert({ ...auditPayload, entity_id: sale.id });
 
-        return { sale_number: sale.sale_number, queued: false };
+        return { sale_number: sale.sale_number, queued: false, sale_id: sale.id as string | null };
       } catch (error) {
         if (!navigator.onLine) return await queueLocally();
         throw error;
