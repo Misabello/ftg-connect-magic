@@ -14,7 +14,7 @@ import {
   type PaymentDraft,
   type PaymentMethodRow,
 } from "@/components/ftg/pos/CheckoutDialog";
-import { ReceiptShareDialog } from "@/components/ftg/pos/ReceiptShareDialog";
+import { ReceiptShareDialog, type SaleAssignment } from "@/components/ftg/pos/ReceiptShareDialog";
 import { PosLedgerPanel } from "@/components/ftg/pos/PosLedgerPanel";
 import { PosTicketsPanel } from "@/components/ftg/pos/PosTicketsPanel";
 import { CashSourcesPanel } from "@/components/ftg/pos/CashSourcesPanel";
@@ -95,6 +95,7 @@ export function PosWorkspace({
   const [lastReceipt, setLastReceipt] = useState<ReceiptShareData | null>(null);
   const [lastContact, setLastContact] = useState({ email: "", phone: "" });
   const [closeSummary, setCloseSummary] = useState<CloseSummary | null>(null);
+  const [lastAssignment, setLastAssignment] = useState<SaleAssignment | null>(null);
   const [closeSummaryOpen, setCloseSummaryOpen] = useState(false);
   const runCloseSession = useServerFn(closeCashSession);
 
