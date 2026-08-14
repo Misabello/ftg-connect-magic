@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useScope } from "@/hooks/useScope";
 import { supabase } from "@/integrations/supabase/client";
-import { POS_CLOSE_SENDER } from "@/lib/ftg/pos-close";
+import { CLOSE_SENDER_EMAIL } from "@/lib/ftg/pos-close";
 
 export const Route = createFileRoute("/_authenticated/configuracion/notificaciones")({
   head: () => ({
@@ -33,7 +33,7 @@ const HEADERS = ["Nombre", "Email", "Rol", "Sede", "Punto de venta", "Estado"];
 
 function NotificacionesPos() {
   const queryClient = useQueryClient();
-  const { locations, activeLocation } = useScope();
+  const { locations } = useScope();
   const [form, setForm] = useState({ full_name: "", email: "", role_label: "", location_id: "all", point_of_sale_id: "all" });
 
   const { data: posList = [] } = useQuery({
@@ -66,7 +66,6 @@ function NotificacionesPos() {
         full_name: form.full_name.trim() || form.email.trim(),
         email: form.email.trim().toLowerCase(),
         role_label: form.role_label.trim() || null,
-        organization_id: activeLocation?.organization_id ?? null,
         location_id: form.location_id === "all" ? null : form.location_id,
         point_of_sale_id: form.point_of_sale_id === "all" ? null : form.point_of_sale_id,
       });
@@ -117,7 +116,7 @@ function NotificacionesPos() {
     <div className="space-y-5">
       <PageHeader
         title="Notificaciones / Punto de venta"
-        description={`Quiénes reciben el aviso de cierre de caja. Emisor configurado: ${POS_CLOSE_SENDER}`}
+        description={`Quiénes reciben el aviso de cierre de caja. Emisor configurado: ${CLOSE_SENDER_EMAIL}`}
         actions={
           <ExportSheetButton title="Destinatarios de cierre de caja" headers={HEADERS} getRows={() => rows} />
         }
