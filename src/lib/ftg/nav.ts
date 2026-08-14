@@ -11,7 +11,7 @@ export const ADMIN_SUBNAV: SubNavItem[] = [
   { to: "/administracion/cobrar", label: "Ctas a Cobrar", group: "General" },
   { to: "/administracion/pagar", label: "Ctas a Pagar", group: "General" },
   { to: "/administracion/minutas", label: "Minutas", group: "General" },
-  { to: "/administracion/asientos/nuevo", label: "Cargar asientos", group: "Contabilidad" },
+  { to: "/administracion/asientos", label: "Asientos contables", group: "Contabilidad" },
   { to: "/administracion/plan-de-cuentas", label: "Plan de cuentas", group: "Contabilidad" },
   { to: "/administracion/reportes", label: "Reportes disponibles", exact: true, group: "Reportes" },
   { to: "/administracion/reportes/ventas", label: "Ventas", group: "Reportes" },
@@ -48,6 +48,7 @@ export const CONFIG_SUBNAV: SubNavItem[] = [
   { to: "/configuracion/roles", label: "Roles y permisos" },
   { to: "/configuracion/empleados", label: "Empleados" },
   { to: "/configuracion/vacaciones", label: "Vacaciones y licencias" },
+  { to: "/configuracion/notificaciones", label: "Notificaciones / Punto de venta" },
   { to: "/configuracion", label: "Empresas y países", search: { tab: "paises" }, exact: true },
   { to: "/configuracion", label: "Sedes y puntos de venta", search: { tab: "sedes" }, exact: true },
   { to: "/configuracion/parametros", label: "Parámetros administrativos" },
@@ -58,6 +59,7 @@ export const SECTION_SUBNAV: Record<string, SubNavItem[]> = {
   administracion: ADMIN_SUBNAV,
   supervisores: SUPERVISOR_SUBNAV,
   configuracion: CONFIG_SUBNAV,
+  pos: POS_SUBNAV,
 };
 
 export function findSubNavItem(items: SubNavItem[], pathname: string, search?: Record<string, unknown>) {
